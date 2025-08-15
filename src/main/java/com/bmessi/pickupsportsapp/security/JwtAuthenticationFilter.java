@@ -1,56 +1,61 @@
 package com.bmessi.pickupsportsapp.security;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
+    private final JwtTokenService tokenService;
+    private final String authHeaderName;
+    private final String authHeaderPrefix;
 
-    private static final byte[] SECRET_KEY = "your-secret-key-must-be-at-least-32-characters".getBytes(StandardCharsets.UTF_8);
-
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager,
+                                   UserDetailsService userDetailsService,
+                                   JwtTokenService tokenService,
+                                   String loginUrl,
+                                   String authHeaderName,
+                                   String authHeaderPrefix) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
-        setFilterProcessesUrl("/auth/login");
+        this.tokenService = tokenService;
+        this.authHeaderName = authHeaderName;
+        this.authHeaderPrefix = authHeaderPrefix != null ? authHeaderPrefix : "Bearer ";
+        setFilterProcessesUrl(loginUrl);
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonNode = mapper.readTree(request.getReader());
-            if (jsonNode == null || jsonNode.get("username") == null || jsonNode.get("password") == null) {
+            JsonNode json = mapper.readTree(request.getReader());
+            if (json == null || json.get("username") == null || json.get("password") == null) {
                 throw new AuthenticationServiceException("Missing username or password");
             }
-
-            String username = jsonNode.get("username").asText(null);
-            String password = jsonNode.get("password").asText(null);
-
+            String username = json.get("username").asText(null);
+            String password = json.get("password").asText(null);
             if (username == null || username.isBlank() || password == null || password.isBlank()) {
                 throw new BadCredentialsException("Invalid username or password");
             }
-
             UsernamePasswordAuthenticationToken authRequest =
                     new UsernamePasswordAuthenticationToken(username, password, Collections.emptyList());
-
             return authenticationManager.authenticate(authRequest);
         } catch (BadCredentialsException | AuthenticationServiceException e) {
             throw e;
@@ -62,17 +67,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication auth) {
         try {
-            UserDetails user = userDetailsService.loadUserByUsername(auth.getName());
-            String token = Jwts.builder()
-                    .subject(user.getUsername())
-                    .signWith(Keys.hmacShaKeyFor(SECRET_KEY))
-                    .compact();
+            var user = userDetailsService.loadUserByUsername(auth.getName());
+            String token = tokenService.generate(user.getUsername());
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json");
-            response.addHeader("Authorization", "Bearer " + token);
-            response.getWriter().write("{\"token\":\"Bearer " + token + "\"}");
+            response.addHeader(authHeaderName, authHeaderPrefix + token);
+            response.getWriter().write("{\"token\":\"" + token + "\"}");
             response.getWriter().flush();
+            log.debug("JWT issued for user {}", user.getUsername());
         } catch (Exception e) {
             throw new AuthenticationServiceException("Failed to generate token", e);
         }
@@ -85,6 +88,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"" + failed.getMessage() + "\"}");
             response.getWriter().flush();
+            log.debug("Authentication failed: {}", failed.getMessage());
         } catch (Exception ignored) {
         }
     }

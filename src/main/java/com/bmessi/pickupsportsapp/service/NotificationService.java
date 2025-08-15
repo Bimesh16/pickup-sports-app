@@ -4,60 +4,109 @@ import com.bmessi.pickupsportsapp.entity.Notification;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.NotificationRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationService {
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
 
-    @Autowired
-    private UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
 
+    @Transactional
     public Notification createNotification(String username, String message) {
+        if (message == null || message.isBlank()) {
+            throw new IllegalArgumentException("Notification message must not be blank");
+        }
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new RuntimeException("User not found");
+            throw new IllegalArgumentException("User not found: " + username);
         }
-        Notification notification = new Notification();
-        notification.setUser(user);
-        notification.setMessage(message);
-        return notificationRepository.save(notification);
+        Notification n = Notification.builder()
+                .user(user)
+                .message(message.trim())
+                .build();
+        Notification saved = notificationRepository.save(n);
+        log.debug("Created notification {} for user {}", saved.getId(), username);
+        return saved;
     }
 
-    public void createGameNotification(String recipientUsername, String actorUsername, String sport, String location, String action) {
-        User recipient = userRepository.findByUsername(recipientUsername);
-        if (recipient == null) {
-            throw new RuntimeException("Recipient user not found");
-        }
-        String message = actorUsername + " has " + action + " " + sport + " at " + location;
-        Notification notification = new Notification();
-        notification.setUser(recipient);
-        notification.setMessage(message);
-        notificationRepository.save(notification);
-        System.out.println("Notification created for " + recipientUsername + ": " + message);
+    // Helper for game-related events (keeps message construction centralized)
+    @Transactional
+    public Notification createGameNotification(String recipientUsername, String actorUsername, String sport, String location, String action) {
+        String msg = String.format("User %s %s %s at %s", actorUsername, action, sport, location);
+        return createNotification(recipientUsername, msg);
     }
 
+    @Transactional(readOnly = true)
     public List<Notification> getUserNotifications(String username) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new RuntimeException("User not found");
+            return List.of();
         }
-        return notificationRepository.findByUser(user);
+        // Sorted newest first (leverages index on user and timestamps)
+        return notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId(), Pageable.unpaged()).getContent();
     }
 
+    @Transactional
     public Notification markAsRead(Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
-        notification.setRead(true);
-        return notificationRepository.save(notification);
+        Notification n = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + notificationId));
+        if (!n.isRead()) {
+            n.setRead(true);
+            n.setReadAt(Instant.now());
+            n = notificationRepository.save(n);
+            log.debug("Marked notification {} as read", notificationId);
+        }
+        return n;
     }
 
+    @Transactional
+    public int markAllAsReadForUser(String username) {
+        User u = userRepository.findByUsername(username);
+        if (u == null) return 0;
+        int updated = notificationRepository.markAllAsRead(u.getId());
+        log.debug("Marked {} notifications as read for user {}", updated, username);
+        return updated;
+    }
+
+    @Transactional
+    public int markAsReadForUser(String username, Collection<Long> notificationIds) {
+        if (notificationIds == null || notificationIds.isEmpty()) return 0;
+        User u = userRepository.findByUsername(username);
+        if (u == null) return 0;
+        int updated = notificationRepository.markAsRead(u.getId(), notificationIds);
+        log.debug("Marked {} notifications as read for user {}", updated, username);
+        return updated;
+    }
+
+    @Transactional
     public void deleteNotification(Long notificationId) {
+        if (!notificationRepository.existsById(notificationId)) {
+            log.debug("Delete skipped, notification {} not found", notificationId);
+            return;
+        }
         notificationRepository.deleteById(notificationId);
+        log.debug("Deleted notification {}", notificationId);
+    }
+
+    @Transactional
+    public int deleteAllReadForUser(String username) {
+        User u = userRepository.findByUsername(username);
+        if (u == null) return 0;
+        int deleted = notificationRepository.deleteReadByUser(u.getId());
+        log.debug("Deleted {} read notifications for user {}", deleted, username);
+        return deleted;
     }
 }

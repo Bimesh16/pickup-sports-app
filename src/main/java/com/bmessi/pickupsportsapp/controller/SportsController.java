@@ -1,24 +1,25 @@
 package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.repository.GameRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashSet;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 @RestController
+@RequiredArgsConstructor
 public class SportsController {
 
-    @Autowired
-    private GameRepository gameRepository;
+    private final GameRepository gameRepository;
 
     @GetMapping("/sports")
-    public String[] getSports() {
-        // Returns an array of unique sports from all games; empty array if no games exist
-        Set<String> uniqueSports = new HashSet<>();
-        gameRepository.findAll().forEach(game -> uniqueSports.add(game.getSport()));
-        return uniqueSports.toArray(new String[0]);
+    public List<String> getSports() {
+        Set<String> sports = gameRepository.findDistinctSports();
+        return sports.stream()
+                .sorted(Comparator.naturalOrder())
+                .toList();
     }
 }

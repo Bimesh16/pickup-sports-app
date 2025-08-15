@@ -1,195 +1,168 @@
 package com.bmessi.pickupsportsapp.controller;
 
-import com.bmessi.pickupsportsapp.dto.UserDTO;
+import com.bmessi.pickupsportsapp.dto.CreateGameRequest;
+import com.bmessi.pickupsportsapp.dto.GameDetailsDTO;
+import com.bmessi.pickupsportsapp.dto.GameSummaryDTO;
 import com.bmessi.pickupsportsapp.entity.Game;
 import com.bmessi.pickupsportsapp.entity.User;
+import com.bmessi.pickupsportsapp.mapper.ApiMapper;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.service.NotificationService;
 import com.bmessi.pickupsportsapp.service.XaiRecommendationService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.net.URI;
+import java.security.Principal;
+import java.time.OffsetDateTime;
 
 @RestController
+@RequestMapping("/games")
+@RequiredArgsConstructor
 public class GameController {
 
-    @Autowired
-    private GameRepository gameRepository;
-    @Autowired
-    private XaiRecommendationService xaiRecommendationService;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private NotificationService notificationService;
+    private final GameRepository gameRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
+    private final XaiRecommendationService xaiRecommendationService;
+    private final ApiMapper mapper;
 
-    @GetMapping("/games")
-    public Page<Game> getGames(@RequestParam(required = false) String sport,
-                               @PageableDefault(size = 10, sort = "time") Pageable pageable) {
-        if (sport != null) {
-            return gameRepository.findBySport(sport, pageable);
-        }
-        return gameRepository.findAll(pageable);
+    // Flexible listing with optional filters and proper pagination; returns summaries
+    @GetMapping
+    public Page<GameSummaryDTO> getGames(
+            @RequestParam(required = false) String sport,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) OffsetDateTime fromTime,
+            @RequestParam(required = false) OffsetDateTime toTime,
+            @PageableDefault(size = 10, sort = "time") Pageable pageable
+    ) {
+        Page<Game> page = (sport == null && location == null && fromTime == null && toTime == null)
+                ? gameRepository.findAll(pageable)
+                : gameRepository.search(sport, location, fromTime, toTime, pageable);
+        return page.map(mapper::toGameSummaryDTO);
     }
 
-    @PostMapping("/games")
-    @PreAuthorize("isAuthenticated()")
-    public Game createGame(@RequestBody Game game) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new RuntimeException("User not found");
-        }
-        game.setUser(user);
-        return gameRepository.save(game);
+    // Detailed view including participants
+    @GetMapping("/{id}")
+    public ResponseEntity<GameDetailsDTO> getGame(@PathVariable Long id) {
+        return gameRepository.findWithParticipantsById(id)
+                .map(mapper::toGameDetailsDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/recommend-games")
+    // Create a game for the current user
+    @PostMapping
     @PreAuthorize("isAuthenticated()")
-    public Page<Game> recommendGames(@RequestParam(required = false) String preferredSport,
-                                     @RequestParam(required = false) String location,
-                                     @PageableDefault(size = 10, sort = "time") Pageable pageable) {
-        String userPreferredSport = preferredSport != null && !preferredSport.isBlank() ? preferredSport : "Soccer";
-        String userLocation = location != null && !location.isBlank() ? location : "Park A";
-        return xaiRecommendationService.getRecommendations(userPreferredSport, userLocation, pageable);
+    public ResponseEntity<GameDetailsDTO> createGame(@Valid @RequestBody CreateGameRequest request, Principal principal) {
+        User owner = userRepository.findByUsername(principal.getName());
+        if (owner == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
+        }
+        Game game = Game.builder()
+                .sport(request.sport())
+                .location(request.location())
+                .time(request.time())
+                .user(owner)
+                .build();
+        Game saved = gameRepository.save(game);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create("/games/" + saved.getId()));
+        return new ResponseEntity<>(mapper.toGameDetailsDTO(saved), headers, HttpStatus.CREATED);
     }
 
-    @GetMapping("/games/me")
+    // Current user's games (detailed to include participants)
+    @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<GameResponse>> getMyGames(@PageableDefault(size = 5, sort = "time") Pageable pageable) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new RuntimeException("User not found");
+    public Page<GameDetailsDTO> getMyGames(@PageableDefault(size = 10, sort = "time") Pageable pageable, Principal principal) {
+        User me = userRepository.findByUsername(principal.getName());
+        if (me == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
         }
-        Page<Game> gamePage = gameRepository.findByUserId(user.getId(), pageable);
-        Page<GameResponse> responsePage = gamePage.map(game -> new GameResponse(
-                game.getId(),
-                game.getSport(),
-                game.getLocation(),
-                game.getTime(),
-                mapParticipants(game.getParticipants())
-        ));
-        return ResponseEntity.ok(responsePage);
+        return gameRepository.findByUser_Id(me.getId(), pageable)
+                .map(mapper::toGameDetailsDTO);
     }
 
-    @PostMapping("/games/{id}/rsvp")
+    // RSVP: idempotent add; returns current game state
+    @PostMapping("/{id}/rsvp")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<GameResponse> rsvpToGame(@PathVariable Long id) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    public ResponseEntity<GameDetailsDTO> rsvpToGame(@PathVariable Long id, Principal principal) {
+        User me = userRepository.findByUsername(principal.getName());
+        if (me == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
         }
-        Optional<Game> gameOpt = gameRepository.findById(id);
-        if (gameOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-        Game game = gameOpt.get();
-        System.out.println("RSVP attempt for game " + id + ", user: " + username + ", participants: " + game.getParticipants());
-        if (!game.getParticipants().contains(user)) {
-            game.getParticipants().add(user);
+        Game game = gameRepository.findWithParticipantsById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+
+        boolean already = gameRepository.existsParticipant(game.getId(), me.getId());
+        if (!already) {
+            game.addParticipant(me);
             gameRepository.save(game);
-            System.out.println("User added to participants, notifying others for game " + id);
-            // Notify creator
+
             User creator = game.getUser();
-            if (creator != null && !creator.getUsername().equals(username)) {
-                notificationService.createGameNotification(creator.getUsername(), username, game.getSport(), game.getLocation(), "joined");
+            if (creator != null && !creator.getId().equals(me.getId())) {
+                notificationService.createGameNotification(creator.getUsername(), me.getUsername(), game.getSport(), game.getLocation(), "joined");
             }
-            // Notify existing participants
-            game.getParticipants().forEach(participant -> {
-                if (participant != null && !participant.getUsername().equals(username) && !participant.equals(creator)) {
-                    notificationService.createGameNotification(participant.getUsername(), username, game.getSport(), game.getLocation(), "joined");
+            game.getParticipants().forEach(p -> {
+                if (!p.getId().equals(me.getId()) && (creator == null || !p.getId().equals(creator.getId()))) {
+                    notificationService.createGameNotification(p.getUsername(), me.getUsername(), game.getSport(), game.getLocation(), "joined");
                 }
             });
         }
-        GameResponse response = new GameResponse(
-                game.getId(),
-                game.getSport(),
-                game.getLocation(),
-                game.getTime(),
-                mapParticipants(game.getParticipants())
-        );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(mapper.toGameDetailsDTO(game));
     }
 
-    @DeleteMapping("/games/{id}/unrsvp")
+    // Un-RSVP: idempotent remove; returns current game state
+    @DeleteMapping("/{id}/unrsvp")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<GameResponse> unrsvpFromGame(@PathVariable Long id) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    public ResponseEntity<GameDetailsDTO> unrsvpFromGame(@PathVariable Long id, Principal principal) {
+        User me = userRepository.findByUsername(principal.getName());
+        if (me == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
         }
-        Optional<Game> gameOpt = gameRepository.findById(id);
-        if (gameOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        Game game = gameRepository.findWithParticipantsById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+
+        boolean existed = gameRepository.existsParticipant(game.getId(), me.getId());
+        if (!existed) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are not a participant of this game");
         }
-        Game game = gameOpt.get();
-        System.out.println("Un-RSVP attempt for game " + id + ", user: " + username + ", participants: " + game.getParticipants());
-        if (!game.getParticipants().contains(user)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-        game.getParticipants().remove(user);
+        game.removeParticipant(me);
         gameRepository.save(game);
-        System.out.println("User removed from participants, notifying others for game " + id);
-        // Notify creator
+
         User creator = game.getUser();
-        if (creator != null && !creator.getUsername().equals(username)) {
-            notificationService.createGameNotification(creator.getUsername(), username, game.getSport(), game.getLocation(), "left");
+        if (creator != null && !creator.getId().equals(me.getId())) {
+            notificationService.createGameNotification(creator.getUsername(), me.getUsername(), game.getSport(), game.getLocation(), "left");
         }
-        // Notify remaining participants
-        game.getParticipants().forEach(participant -> {
-            if (participant != null && !participant.getUsername().equals(creator.getUsername())) {
-                notificationService.createGameNotification(participant.getUsername(), username, game.getSport(), game.getLocation(), "left");
+        game.getParticipants().forEach(p -> {
+            if (creator == null || !p.getId().equals(creator.getId())) {
+                notificationService.createGameNotification(p.getUsername(), me.getUsername(), game.getSport(), game.getLocation(), "left");
             }
         });
-        GameResponse response = new GameResponse(
-                game.getId(),
-                game.getSport(),
-                game.getLocation(),
-                game.getTime(),
-                mapParticipants(game.getParticipants())
-        );
-        return ResponseEntity.ok(response);
+
+        return ResponseEntity.ok(mapper.toGameDetailsDTO(game));
     }
 
-    @GetMapping("/leaderboard")
-    public List<LeaderboardEntry> getLeaderboard() {
-        List<Game> allGames = gameRepository.findAll();
-        Map<String, Long> rsvpCounts = allGames.stream()
-                .flatMap(game -> game.getParticipants().stream())
-                .map(User::getUsername)
-                .collect(Collectors.groupingBy(
-                        username -> username,
-                        Collectors.counting()
-                ));
-        return rsvpCounts.entrySet().stream()
-                .map(entry -> new LeaderboardEntry(entry.getKey(), entry.getValue()))
-                .sorted((e1, e2) -> e2.rsvpCount().compareTo(e1.rsvpCount()))
-                .collect(Collectors.toList());
+    // Recommendations passthrough with sensible defaults (keeps entity, or switch to GameSummaryDTO if mapper is extended)
+    @GetMapping("/recommend")
+    @PreAuthorize("isAuthenticated()")
+    public Page<GameSummaryDTO> recommendGames(
+            @RequestParam(required = false) String preferredSport,
+            @RequestParam(required = false) String location,
+            @PageableDefault(size = 10, sort = "time") Pageable pageable
+    ) {
+        String sport = (preferredSport != null && !preferredSport.isBlank()) ? preferredSport : "Soccer";
+        String loc = (location != null && !location.isBlank()) ? location : "Park A";
+        return xaiRecommendationService.getRecommendations(sport, loc, pageable).map(mapper::toGameSummaryDTO);
     }
-
-    private List<UserDTO> mapParticipants(List<User> users) {
-        return users.stream()
-                .map(u -> new UserDTO(u.getId(), u.getUsername(), u.getPreferredSport(), u.getLocation()))
-                .collect(Collectors.toList());
-    }
-
-    public record GameResponse(Long id, String sport, String location, String time, List<UserDTO> participants) {}
-
-    public record UserDTO(Long id, String username, String preferredSport, String location) {}
-
-    public record LeaderboardEntry(String username, Long rsvpCount) {}
 }
