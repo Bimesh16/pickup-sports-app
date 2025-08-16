@@ -69,11 +69,11 @@ public class Game {
     private Long version;
 
     @CreatedDate
-    @Column(updatable = false, nullable = false)
+    @Column(name = "created_at", nullable = false, columnDefinition = "timestamp with time zone")
     private Instant createdAt;
 
     @LastModifiedDate
-    @Column(nullable = false)
+    @Column(name = "updated_at", columnDefinition = "timestamp with time zone")
     private Instant updatedAt;
 
     // Helper methods to manage the association consistently

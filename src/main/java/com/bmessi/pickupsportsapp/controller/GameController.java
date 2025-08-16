@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.net.URI;
 import java.security.Principal;
@@ -37,13 +38,14 @@ public class GameController {
     private final XaiRecommendationService xaiRecommendationService;
     private final ApiMapper mapper;
 
-    // Flexible listing with optional filters and proper pagination; returns summaries
     @GetMapping
     public Page<GameSummaryDTO> getGames(
             @RequestParam(required = false) String sport,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) OffsetDateTime fromTime,
-            @RequestParam(required = false) OffsetDateTime toTime,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fromTime,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toTime,
             @PageableDefault(size = 10, sort = "time") Pageable pageable
     ) {
         Page<Game> page = (sport == null && location == null && fromTime == null && toTime == null)
@@ -52,7 +54,6 @@ public class GameController {
         return page.map(mapper::toGameSummaryDTO);
     }
 
-    // Detailed view including participants
     @GetMapping("/{id}")
     public ResponseEntity<GameDetailsDTO> getGame(@PathVariable Long id) {
         return gameRepository.findWithParticipantsById(id)
@@ -61,7 +62,6 @@ public class GameController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Create a game for the current user
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<GameDetailsDTO> createGame(@Valid @RequestBody CreateGameRequest request, Principal principal) {
@@ -81,7 +81,6 @@ public class GameController {
         return new ResponseEntity<>(mapper.toGameDetailsDTO(saved), headers, HttpStatus.CREATED);
     }
 
-    // Current user's games (detailed to include participants)
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public Page<GameDetailsDTO> getMyGames(@PageableDefault(size = 10, sort = "time") Pageable pageable, Principal principal) {
@@ -93,7 +92,6 @@ public class GameController {
                 .map(mapper::toGameDetailsDTO);
     }
 
-    // RSVP: idempotent add; returns current game state
     @PostMapping("/{id}/rsvp")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<GameDetailsDTO> rsvpToGame(@PathVariable Long id, Principal principal) {
@@ -122,7 +120,6 @@ public class GameController {
         return ResponseEntity.ok(mapper.toGameDetailsDTO(game));
     }
 
-    // Un-RSVP: idempotent remove; returns current game state
     @DeleteMapping("/{id}/unrsvp")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<GameDetailsDTO> unrsvpFromGame(@PathVariable Long id, Principal principal) {
@@ -153,7 +150,6 @@ public class GameController {
         return ResponseEntity.ok(mapper.toGameDetailsDTO(game));
     }
 
-    // Recommendations passthrough with sensible defaults (keeps entity, or switch to GameSummaryDTO if mapper is extended)
     @GetMapping("/recommend")
     @PreAuthorize("isAuthenticated()")
     public Page<GameSummaryDTO> recommendGames(

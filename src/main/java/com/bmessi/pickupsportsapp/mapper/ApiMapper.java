@@ -15,19 +15,12 @@ import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface ApiMapper {
-
-    // User
     UserDTO toUserDTO(User user);
     List<UserDTO> toUserDTOs(List<User> users);
     List<UserDTO> toUserDTOs(Set<User> users);
-
-    // Game
     GameSummaryDTO toGameSummaryDTO(Game game);
-
-    @Mapping(target = "participants", source = "participants") // Set<User> -> List<UserDTO> via List method
+    @Mapping(target = "participants", source = "participants")
     GameDetailsDTO toGameDetailsDTO(Game game);
-
-    // Notification
     NotificationDTO toNotificationDTO(Notification n);
     List<NotificationDTO> toNotificationDTOs(List<Notification> list);
 }
