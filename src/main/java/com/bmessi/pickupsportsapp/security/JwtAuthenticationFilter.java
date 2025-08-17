@@ -22,7 +22,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final AuthenticationManager authenticationManager;
-    private final UserDetailsService userDetailsService;
     private final JwtTokenService tokenService;
     private final String authHeaderName;
     private final String authHeaderPrefix;
@@ -34,7 +33,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                    String authHeaderName,
                                    String authHeaderPrefix) {
         this.authenticationManager = authenticationManager;
-        this.userDetailsService = userDetailsService;
+        // userDetailsService no longer needed here for token issuance
         this.tokenService = tokenService;
         this.authHeaderName = authHeaderName;
         this.authHeaderPrefix = authHeaderPrefix != null ? authHeaderPrefix : "Bearer ";
@@ -65,24 +64,37 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication auth) {
+    protected void successfulAuthentication(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            FilterChain chain,
+                                            Authentication auth) {
         try {
-            var user = userDetailsService.loadUserByUsername(auth.getName());
-            String token = tokenService.generate(user.getUsername());
+            // Use the authenticated principal instead of reloading from DB
+            Object principal = auth.getPrincipal();
+            String username;
+            if (principal instanceof org.springframework.security.core.userdetails.UserDetails ud) {
+                username = ud.getUsername();
+            } else {
+                username = auth.getName();
+            }
+
+            String token = tokenService.generate(username);
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json");
             response.addHeader(authHeaderName, authHeaderPrefix + token);
             response.getWriter().write("{\"token\":\"" + token + "\"}");
             response.getWriter().flush();
-            log.debug("JWT issued for user {}", user.getUsername());
+            log.debug("JWT issued for user {}", username);
         } catch (Exception e) {
             throw new AuthenticationServiceException("Failed to generate token", e);
         }
     }
 
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException failed) {
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+                                              HttpServletResponse response,
+                                              org.springframework.security.core.AuthenticationException failed) {
         try {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");

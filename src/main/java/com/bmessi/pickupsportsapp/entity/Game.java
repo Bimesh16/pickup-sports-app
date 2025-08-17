@@ -1,87 +1,75 @@
 package com.bmessi.pickupsportsapp.entity;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
-
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(
-        name = "game",
-        indexes = {
-                @Index(name = "idx_game_sport", columnList = "sport"),
-                @Index(name = "idx_game_time", columnList = "time")
-        }
-)
-@EntityListeners(AuditingEntityListener.class)
+@Table(name = "game")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = {"participants", "user"})
 public class Game {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
     private Long id;
 
-    @NotBlank
-    @Column(nullable = false, length = 50)
+    @Column(name = "sport", nullable = false, length = 100)
     private String sport;
 
-    @NotBlank
-    @Column(nullable = false, length = 255)
+    // IMPORTANT: ensure this is String (not byte[]), and no columnDefinition forcing bytea.
+    @Column(name = "location", nullable = false, length = 255)
     private String location;
 
-    @NotNull
-    @Column(nullable = false)
+    @Column(name = "time", nullable = false)
     private OffsetDateTime time;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "skill_level", length = 50)
+    private String skillLevel;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "game_participants",
-            joinColumns = @JoinColumn(name = "game_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"),
-            uniqueConstraints = @UniqueConstraint(name = "uk_game_user", columnNames = {"game_id", "user_id"})
-    )
-    private Set<User> participants = new HashSet<>();
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Version
     private Long version;
 
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, columnDefinition = "timestamp with time zone")
-    private Instant createdAt;
+    @Column(name = "created_at", updatable = false)
+    private OffsetDateTime createdAt;
 
-    @LastModifiedDate
-    @Column(name = "updated_at", columnDefinition = "timestamp with time zone")
-    private Instant updatedAt;
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 
-    // Helper methods to manage the association consistently
-    public boolean addParticipant(User participant) {
-        return participants.add(participant);
+    @ManyToMany
+    @JoinTable(
+            name = "game_participants",
+            joinColumns = @JoinColumn(name = "game_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @Builder.Default
+    private Set<User> participants = new HashSet<>();
+
+    public void addParticipant(User user) {
+        participants.add(user);
     }
 
-    public boolean removeParticipant(User participant) {
-        return participants.remove(participant);
+    public void removeParticipant(User user) {
+        participants.remove(user);
+    }
+
+    @PrePersist
+    void onCreate() {
+        createdAt = OffsetDateTime.now();
+        updatedAt = createdAt;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = OffsetDateTime.now();
     }
 }

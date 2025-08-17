@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @RestController
@@ -18,7 +19,11 @@ public class SportsController {
     @GetMapping("/sports")
     public List<String> getSports() {
         Set<String> sports = gameRepository.findDistinctSports();
+        if (sports == null || sports.isEmpty()) {
+            return List.of();
+        }
         return sports.stream()
+                .filter(Objects::nonNull)
                 .sorted(Comparator.naturalOrder())
                 .toList();
     }

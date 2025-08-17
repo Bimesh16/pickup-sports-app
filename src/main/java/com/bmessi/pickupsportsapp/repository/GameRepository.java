@@ -1,75 +1,63 @@
 package com.bmessi.pickupsportsapp.repository;
 
 import com.bmessi.pickupsportsapp.entity.Game;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.*;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.transaction.annotation.Transactional;
-
-import jakarta.persistence.LockModeType;
-import jakarta.persistence.QueryHint;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
-
-import static org.hibernate.jpa.HibernateHints.HINT_READ_ONLY;
-import static org.hibernate.jpa.HibernateHints.HINT_FETCH_SIZE;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 
 public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificationExecutor<Game> {
 
-    @EntityGraph(attributePaths = {"user"})
-    Page<Game> findBySportIgnoreCase(String sport, Pageable pageable);
-
-    @EntityGraph(attributePaths = {"user"})
-    Page<Game> findByUser_Id(Long userId, Pageable pageable);
-
-    @EntityGraph(attributePaths = {"user"})
-    Page<Game> findByTimeGreaterThanEqualOrderByTimeAsc(OffsetDateTime from, Pageable pageable);
-
-    @EntityGraph(attributePaths = {"user"})
-    @Query(value = """
-           SELECT g
-             FROM Game g
-            WHERE (:sport IS NULL OR LOWER(g.sport) = LOWER(:sport))
-              AND (:location IS NULL OR LOWER(g.location) LIKE LOWER(CONCAT('%', :location, '%')))
-              AND (:fromTime IS NULL OR g.time >= :fromTime)
-              AND (:toTime   IS NULL OR g.time <= :toTime)
-        """,
+    // Native query:
+    // - Explicit casts for parameters (avoid untyped NULL errors)
+    // - Case-insensitive matching for sport and skillLevel (ILIKE)
+    // - btrim + nullif to ignore accidental spaces and empty strings
+    // - location remains ILIKE with column cast to handle bytea/text mismatch
+    @Query(
+            value = """
+            select g.*
+            from game g
+            join app_user u on u.id = g.user_id
+            where (nullif(btrim(cast(:sport as text)), '') is null or g.sport ILIKE nullif(btrim(cast(:sport as text)), ''))
+              and (nullif(btrim(cast(:location as text)), '') is null 
+                   or cast(g.location as text) ILIKE concat('%%', nullif(btrim(cast(:location as text)), ''), '%%'))
+              and (cast(:fromTime as timestamptz) is null or g.time >= cast(:fromTime as timestamptz))
+              and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
+              and (nullif(btrim(cast(:skillLevel as text)), '') is null or g.skill_level ILIKE nullif(btrim(cast(:skillLevel as text)), ''))
+            order by g.time
+            """,
             countQuery = """
-           SELECT COUNT(g)
-             FROM Game g
-            WHERE (:sport IS NULL OR LOWER(g.sport) = LOWER(:sport))
-              AND (:location IS NULL OR LOWER(g.location) LIKE LOWER(CONCAT('%', :location, '%')))
-              AND (:fromTime IS NULL OR g.time >= :fromTime)
-              AND (:toTime   IS NULL OR g.time <= :toTime)
-        """)
-    Page<Game> search(String sport, String location, OffsetDateTime fromTime, OffsetDateTime toTime, Pageable pageable);
+            select count(*)
+            from game g
+            join app_user u on u.id = g.user_id
+            where (nullif(btrim(cast(:sport as text)), '') is null or g.sport ILIKE nullif(btrim(cast(:sport as text)), ''))
+              and (nullif(btrim(cast(:location as text)), '') is null 
+                   or cast(g.location as text) ILIKE concat('%%', nullif(btrim(cast(:location as text)), ''), '%%'))
+              and (cast(:fromTime as timestamptz) is null or g.time >= cast(:fromTime as timestamptz))
+              and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
+              and (nullif(btrim(cast(:skillLevel as text)), '') is null or g.skill_level ILIKE nullif(btrim(cast(:skillLevel as text)), ''))
+            """,
+            nativeQuery = true
+    )
+    Page<Game> search(@Param("sport") String sport,
+                      @Param("location") String location,
+                      @Param("fromTime") OffsetDateTime fromTime,
+                      @Param("toTime") OffsetDateTime toTime,
+                      @Param("skillLevel") String skillLevel,
+                      Pageable pageable);
 
-    @EntityGraph(attributePaths = {"user", "participants"})
-    Optional<Game> findWithParticipantsById(Long id);
-
-    @Query("""
-        SELECT CASE WHEN COUNT(g) > 0 THEN true ELSE false END
-          FROM Game g
-          JOIN g.participants p
-         WHERE g.id = :gameId
-           AND p.id = :userId
-    """)
-    boolean existsParticipant(Long gameId, Long userId);
-
-    @Query("SELECT DISTINCT g.sport FROM Game g")
+    @Query("select distinct g.sport from Game g")
     Set<String> findDistinctSports();
 
-    @Lock(LockModeType.OPTIMISTIC)
-    Optional<Game> findWithOptimisticLockById(Long id);
+    @EntityGraph(attributePaths = {"participants", "user"})
+    @Query("select g from Game g where g.id = :id")
+    Optional<Game> findWithParticipantsById(@Param("id") Long id);
 
-    @Transactional(readOnly = true)
-    @QueryHints({
-            @QueryHint(name = HINT_READ_ONLY, value = "true"),
-            // Optional: tune fetch size for large streams (driver-dependent)
-            @QueryHint(name = HINT_FETCH_SIZE, value = "1000")
-    })
-    Stream<Game> streamByTimeBetween(OffsetDateTime from, OffsetDateTime to);
+    Page<Game> findByUser_Id(Long userId, Pageable pageable);
+
+    @Query(value = "select exists(select 1 from game_participants gp where gp.game_id = :gameId and gp.user_id = :userId)", nativeQuery = true)
+    boolean existsParticipant(@Param("gameId") Long gameId, @Param("userId") Long userId);
 }

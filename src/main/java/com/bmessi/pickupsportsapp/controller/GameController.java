@@ -42,15 +42,14 @@ public class GameController {
     public Page<GameSummaryDTO> getGames(
             @RequestParam(required = false) String sport,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fromTime,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toTime,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fromTime,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toTime,
+            @RequestParam(required = false) String skillLevel,
             @PageableDefault(size = 10, sort = "time") Pageable pageable
     ) {
-        Page<Game> page = (sport == null && location == null && fromTime == null && toTime == null)
+        Page<Game> page = (sport == null && location == null && fromTime == null && toTime == null && skillLevel == null)
                 ? gameRepository.findAll(pageable)
-                : gameRepository.search(sport, location, fromTime, toTime, pageable);
+                : gameRepository.search(sport, location, fromTime, toTime, skillLevel, pageable);
         return page.map(mapper::toGameSummaryDTO);
     }
 
@@ -73,6 +72,7 @@ public class GameController {
                 .sport(request.sport())
                 .location(request.location())
                 .time(request.time())
+                .skillLevel(request.skillLevel())
                 .user(owner)
                 .build();
         Game saved = gameRepository.save(game);
@@ -155,10 +155,12 @@ public class GameController {
     public Page<GameSummaryDTO> recommendGames(
             @RequestParam(required = false) String preferredSport,
             @RequestParam(required = false) String location,
+            @RequestParam(required = false) String skillLevel,
             @PageableDefault(size = 10, sort = "time") Pageable pageable
     ) {
         String sport = (preferredSport != null && !preferredSport.isBlank()) ? preferredSport : "Soccer";
         String loc = (location != null && !location.isBlank()) ? location : "Park A";
-        return xaiRecommendationService.getRecommendations(sport, loc, pageable).map(mapper::toGameSummaryDTO);
+        String skill = (skillLevel != null && !skillLevel.isBlank()) ? skillLevel : null;
+        return xaiRecommendationService.getRecommendations(sport, loc, skill, pageable).map(mapper::toGameSummaryDTO);
     }
 }

@@ -1,12 +1,14 @@
 package com.bmessi.pickupsportsapp.dto;
 
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.util.Set;
 
 public record GameDetailsDTO(
         Long id,
         String sport,
         String location,
         OffsetDateTime time,
-        List<UserDTO> participants
+        String skillLevel,
+        UserDTO creator,
+        Set<UserDTO> participants
 ) {}

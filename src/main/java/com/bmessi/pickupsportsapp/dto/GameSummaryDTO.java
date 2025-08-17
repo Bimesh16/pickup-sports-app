@@ -6,5 +6,6 @@ public record GameSummaryDTO(
         Long id,
         String sport,
         String location,
-        OffsetDateTime time
+        OffsetDateTime time,
+        String skillLevel
 ) {}
