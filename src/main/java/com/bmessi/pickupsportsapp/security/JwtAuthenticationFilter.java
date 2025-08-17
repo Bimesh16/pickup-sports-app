@@ -1,18 +1,16 @@
 package com.bmessi.pickupsportsapp.security;
 
+import com.bmessi.pickupsportsapp.dto.auth.TokenPairResponse;
+import com.bmessi.pickupsportsapp.service.AuthService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.slf4j.*;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.Collections;
@@ -22,19 +20,17 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenService tokenService;
+    private final AuthService authService;
     private final String authHeaderName;
     private final String authHeaderPrefix;
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager,
-                                   UserDetailsService userDetailsService,
-                                   JwtTokenService tokenService,
+                                   AuthService authService,
                                    String loginUrl,
                                    String authHeaderName,
                                    String authHeaderPrefix) {
         this.authenticationManager = authenticationManager;
-        // userDetailsService no longer needed here for token issuance
-        this.tokenService = tokenService;
+        this.authService = authService;
         this.authHeaderName = authHeaderName;
         this.authHeaderPrefix = authHeaderPrefix != null ? authHeaderPrefix : "Bearer ";
         setFilterProcessesUrl(loginUrl);
@@ -69,25 +65,24 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             FilterChain chain,
                                             Authentication auth) {
         try {
-            // Use the authenticated principal instead of reloading from DB
             Object principal = auth.getPrincipal();
-            String username;
-            if (principal instanceof org.springframework.security.core.userdetails.UserDetails ud) {
-                username = ud.getUsername();
-            } else {
-                username = auth.getName();
-            }
+            String username = (principal instanceof UserDetails ud) ? ud.getUsername() : auth.getName();
 
-            String token = tokenService.generate(username);
+            TokenPairResponse tokens = authService.issueTokensForAuthenticatedUser(username);
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json");
-            response.addHeader(authHeaderName, authHeaderPrefix + token);
-            response.getWriter().write("{\"token\":\"" + token + "\"}");
+            response.addHeader(authHeaderName, authHeaderPrefix + tokens.accessToken());
+            response.getWriter().write(
+                    "{\"accessToken\":\"" + tokens.accessToken() + "\"," +
+                            "\"refreshToken\":\"" + tokens.refreshToken() + "\"," +
+                            "\"tokenType\":\"" + tokens.tokenType() + "\"," +
+                            "\"expiresInSeconds\":" + tokens.expiresInSeconds() + "}"
+            );
             response.getWriter().flush();
-            log.debug("JWT issued for user {}", username);
+            log.debug("Issued access and refresh tokens for user {}", username);
         } catch (Exception e) {
-            throw new AuthenticationServiceException("Failed to generate token", e);
+            throw new AuthenticationServiceException("Failed to generate tokens", e);
         }
     }
 
