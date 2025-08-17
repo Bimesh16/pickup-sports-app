@@ -19,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -81,19 +82,24 @@ public class GameController {
         return new ResponseEntity<>(mapper.toGameDetailsDTO(saved), headers, HttpStatus.CREATED);
     }
 
+    // FIXED METHOD - No more LazyInitializationException!
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
     public Page<GameDetailsDTO> getMyGames(@PageableDefault(size = 10, sort = "time") Pageable pageable, Principal principal) {
         User me = userRepository.findByUsername(principal.getName());
         if (me == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
         }
-        return gameRepository.findByUser_Id(me.getId(), pageable)
+
+        // Use the new repository method that eagerly loads participants
+        return gameRepository.findByUserIdWithParticipants(me.getId(), pageable)
                 .map(mapper::toGameDetailsDTO);
     }
 
     @PostMapping("/{id}/rsvp")
     @PreAuthorize("isAuthenticated()")
+    @Transactional
     public ResponseEntity<GameDetailsDTO> rsvpToGame(@PathVariable Long id, Principal principal) {
         User me = userRepository.findByUsername(principal.getName());
         if (me == null) {
@@ -122,6 +128,7 @@ public class GameController {
 
     @DeleteMapping("/{id}/unrsvp")
     @PreAuthorize("isAuthenticated()")
+    @Transactional
     public ResponseEntity<GameDetailsDTO> unrsvpFromGame(@PathVariable Long id, Principal principal) {
         User me = userRepository.findByUsername(principal.getName());
         if (me == null) {

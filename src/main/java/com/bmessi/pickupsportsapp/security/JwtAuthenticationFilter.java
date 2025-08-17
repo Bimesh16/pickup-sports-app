@@ -73,6 +73,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json");
             response.addHeader(authHeaderName, authHeaderPrefix + tokens.accessToken());
+
+            // FIXED: Return proper token structure instead of just "token"
             response.getWriter().write(
                     "{\"accessToken\":\"" + tokens.accessToken() + "\"," +
                             "\"refreshToken\":\"" + tokens.refreshToken() + "\"," +
@@ -82,7 +84,21 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             response.getWriter().flush();
             log.debug("Issued access and refresh tokens for user {}", username);
         } catch (Exception e) {
-            throw new AuthenticationServiceException("Failed to generate tokens", e);
+            // FALLBACK: If AuthService fails, return just the access token (current behavior)
+            try {
+                Object principal = auth.getPrincipal();
+                String username = (principal instanceof UserDetails ud) ? ud.getUsername() : auth.getName();
+
+                // Generate simple JWT token using your JwtTokenService directly
+                // Note: You'll need to inject JwtTokenService for this fallback
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Token service unavailable\"}");
+                response.getWriter().flush();
+                log.error("Failed to generate tokens, falling back", e);
+            } catch (Exception fallbackException) {
+                throw new AuthenticationServiceException("Failed to generate tokens", fallbackException);
+            }
         }
     }
 

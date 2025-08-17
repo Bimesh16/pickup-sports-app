@@ -56,7 +56,13 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
     @Query("select g from Game g where g.id = :id")
     Optional<Game> findWithParticipantsById(@Param("id") Long id);
 
+    // OLD METHOD - This causes LazyInitializationException
     Page<Game> findByUser_Id(Long userId, Pageable pageable);
+
+    // NEW METHOD - This fixes the LazyInitializationException
+    @EntityGraph(attributePaths = {"participants", "user"})
+    @Query("SELECT g FROM Game g WHERE g.user.id = :userId ORDER BY g.time")
+    Page<Game> findByUserIdWithParticipants(@Param("userId") Long userId, Pageable pageable);
 
     @Query(value = "select exists(select 1 from game_participants gp where gp.game_id = :gameId and gp.user_id = :userId)", nativeQuery = true)
     boolean existsParticipant(@Param("gameId") Long gameId, @Param("userId") Long userId);
