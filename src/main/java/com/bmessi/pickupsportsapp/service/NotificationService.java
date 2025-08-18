@@ -5,108 +5,109 @@ import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.NotificationRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.Collection;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
+    private static final String ERR_MESSAGE_BLANK = "Notification message must not be blank";
+    private static final String ERR_USER_NOT_FOUND = "User not found: %s";
+    private static final String ERR_NOTIFICATION_NOT_FOUND = "Notification not found: %d";
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
     @Transactional
     public Notification createNotification(String username, String message) {
-        if (message == null || message.isBlank()) {
-            throw new IllegalArgumentException("Notification message must not be blank");
-        }
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new IllegalArgumentException("User not found: " + username);
-        }
-        Notification n = Notification.builder()
+        String normalizedMessage = validateAndNormalizeMessage(message);
+        User user = requireUserByUsername(username);
+
+        Notification notification = Notification.builder()
                 .user(user)
-                .message(message.trim())
+                .message(normalizedMessage)
                 .build();
-        Notification saved = notificationRepository.save(n);
-        log.debug("Created notification {} for user {}", saved.getId(), username);
-        return saved;
+
+        Notification savedNotification = notificationRepository.save(notification);
+        log.debug("Created notification {} for user {}", savedNotification.getId(), username);
+        return savedNotification;
     }
 
-    // Helper for game-related events (keeps message construction centralized)
+    // Helper used by game flows to compose a message
     @Transactional
     public Notification createGameNotification(String recipientUsername, String actorUsername, String sport, String location, String action) {
-        String msg = String.format("User %s %s %s at %s", actorUsername, action, sport, location);
+        String msg = formatGameNotificationMessage(actorUsername, action, sport, location);
         return createNotification(recipientUsername, msg);
     }
 
+    // Legacy API preserved: returns all notifications unpaged
     @Transactional(readOnly = true)
     public List<Notification> getUserNotifications(String username) {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return List.of();
+        return getUserNotifications(username, false, Pageable.unpaged()).getContent();
+    }
+
+    // New pageable-aware API
+    @Transactional(readOnly = true)
+    public Page<Notification> getUserNotifications(String username, Pageable pageable) {
+        return getUserNotifications(username, false, pageable);
+    }
+
+    // New pageable-aware API with unreadOnly flag (DB-side filtering)
+    @Transactional(readOnly = true)
+    public Page<Notification> getUserNotifications(String username, boolean unreadOnly, Pageable pageable) {
+        User user = requireUserByUsername(username);
+        if (unreadOnly) {
+            return notificationRepository.findByUser_IdAndReadFalseOrderByCreatedAtDesc(user.getId(), pageable);
         }
-        // Sorted newest first (leverages index on user and timestamps)
-        return notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId(), Pageable.unpaged()).getContent();
+        return notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId(), pageable);
     }
 
     @Transactional
-    public Notification markAsRead(Long notificationId) {
-        Notification n = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + notificationId));
-        if (!n.isRead()) {
-            n.setRead(true);
-            n.setReadAt(Instant.now());
-            n = notificationRepository.save(n);
-            log.debug("Marked notification {} as read", notificationId);
-        }
-        return n;
+    public Notification markAsReadForUser(Long id, String username) {
+        User user = requireUserByUsername(username);
+        Notification notification = notificationRepository.findByIdAndUser_Id(id, user.getId())
+                .orElseThrow(() -> new IllegalArgumentException(String.format(ERR_NOTIFICATION_NOT_FOUND, id)));
+        notification.markRead();
+        return notificationRepository.save(notification);
     }
 
     @Transactional
     public int markAllAsReadForUser(String username) {
-        User u = userRepository.findByUsername(username);
-        if (u == null) return 0;
-        int updated = notificationRepository.markAllAsRead(u.getId());
-        log.debug("Marked {} notifications as read for user {}", updated, username);
-        return updated;
+        User user = requireUserByUsername(username);
+        return notificationRepository.markAllAsRead(user.getId());
     }
 
     @Transactional
-    public int markAsReadForUser(String username, Collection<Long> notificationIds) {
-        if (notificationIds == null || notificationIds.isEmpty()) return 0;
-        User u = userRepository.findByUsername(username);
-        if (u == null) return 0;
-        int updated = notificationRepository.markAsRead(u.getId(), notificationIds);
-        log.debug("Marked {} notifications as read for user {}", updated, username);
-        return updated;
-    }
-
-    @Transactional
-    public void deleteNotification(Long notificationId) {
-        if (!notificationRepository.existsById(notificationId)) {
-            log.debug("Delete skipped, notification {} not found", notificationId);
-            return;
+    public void deleteNotificationForUser(Long id, String username) {
+        User user = requireUserByUsername(username);
+        int deleted = notificationRepository.deleteByIdAndUser_Id(id, user.getId());
+        if (deleted == 0) {
+            throw new IllegalArgumentException(String.format(ERR_NOTIFICATION_NOT_FOUND, id));
         }
-        notificationRepository.deleteById(notificationId);
-        log.debug("Deleted notification {}", notificationId);
     }
 
-    @Transactional
-    public int deleteAllReadForUser(String username) {
-        User u = userRepository.findByUsername(username);
-        if (u == null) return 0;
-        int deleted = notificationRepository.deleteReadByUser(u.getId());
-        log.debug("Deleted {} read notifications for user {}", deleted, username);
-        return deleted;
+    // --- Helpers ---
+
+    private static String validateAndNormalizeMessage(String message) {
+        if (message == null || message.isBlank()) {
+            throw new IllegalArgumentException(ERR_MESSAGE_BLANK);
+        }
+        return message.trim();
+    }
+
+    private static String formatGameNotificationMessage(String actorUsername, String action, String sport, String location) {
+        return "%s %s your %s game at %s".formatted(actorUsername, action, sport, location);
+    }
+
+    private User requireUserByUsername(String username) {
+        return userRepository.findOptionalByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(ERR_USER_NOT_FOUND, username)));
     }
 }

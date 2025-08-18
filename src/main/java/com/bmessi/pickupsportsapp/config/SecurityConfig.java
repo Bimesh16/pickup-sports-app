@@ -31,7 +31,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // Recommended way to obtain AuthenticationManager (auto-wires UserDetailsService + PasswordEncoder)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
@@ -55,8 +54,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/refresh", "/auth/logout",
-                                "/users/register", "/sports", "/games", "/games/*").permitAll()
+                        // 🔥 UPDATED: Made auth endpoints more explicit
+                        .requestMatchers("/auth/**", "/users/register", "/sports", "/games", "/games/**").permitAll()
+                        .requestMatchers("/notifications/**").authenticated() // Require auth for notifications
                         .anyRequest().authenticated()
                 )
                 // Place login filter at UsernamePasswordAuthenticationFilter position

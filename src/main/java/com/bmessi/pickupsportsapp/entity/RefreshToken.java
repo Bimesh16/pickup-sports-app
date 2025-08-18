@@ -28,16 +28,51 @@ public class RefreshToken {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
-    private User user;
+    private com.bmessi.pickupsportsapp.entity.User user;
 
     @Column(nullable = false)
     private OffsetDateTime expiresAt;
 
     private OffsetDateTime revokedAt;
 
-    private String replacedByTokenHash; // optional, for rotation tracking
+    // For rotation tracking; if set, this token has already been rotated
+    @Column(length = 255)
+    private String replacedByTokenHash;
 
+    // Optimistic locking to prevent concurrent rotations of the same token
+    @Version
+    private Long version;
+
+    // ---------------- Convenience and status helpers ----------------
+
+    public boolean isRevoked() {
+        return revokedAt != null;
+    }
+
+    public boolean isExpired() {
+        return OffsetDateTime.now().isAfter(expiresAt);
+    }
+
+    // Active = not revoked and not expired (single-use semantics)
     public boolean isActive() {
-        return revokedAt == null && OffsetDateTime.now().isBefore(expiresAt);
+        return !isRevoked() && !isExpired();
+    }
+
+    // Mark token as revoked now (logout or compromise)
+    public void revokeNow() {
+        if (this.revokedAt == null) {
+            this.revokedAt = OffsetDateTime.now();
+        }
+    }
+
+    // Rotate this token: revoke it and record the replacement's hash
+    public void rotateTo(String newTokenHash) {
+        revokeNow();
+        this.replacedByTokenHash = newTokenHash;
+    }
+
+    // True if the token was already used for rotation (reuse attempt indicator)
+    public boolean wasRotated() {
+        return this.replacedByTokenHash != null;
     }
 }

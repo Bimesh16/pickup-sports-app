@@ -15,8 +15,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.hibernate.jpa.HibernateHints.HINT_READ_ONLY;
 import static org.hibernate.jpa.HibernateHints.HINT_FETCH_SIZE;
+import static org.hibernate.jpa.HibernateHints.HINT_READ_ONLY;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long>, JpaSpecificationExecutor<Notification> {
 
@@ -68,10 +68,15 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Transactional(readOnly = true)
     @QueryHints({
             @QueryHint(name = HINT_READ_ONLY, value = "true"),
-            // Optional: tune fetch size for large streams (driver-dependent)
             @QueryHint(name = HINT_FETCH_SIZE, value = "1000")
     })
     Stream<Notification> streamByUser_IdAndCreatedAtBetween(Long userId, Instant from, Instant to);
+
+    // Added: enforce ownership for single-id operations
+    Optional<Notification> findByIdAndUser_Id(Long id, Long userId);
+
+    @Modifying
+    int deleteByIdAndUser_Id(Long id, Long userId);
 
     interface Summary {
         Long getId();
