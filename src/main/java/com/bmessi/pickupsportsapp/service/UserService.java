@@ -4,24 +4,23 @@ import com.bmessi.pickupsportsapp.dto.CreateUserRequest;
 import com.bmessi.pickupsportsapp.dto.UserDTO;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.exception.UsernameTakenException;
-import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.mapper.ApiMapper;
+import com.bmessi.pickupsportsapp.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ApiMapper mapper;
+    private final EmailService emailService; // <-- add this
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, ApiMapper mapper) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.mapper = mapper;
-    }
-
+    @Transactional
     public UserDTO register(CreateUserRequest request) {
         if (userRepository.findByUsername(request.username()) != null) {
             throw new UsernameTakenException("Username '" + request.username() + "' is already taken");
@@ -32,6 +31,10 @@ public class UserService {
         user.setPreferredSport(request.preferredSport());
         user.setLocation(request.location());
         user = userRepository.save(user);
+
+        // Send welcome email asynchronously
+        emailService.sendWelcomeEmail(user);
+
         return mapper.toUserDTO(user);
     }
 }
