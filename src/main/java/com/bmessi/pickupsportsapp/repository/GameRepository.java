@@ -1,28 +1,32 @@
 package com.bmessi.pickupsportsapp.repository;
 
 import com.bmessi.pickupsportsapp.entity.Game;
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+/**
+ * Repository for Game entities. Includes search, participant checks,
+ * eager loading for "my games", and a location-based query.
+ */
 public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificationExecutor<Game> {
 
-    // Native query:
-    // - Explicit casts for parameters (avoid untyped NULL errors)
-    // - Case-insensitive matching for sport and skillLevel (ILIKE)
-    // - btrim + nullif to ignore accidental spaces and empty strings
-    // - location remains ILIKE with column cast to handle bytea/text mismatch
+    /**
+     * Complex native search for filtering by sport, location, time range, and skill level.
+     */
     @Query(
             value = """
             select g.*
             from game g
             join app_user u on u.id = g.user_id
             where (nullif(btrim(cast(:sport as text)), '') is null or g.sport ILIKE nullif(btrim(cast(:sport as text)), ''))
-              and (nullif(btrim(cast(:location as text)), '') is null 
+              and (nullif(btrim(cast(:location as text)), '') is null
                    or cast(g.location as text) ILIKE concat('%%', nullif(btrim(cast(:location as text)), ''), '%%'))
               and (cast(:fromTime as timestamptz) is null or g.time >= cast(:fromTime as timestamptz))
               and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
@@ -34,7 +38,7 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
             from game g
             join app_user u on u.id = g.user_id
             where (nullif(btrim(cast(:sport as text)), '') is null or g.sport ILIKE nullif(btrim(cast(:sport as text)), ''))
-              and (nullif(btrim(cast(:location as text)), '') is null 
+              and (nullif(btrim(cast(:location as text)), '') is null
                    or cast(g.location as text) ILIKE concat('%%', nullif(btrim(cast(:location as text)), ''), '%%'))
               and (cast(:fromTime as timestamptz) is null or g.time >= cast(:fromTime as timestamptz))
               and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
@@ -42,28 +46,63 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
             """,
             nativeQuery = true
     )
-    Page<Game> search(@Param("sport") String sport,
-                      @Param("location") String location,
-                      @Param("fromTime") OffsetDateTime fromTime,
-                      @Param("toTime") OffsetDateTime toTime,
-                      @Param("skillLevel") String skillLevel,
-                      Pageable pageable);
+    Page<Game> search(
+            @Param("sport") String sport,
+            @Param("location") String location,
+            @Param("fromTime") OffsetDateTime fromTime,
+            @Param("toTime") OffsetDateTime toTime,
+            @Param("skillLevel") String skillLevel,
+            Pageable pageable
+    );
 
+    /**
+     * Retrieve all distinct sports for the sports dropdown.
+     */
     @Query("select distinct g.sport from Game g")
     Set<String> findDistinctSports();
 
+    /**
+     * Fetch a game and its participants eagerly.
+     */
     @EntityGraph(attributePaths = {"participants", "user"})
     @Query("select g from Game g where g.id = :id")
     Optional<Game> findWithParticipantsById(@Param("id") Long id);
 
-    // OLD METHOD - This causes LazyInitializationException
+    /**
+     * Old method left in place (may be unused now).
+     */
     Page<Game> findByUser_Id(Long userId, Pageable pageable);
 
-    // NEW METHOD - This fixes the LazyInitializationException
+    /**
+     * New method for "my games": fetches participants eagerly to avoid lazy loading errors.
+     */
     @EntityGraph(attributePaths = {"participants", "user"})
     @Query("SELECT g FROM Game g WHERE g.user.id = :userId ORDER BY g.time")
     Page<Game> findByUserIdWithParticipants(@Param("userId") Long userId, Pageable pageable);
 
+    /**
+     * Check if a user has already RSVPed to a game.
+     */
     @Query(value = "select exists(select 1 from game_participants gp where gp.game_id = :gameId and gp.user_id = :userId)", nativeQuery = true)
     boolean existsParticipant(@Param("gameId") Long gameId, @Param("userId") Long userId);
+
+    /**
+     * Find games within a radius (km) of given coordinates using a simplified Haversine formula.
+     */
+    @Query("""
+        select g from Game g
+        where g.latitude is not null and g.longitude is not null and
+              (6371 * acos(
+                   cos(radians(:lat)) *
+                   cos(radians(g.latitude)) *
+                   cos(radians(g.longitude) - radians(:lon)) +
+                   sin(radians(:lat)) *
+                   sin(radians(g.latitude))
+              )) <= :radius
+        """)
+    List<Game> findByLocationWithinRadius(
+            @Param("lat") double latitude,
+            @Param("lon") double longitude,
+            @Param("radius") double radiusKm
+    );
 }

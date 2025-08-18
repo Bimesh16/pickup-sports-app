@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +23,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.net.URI;
 import java.security.Principal;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/games")
@@ -39,12 +40,17 @@ public class GameController {
     private final XaiRecommendationService xaiRecommendationService;
     private final ApiMapper mapper;
 
+    /**
+     * List games with optional filters (sport, location, time range, skill).
+     */
     @GetMapping
     public Page<GameSummaryDTO> getGames(
             @RequestParam(required = false) String sport,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fromTime,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toTime,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fromTime,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toTime,
             @RequestParam(required = false) String skillLevel,
             @PageableDefault(size = 10, sort = "time") Pageable pageable
     ) {
@@ -54,6 +60,9 @@ public class GameController {
         return page.map(mapper::toGameSummaryDTO);
     }
 
+    /**
+     * Retrieve a single game by ID with participants and creator loaded.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<GameDetailsDTO> getGame(@PathVariable Long id) {
         return gameRepository.findWithParticipantsById(id)
@@ -62,9 +71,15 @@ public class GameController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Create a new game.  Requires authentication.
+     */
     @PostMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<GameDetailsDTO> createGame(@Valid @RequestBody CreateGameRequest request, Principal principal) {
+    public ResponseEntity<GameDetailsDTO> createGame(
+            @Valid @RequestBody CreateGameRequest request,
+            Principal principal
+    ) {
         User owner = userRepository.findByUsername(principal.getName());
         if (owner == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
@@ -74,6 +89,8 @@ public class GameController {
                 .location(request.location())
                 .time(request.time())
                 .skillLevel(request.skillLevel())
+                .latitude(request.latitude())    // new fields
+                .longitude(request.longitude())  // new fields
                 .user(owner)
                 .build();
         Game saved = gameRepository.save(game);
@@ -82,21 +99,41 @@ public class GameController {
         return new ResponseEntity<>(mapper.toGameDetailsDTO(saved), headers, HttpStatus.CREATED);
     }
 
-    // FIXED METHOD - No more LazyInitializationException!
+    /**
+     * Find games near a given coordinate (in kilometers).  Public endpoint.
+     */
+    @GetMapping("/near")
+    public List<GameSummaryDTO> findNearbyGames(
+            @RequestParam double lat,
+            @RequestParam double lon,
+            @RequestParam(defaultValue = "5.0") double radiusKm
+    ) {
+        var games = gameRepository.findByLocationWithinRadius(lat, lon, radiusKm);
+        return games.stream().map(mapper::toGameSummaryDTO).toList();
+    }
+
+    /**
+     * Get games created by the current user.  Eagerly loads participants.
+     */
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
-    public Page<GameDetailsDTO> getMyGames(@PageableDefault(size = 10, sort = "time") Pageable pageable, Principal principal) {
+    public Page<GameDetailsDTO> getMyGames(
+            @PageableDefault(size = 10, sort = "time") Pageable pageable,
+            Principal principal
+    ) {
         User me = userRepository.findByUsername(principal.getName());
         if (me == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
         }
-
-        // Use the new repository method that eagerly loads participants
         return gameRepository.findByUserIdWithParticipants(me.getId(), pageable)
                 .map(mapper::toGameDetailsDTO);
     }
 
+    /**
+     * RSVP to a game.  Adds the current user to participants if not already present,
+     * and sends notifications to the creator and other participants.
+     */
     @PostMapping("/{id}/rsvp")
     @PreAuthorize("isAuthenticated()")
     @Transactional
@@ -115,17 +152,32 @@ public class GameController {
 
             User creator = game.getUser();
             if (creator != null && !creator.getId().equals(me.getId())) {
-                notificationService.createGameNotification(creator.getUsername(), me.getUsername(), game.getSport(), game.getLocation(), "joined");
+                notificationService.createGameNotification(
+                        creator.getUsername(),
+                        me.getUsername(),
+                        game.getSport(),
+                        game.getLocation(),
+                        "joined"
+                );
             }
             game.getParticipants().forEach(p -> {
                 if (!p.getId().equals(me.getId()) && (creator == null || !p.getId().equals(creator.getId()))) {
-                    notificationService.createGameNotification(p.getUsername(), me.getUsername(), game.getSport(), game.getLocation(), "joined");
+                    notificationService.createGameNotification(
+                            p.getUsername(),
+                            me.getUsername(),
+                            game.getSport(),
+                            game.getLocation(),
+                            "joined"
+                    );
                 }
             });
         }
         return ResponseEntity.ok(mapper.toGameDetailsDTO(game));
     }
 
+    /**
+     * Un-RSVP from a game.  Removes the user and sends notifications.
+     */
     @DeleteMapping("/{id}/unrsvp")
     @PreAuthorize("isAuthenticated()")
     @Transactional
@@ -146,17 +198,31 @@ public class GameController {
 
         User creator = game.getUser();
         if (creator != null && !creator.getId().equals(me.getId())) {
-            notificationService.createGameNotification(creator.getUsername(), me.getUsername(), game.getSport(), game.getLocation(), "left");
+            notificationService.createGameNotification(
+                    creator.getUsername(),
+                    me.getUsername(),
+                    game.getSport(),
+                    game.getLocation(),
+                    "left"
+            );
         }
         game.getParticipants().forEach(p -> {
             if (creator == null || !p.getId().equals(creator.getId())) {
-                notificationService.createGameNotification(p.getUsername(), me.getUsername(), game.getSport(), game.getLocation(), "left");
+                notificationService.createGameNotification(
+                        p.getUsername(),
+                        me.getUsername(),
+                        game.getSport(),
+                        game.getLocation(),
+                        "left"
+                );
             }
         });
-
         return ResponseEntity.ok(mapper.toGameDetailsDTO(game));
     }
 
+    /**
+     * Get AI-powered game recommendations.  Delegates to XaiRecommendationService.
+     */
     @GetMapping("/recommend")
     @PreAuthorize("isAuthenticated()")
     public Page<GameSummaryDTO> recommendGames(
@@ -168,6 +234,7 @@ public class GameController {
         String sport = (preferredSport != null && !preferredSport.isBlank()) ? preferredSport : "Soccer";
         String loc = (location != null && !location.isBlank()) ? location : "Park A";
         String skill = (skillLevel != null && !skillLevel.isBlank()) ? skillLevel : null;
-        return xaiRecommendationService.getRecommendations(sport, loc, skill, pageable).map(mapper::toGameSummaryDTO);
+        return xaiRecommendationService.getRecommendations(sport, loc, skill, pageable)
+                .map(mapper::toGameSummaryDTO);
     }
 }

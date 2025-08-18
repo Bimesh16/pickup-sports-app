@@ -6,6 +6,10 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents an application user.  Now includes optional
+ * age, position, and contactPreference fields.
+ */
 @Entity
 @Table(name = "app_user", uniqueConstraints = @UniqueConstraint(columnNames = "username"))
 @Getter
@@ -44,12 +48,30 @@ public class User {
     @Column(length = 20)
     private SkillLevel skillLevel;
 
-    // Aggregates maintained by rating service
+    // Rating aggregates
     @Column
     private Double ratingAverage;
 
     @Column
     private Integer ratingCount;
+
+    /**
+     * User's age (optional).
+     */
+    @Column
+    private Integer age;
+
+    /**
+     * User's preferred playing position (e.g., “Forward”, “Goalkeeper”).
+     */
+    @Column(length = 100)
+    private String position;
+
+    /**
+     * Preferred contact method (e.g., “Email”, “SMS”).
+     */
+    @Column(length = 50)
+    private String contactPreference;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

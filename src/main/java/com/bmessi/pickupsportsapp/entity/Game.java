@@ -6,6 +6,10 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Entity representing a pickup game.  Includes GPS coordinates so
+ * games can be filtered by proximity.
+ */
 @Entity
 @Table(name = "game")
 @Getter
@@ -22,7 +26,6 @@ public class Game {
     @Column(name = "sport", nullable = false, length = 100)
     private String sport;
 
-    // IMPORTANT: ensure this is String (not byte[]), and no columnDefinition forcing bytea.
     @Column(name = "location", nullable = false, length = 255)
     private String location;
 
@@ -31,6 +34,18 @@ public class Game {
 
     @Column(name = "skill_level", length = 50)
     private String skillLevel;
+
+    /**
+     * Latitude of the game location (optional).
+     */
+    @Column
+    private Double latitude;
+
+    /**
+     * Longitude of the game location (optional).
+     */
+    @Column
+    private Double longitude;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")

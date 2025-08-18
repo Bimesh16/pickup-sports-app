@@ -58,6 +58,12 @@
             <artifactId>spring-boot-starter-security</artifactId>
             <version>3.5.4</version>
         </dependency>
+        <!-- WebSocket and STOMP support -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>

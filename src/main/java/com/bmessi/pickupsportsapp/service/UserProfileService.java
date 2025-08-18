@@ -39,6 +39,9 @@ public class UserProfileService {
         if (request.bio() != null) user.setBio(request.bio().trim());
         if (request.avatarUrl() != null) user.setAvatarUrl(request.avatarUrl().trim());
         if (request.skillLevel() != null) user.setSkillLevel(request.skillLevel());
+        if (request.age() != null) user.setAge(request.age());
+        if (request.position() != null) user.setPosition(request.position().trim());
+        if (request.contactPreference() != null) user.setContactPreference(request.contactPreference().trim());
 
         User saved = userRepository.save(user);
         return toDto(saved);
@@ -55,11 +58,10 @@ public class UserProfileService {
         user.setAvatarUrl(newUrl);
         User saved = userRepository.save(user);
 
-        // Best-effort cleanup; do not block on deletion errors
+        // Best-effort cleanup
         if (oldUrl != null && !oldUrl.isBlank() && !oldUrl.equals(newUrl)) {
             avatarStorageService.delete(oldUrl);
         }
-
         return toDto(saved);
     }
 
@@ -71,10 +73,7 @@ public class UserProfileService {
         String oldUrl = user.getAvatarUrl();
         if (oldUrl == null || oldUrl.isBlank()) return;
 
-        // Best-effort deletion first
         avatarStorageService.delete(oldUrl);
-
-        // Detach avatar from user
         user.setAvatarUrl(null);
         userRepository.save(user);
     }
@@ -85,7 +84,10 @@ public class UserProfileService {
                 u.getUsername(),
                 u.getBio(),
                 u.getAvatarUrl(),
-                u.getSkillLevel()
+                u.getSkillLevel(),
+                u.getAge(),
+                u.getPosition(),
+                u.getContactPreference()
         );
     }
 }
