@@ -1,17 +1,10 @@
 package com.bmessi.pickupsportsapp.entity;
 
+import com.bmessi.pickupsportsapp.model.SkillLevel;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
+import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name = "app_user", uniqueConstraints = @UniqueConstraint(columnNames = "username"))
@@ -41,26 +34,24 @@ public class User {
     @Column(length = 255)
     private String location;
 
+    @Column(length = 1000)
+    private String bio;
+
+    @Column(length = 512)
+    private String avatarUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private SkillLevel skillLevel;
+
+    // Aggregates maintained by rating service
+    @Column
+    private Double ratingAverage;
+
+    @Column
+    private Integer ratingCount;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Game> games = new ArrayList<>();
-
-    // Convenience helpers to keep both sides of the association in sync
-    public void addGame(Game game) {
-        if (game == null) return;
-        if (!this.games.contains(game)) {
-            this.games.add(game);
-        }
-        if (game.getUser() != this) {
-            game.setUser(this);
-        }
-    }
-
-    public void removeGame(Game game) {
-        if (game == null) return;
-        this.games.remove(game);
-        if (Objects.equals(game.getUser(), this)) {
-            game.setUser(null);
-        }
-    }
 }
