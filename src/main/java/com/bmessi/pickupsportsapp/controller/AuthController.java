@@ -61,31 +61,52 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<TokenPairResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+    public ResponseEntity<?> refresh(@Valid @RequestBody RefreshRequest request) {
         try {
-            log.debug("Token refresh attempt");
+            log.debug("Token refresh attempt with refresh token: {}",
+                    request.refreshToken().substring(0, Math.min(10, request.refreshToken().length())) + "...");
+
             TokenPairResponse tokens = authService.refresh(request.refreshToken());
             log.debug("Token refresh successful");
             return ResponseEntity.ok(tokens);
+
         } catch (BadCredentialsException e) {
             log.debug("Token refresh failed: {}", e.getMessage());
-            return ResponseEntity.status(401).body(null);
+            return ResponseEntity.status(401)
+                    .body(Map.of(
+                            "error", "invalid_token",
+                            "message", "Invalid or expired refresh token",
+                            "details", e.getMessage(),
+                            "timestamp", System.currentTimeMillis()
+                    ));
         } catch (Exception e) {
-            log.error("Token refresh error: {}", e.getMessage());
-            return ResponseEntity.status(500).body(null);
+            log.error("Token refresh error: {}", e.getMessage(), e);
+            return ResponseEntity.status(500)
+                    .body(Map.of(
+                            "error", "internal_server_error",
+                            "message", "Token refresh failed",
+                            "timestamp", System.currentTimeMillis()
+                    ));
         }
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(@Valid @RequestBody RefreshRequest request) {
+    public ResponseEntity<Map<String, Object>> logout(@Valid @RequestBody RefreshRequest request) {
         try {
             log.debug("Logout attempt");
             authService.logout(request.refreshToken());
             log.debug("Logout successful");
-            return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+            return ResponseEntity.ok(Map.of(
+                    "message", "Logged out successfully",
+                    "timestamp", System.currentTimeMillis()
+            ));
         } catch (Exception e) {
             log.error("Logout error: {}", e.getMessage());
-            return ResponseEntity.ok(Map.of("message", "Logout completed")); // Always return success for logout
+            // Always return success for logout for security reasons
+            return ResponseEntity.ok(Map.of(
+                    "message", "Logout completed",
+                    "timestamp", System.currentTimeMillis()
+            ));
         }
     }
 

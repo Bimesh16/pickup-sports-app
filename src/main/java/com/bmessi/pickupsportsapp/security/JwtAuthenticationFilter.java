@@ -41,21 +41,42 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode json = mapper.readTree(request.getReader());
-            if (json == null || json.get("username") == null || json.get("password") == null) {
+
+            if (json == null) {
+                log.debug("Request body is null");
+                throw new AuthenticationServiceException("Request body cannot be empty");
+            }
+
+            if (json.get("username") == null || json.get("password") == null) {
+                log.debug("Missing username or password in request");
                 throw new AuthenticationServiceException("Missing username or password");
             }
+
             String username = json.get("username").asText(null);
             String password = json.get("password").asText(null);
-            if (username == null || username.isBlank() || password == null || password.isBlank()) {
-                throw new BadCredentialsException("Invalid username or password");
+
+            if (username == null || username.isBlank()) {
+                log.debug("Username is null or blank");
+                throw new BadCredentialsException("Username cannot be empty");
             }
+
+            if (password == null || password.isBlank()) {
+                log.debug("Password is null or blank");
+                throw new BadCredentialsException("Password cannot be empty");
+            }
+
+            log.debug("Attempting authentication for user: {}", username);
+
             UsernamePasswordAuthenticationToken authRequest =
                     new UsernamePasswordAuthenticationToken(username, password, Collections.emptyList());
             return authenticationManager.authenticate(authRequest);
+
         } catch (BadCredentialsException | AuthenticationServiceException e) {
+            log.debug("Authentication attempt failed: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
-            throw new AuthenticationServiceException("Invalid authentication request payload", e);
+            log.error("Authentication attempt error: {}", e.getMessage(), e);
+            throw new AuthenticationServiceException("Invalid authentication request", e);
         }
     }
 
@@ -68,36 +89,45 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             Object principal = auth.getPrincipal();
             String username = (principal instanceof UserDetails ud) ? ud.getUsername() : auth.getName();
 
+            log.debug("Authentication successful for user: {}, generating tokens...", username);
+
             TokenPairResponse tokens = authService.issueTokensForAuthenticatedUser(username);
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json");
             response.addHeader(authHeaderName, authHeaderPrefix + tokens.accessToken());
 
-            // FIXED: Return proper token structure instead of just "token"
-            response.getWriter().write(
-                    "{\"accessToken\":\"" + tokens.accessToken() + "\"," +
-                            "\"refreshToken\":\"" + tokens.refreshToken() + "\"," +
-                            "\"tokenType\":\"" + tokens.tokenType() + "\"," +
-                            "\"expiresInSeconds\":" + tokens.expiresInSeconds() + "}"
+            String jsonResponse = String.format(
+                    "{\"accessToken\":\"%s\",\"refreshToken\":\"%s\",\"tokenType\":\"%s\",\"expiresInSeconds\":%d}",
+                    tokens.accessToken(),
+                    tokens.refreshToken(),
+                    tokens.tokenType(),
+                    tokens.expiresInSeconds()
             );
-            response.getWriter().flush();
-            log.debug("Issued access and refresh tokens for user {}", username);
-        } catch (Exception e) {
-            // FALLBACK: If AuthService fails, return just the access token (current behavior)
-            try {
-                Object principal = auth.getPrincipal();
-                String username = (principal instanceof UserDetails ud) ? ud.getUsername() : auth.getName();
 
-                // Generate simple JWT token using your JwtTokenService directly
-                // Note: You'll need to inject JwtTokenService for this fallback
-                response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write(jsonResponse);
+            response.getWriter().flush();
+
+            log.debug("Successfully issued tokens for user: {}", username);
+
+        } catch (Exception e) {
+            log.error("Failed to generate tokens for authenticated user: {}", e.getMessage(), e);
+
+            try {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"error\":\"Token service unavailable\"}");
+
+                String errorResponse = String.format(
+                        "{\"error\":\"token_generation_failed\",\"message\":\"Failed to generate authentication tokens\",\"details\":\"%s\",\"timestamp\":%d}",
+                        e.getMessage().replace("\"", "'"), // Escape quotes in error message
+                        System.currentTimeMillis()
+                );
+
+                response.getWriter().write(errorResponse);
                 response.getWriter().flush();
-                log.error("Failed to generate tokens, falling back", e);
-            } catch (Exception fallbackException) {
-                throw new AuthenticationServiceException("Failed to generate tokens", fallbackException);
+
+            } catch (Exception writeException) {
+                log.error("Failed to write error response: {}", writeException.getMessage());
             }
         }
     }
@@ -107,12 +137,22 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                               HttpServletResponse response,
                                               org.springframework.security.core.AuthenticationException failed) {
         try {
+            log.debug("Authentication failed: {}", failed.getMessage());
+
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"" + failed.getMessage() + "\"}");
+
+            String errorResponse = String.format(
+                    "{\"error\":\"authentication_failed\",\"message\":\"%s\",\"timestamp\":%d}",
+                    failed.getMessage().replace("\"", "'"), // Escape quotes
+                    System.currentTimeMillis()
+            );
+
+            response.getWriter().write(errorResponse);
             response.getWriter().flush();
-            log.debug("Authentication failed: {}", failed.getMessage());
-        } catch (Exception ignored) {
+
+        } catch (Exception e) {
+            log.error("Failed to write unsuccessful authentication response: {}", e.getMessage());
         }
     }
 }
