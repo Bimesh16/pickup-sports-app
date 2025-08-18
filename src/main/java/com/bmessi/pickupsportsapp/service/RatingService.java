@@ -11,14 +11,18 @@ import com.bmessi.pickupsportsapp.repository.PlayerRatingRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.print.Pageable;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+/**
+ * Service for rating players.  Handles rating upsert logic, validation of
+ * participation and game completion, and updates users' rating aggregates.
+ */
 @Service
 @RequiredArgsConstructor
 public class RatingService {
@@ -47,8 +51,12 @@ public class RatingService {
                 .orElseThrow(() -> new IllegalArgumentException("Game not found"));
 
         // Validate both participated (rater and rated)
-        boolean raterParticipated = participated(game.getId(), rater.getId(), game.getUser() != null && game.getUser().getId().equals(rater.getId()));
-        boolean ratedParticipated = participated(game.getId(), rated.getId(), game.getUser() != null && game.getUser().getId().equals(rated.getId()));
+        boolean raterParticipated = participated(game.getId(),
+                rater.getId(),
+                game.getUser() != null && game.getUser().getId().equals(rater.getId()));
+        boolean ratedParticipated = participated(game.getId(),
+                rated.getId(),
+                game.getUser() != null && game.getUser().getId().equals(rated.getId()));
 
         if (!raterParticipated || !ratedParticipated) {
             throw new IllegalArgumentException("Both users must have participated in the game");
@@ -98,7 +106,9 @@ public class RatingService {
 
     @Transactional(readOnly = true)
     public List<RatingDTO> getRecentRatings(Long userId, int limit) {
-        var list = ratingRepository.findRecentByRatedId(userId, (Pageable) PageRequest.of(0, Math.max(1, limit)));
+        int size = limit <= 0 ? 1 : limit;
+        Pageable pageable = PageRequest.of(0, size);
+        var list = ratingRepository.findRecentByRatedId(userId, pageable);
         return list.stream().map(r -> new RatingDTO(
                 r.getId(),
                 r.getRater().getId(),
