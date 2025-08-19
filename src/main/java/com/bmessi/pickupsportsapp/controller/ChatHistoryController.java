@@ -2,28 +2,31 @@ package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.dto.ChatMessageDTO;
 import com.bmessi.pickupsportsapp.service.ChatService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/chat")
+@RequiredArgsConstructor
 public class ChatHistoryController {
 
     private final ChatService chatService;
 
-    public ChatHistoryController(ChatService chatService) {
-        this.chatService = chatService;
-    }
-
-    @GetMapping("/games/{gameId}/history")
+    // GET /games/{gameId}/chat/history?before=2025-08-19T20:00:00Z&limit=50
+    @GetMapping(
+            path = "/games/{gameId}/chat/history",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public List<ChatMessageDTO> history(
             @PathVariable Long gameId,
-            @RequestParam(required = false) String before,
-            @RequestParam(defaultValue = "50") int limit) {
-
-        Instant cutoff = (before == null || before.isBlank()) ? null : Instant.parse(before);
-        return chatService.history(gameId, cutoff, limit);
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant before,
+            @RequestParam(defaultValue = "50") int limit
+    ) {
+        return chatService.history(gameId, before, limit);
     }
 }

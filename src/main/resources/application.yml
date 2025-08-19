@@ -1,0 +1,16 @@
+# src/main/resources/application.yml
+chat:
+  redis:
+    enabled: false         # <— run fine without Redis in dev
+    channel: chat-messages
+
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    # password: yourpass # if you set one
+
+
+xai:
+  enabled: true
+

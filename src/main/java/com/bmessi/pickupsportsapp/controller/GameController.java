@@ -1,5 +1,6 @@
 package com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.dto.ChatMessageDTO;
 import com.bmessi.pickupsportsapp.dto.CreateGameRequest;
 import com.bmessi.pickupsportsapp.dto.GameDetailsDTO;
 import com.bmessi.pickupsportsapp.dto.GameSummaryDTO;
@@ -8,10 +9,11 @@ import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.mapper.ApiMapper;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
+import com.bmessi.pickupsportsapp.service.ChatService;                 // <- NEW
 import com.bmessi.pickupsportsapp.service.NotificationService;
 import com.bmessi.pickupsportsapp.service.XaiRecommendationService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.ObjectProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -19,7 +21,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -27,38 +28,37 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 import java.security.Principal;
+import java.time.Instant;                                              // <- for history param
 import java.time.OffsetDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/games")
+@RequiredArgsConstructor
 public class GameController {
 
     private final GameRepository gameRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final XaiRecommendationService xaiRecommendationService;
     private final ApiMapper mapper;
+    private final ChatService chatService;                            // <- NEW
 
-    // Optional dependency
-    private final @Nullable XaiRecommendationService xaiRecommendationService;
+    // ---------------- Chat history endpoint (works under /games) ----------------
 
-    public GameController(
-            GameRepository gameRepository,
-            UserRepository userRepository,
-            NotificationService notificationService,
-            ApiMapper mapper,
-            ObjectProvider<XaiRecommendationService> xaiRecommendationServiceProvider
+    // GET /games/{gameId}/chat/history?before=2025-08-19T21:00:00Z&limit=50
+    @GetMapping("/{gameId}/chat/history")
+    public List<ChatMessageDTO> history(
+            @PathVariable Long gameId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant before,
+            @RequestParam(defaultValue = "50") int limit
     ) {
-        this.gameRepository = gameRepository;
-        this.userRepository = userRepository;
-        this.notificationService = notificationService;
-        this.mapper = mapper;
-        this.xaiRecommendationService = xaiRecommendationServiceProvider.getIfAvailable();
+        return chatService.history(gameId, before, limit);
     }
 
-    /**
-     * List games with optional filters (sport, location, time range, skill).
-     */
+    // ---------------- Existing endpoints below ----------------
+
     @GetMapping
     public Page<GameSummaryDTO> getGames(
             @RequestParam(required = false) String sport,
@@ -76,9 +76,6 @@ public class GameController {
         return page.map(mapper::toGameSummaryDTO);
     }
 
-    /**
-     * Retrieve a single game by ID with participants and creator loaded.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<GameDetailsDTO> getGame(@PathVariable Long id) {
         return gameRepository.findWithParticipantsById(id)
@@ -87,9 +84,6 @@ public class GameController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Create a new game.  Requires authentication.
-     */
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<GameDetailsDTO> createGame(
@@ -115,9 +109,6 @@ public class GameController {
         return new ResponseEntity<>(mapper.toGameDetailsDTO(saved), headers, HttpStatus.CREATED);
     }
 
-    /**
-     * Find games near a given coordinate (in kilometers).  Public endpoint.
-     */
     @GetMapping("/near")
     public List<GameSummaryDTO> findNearbyGames(
             @RequestParam double lat,
@@ -128,9 +119,6 @@ public class GameController {
         return games.stream().map(mapper::toGameSummaryDTO).toList();
     }
 
-    /**
-     * Get games created by the current user.  Eagerly loads participants.
-     */
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
@@ -146,9 +134,6 @@ public class GameController {
                 .map(mapper::toGameDetailsDTO);
     }
 
-    /**
-     * RSVP to a game.
-     */
     @PostMapping("/{id}/rsvp")
     @PreAuthorize("isAuthenticated()")
     @Transactional
@@ -190,9 +175,6 @@ public class GameController {
         return ResponseEntity.ok(mapper.toGameDetailsDTO(game));
     }
 
-    /**
-     * Un-RSVP from a game.
-     */
     @DeleteMapping("/{id}/unrsvp")
     @PreAuthorize("isAuthenticated()")
     @Transactional
@@ -235,10 +217,6 @@ public class GameController {
         return ResponseEntity.ok(mapper.toGameDetailsDTO(game));
     }
 
-    /**
-     * Get AI-powered game recommendations.
-     * Falls back to a plain list if XaiRecommendationService isn’t available.
-     */
     @GetMapping("/recommend")
     @PreAuthorize("isAuthenticated()")
     public Page<GameSummaryDTO> recommendGames(
@@ -250,14 +228,7 @@ public class GameController {
         String sport = (preferredSport != null && !preferredSport.isBlank()) ? preferredSport : "Soccer";
         String loc = (location != null && !location.isBlank()) ? location : "Park A";
         String skill = (skillLevel != null && !skillLevel.isBlank()) ? skillLevel : null;
-
-        if (xaiRecommendationService != null) {
-            return xaiRecommendationService.getRecommendations(sport, loc, skill, pageable)
-                    .map(mapper::toGameSummaryDTO);
-        }
-
-        // Fallback: basic search or list-all if you want something even simpler
-        Page<Game> page = gameRepository.search(sport, loc, null, null, skill, pageable);
-        return page.map(mapper::toGameSummaryDTO);
+        return xaiRecommendationService.getRecommendations(sport, loc, skill, pageable)
+                .map(mapper::toGameSummaryDTO);
     }
 }
