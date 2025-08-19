@@ -4,6 +4,10 @@ chat:
     enabled: false         # <— run fine without Redis in dev
     channel: chat-messages
 
+rate limit:
+  enabled: true
+  perSecond: 10
+
 spring:
   redis:
     host: localhost
