@@ -11,4 +11,9 @@ public interface ChatService {
 
     /** Return up to `limit` messages (newest first), before `before` cutoff. */
     List<ChatMessageDTO> history(Long gameId, Instant before, int limit);
+
+    List<ChatMessageDTO> latest(Long gameId, int limit);
+
+    List<ChatMessageDTO> since(Long gameId, Instant after, int limit);
+
 }

@@ -66,4 +66,43 @@ public class ChatServiceImpl implements ChatService {
                 })
                 .toList();
     }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<ChatMessageDTO> latest(Long gameId, int limit) {
+        int size = Math.max(1, Math.min(200, limit <= 0 ? 50 : limit));
+        var page = org.springframework.data.domain.PageRequest.of(0, size);
+        var desc = chatRepo.findByGame_IdOrderBySentAtDesc(gameId, page);
+
+        // return ASC for natural render (oldest → newest)
+        java.util.List<ChatMessage> asc = new java.util.ArrayList<>(desc);
+        java.util.Collections.reverse(asc);
+
+        return asc.stream().map(m -> {
+            ChatMessageDTO dto = new ChatMessageDTO();
+            dto.setSender(m.getSender());
+            dto.setContent(m.getContent());
+            dto.setSentAt(m.getSentAt());
+            return dto;
+        }).toList();
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<ChatMessageDTO> since(Long gameId, Instant after, int limit) {
+        if (after == null) after = Instant.EPOCH;
+        int size = Math.max(1, Math.min(500, limit <= 0 ? 100 : limit));
+        var page = org.springframework.data.domain.PageRequest.of(0, size);
+
+        return chatRepo.findByGame_IdAndSentAtAfterOrderBySentAtAsc(gameId, after, page)
+                .stream()
+                .map(m -> {
+                    ChatMessageDTO dto = new ChatMessageDTO();
+                    dto.setSender(m.getSender());
+                    dto.setContent(m.getContent());
+                    dto.setSentAt(m.getSentAt());
+                    return dto;
+                })
+                .toList();
+    }
 }

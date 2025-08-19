@@ -29,4 +29,24 @@ public class ChatHistoryController {
     ) {
         return chatService.history(gameId, before, limit);
     }
+
+    // GET /games/{gameId}/chat/latest?limit=50
+    @GetMapping(path = "/games/{gameId}/chat/latest", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ChatMessageDTO> latest(
+            @PathVariable Long gameId,
+            @RequestParam(defaultValue = "50") int limit
+    ) {
+        return chatService.latest(gameId, limit);
+    }
+
+    // GET /games/{gameId}/chat/since?after=2025-08-19T22:10:00Z&limit=100
+    @GetMapping(path = "/games/{gameId}/chat/since", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ChatMessageDTO> since(
+            @PathVariable Long gameId,
+            @RequestParam("after") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant after,
+            @RequestParam(defaultValue = "100") int limit
+    ) {
+        return chatService.since(gameId, after, limit);
+    }
+
 }
