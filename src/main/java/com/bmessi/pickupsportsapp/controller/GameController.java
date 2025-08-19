@@ -11,7 +11,7 @@ import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.service.NotificationService;
 import com.bmessi.pickupsportsapp.service.XaiRecommendationService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -19,6 +19,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -31,14 +32,29 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/games")
-@RequiredArgsConstructor
 public class GameController {
 
     private final GameRepository gameRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
-    private final XaiRecommendationService xaiRecommendationService;
     private final ApiMapper mapper;
+
+    // Optional dependency
+    private final @Nullable XaiRecommendationService xaiRecommendationService;
+
+    public GameController(
+            GameRepository gameRepository,
+            UserRepository userRepository,
+            NotificationService notificationService,
+            ApiMapper mapper,
+            ObjectProvider<XaiRecommendationService> xaiRecommendationServiceProvider
+    ) {
+        this.gameRepository = gameRepository;
+        this.userRepository = userRepository;
+        this.notificationService = notificationService;
+        this.mapper = mapper;
+        this.xaiRecommendationService = xaiRecommendationServiceProvider.getIfAvailable();
+    }
 
     /**
      * List games with optional filters (sport, location, time range, skill).
@@ -87,10 +103,10 @@ public class GameController {
         Game game = Game.builder()
                 .sport(request.sport())
                 .location(request.location())
-                .time(request.time())
+                .time(request.time().toInstant())
                 .skillLevel(request.skillLevel())
-                .latitude(request.latitude())    // new fields
-                .longitude(request.longitude())  // new fields
+                .latitude(request.latitude())
+                .longitude(request.longitude())
                 .user(owner)
                 .build();
         Game saved = gameRepository.save(game);
@@ -131,8 +147,7 @@ public class GameController {
     }
 
     /**
-     * RSVP to a game.  Adds the current user to participants if not already present,
-     * and sends notifications to the creator and other participants.
+     * RSVP to a game.
      */
     @PostMapping("/{id}/rsvp")
     @PreAuthorize("isAuthenticated()")
@@ -176,7 +191,7 @@ public class GameController {
     }
 
     /**
-     * Un-RSVP from a game.  Removes the user and sends notifications.
+     * Un-RSVP from a game.
      */
     @DeleteMapping("/{id}/unrsvp")
     @PreAuthorize("isAuthenticated()")
@@ -221,7 +236,8 @@ public class GameController {
     }
 
     /**
-     * Get AI-powered game recommendations.  Delegates to XaiRecommendationService.
+     * Get AI-powered game recommendations.
+     * Falls back to a plain list if XaiRecommendationService isn’t available.
      */
     @GetMapping("/recommend")
     @PreAuthorize("isAuthenticated()")
@@ -234,7 +250,14 @@ public class GameController {
         String sport = (preferredSport != null && !preferredSport.isBlank()) ? preferredSport : "Soccer";
         String loc = (location != null && !location.isBlank()) ? location : "Park A";
         String skill = (skillLevel != null && !skillLevel.isBlank()) ? skillLevel : null;
-        return xaiRecommendationService.getRecommendations(sport, loc, skill, pageable)
-                .map(mapper::toGameSummaryDTO);
+
+        if (xaiRecommendationService != null) {
+            return xaiRecommendationService.getRecommendations(sport, loc, skill, pageable)
+                    .map(mapper::toGameSummaryDTO);
+        }
+
+        // Fallback: basic search or list-all if you want something even simpler
+        Page<Game> page = gameRepository.search(sport, loc, null, null, skill, pageable);
+        return page.map(mapper::toGameSummaryDTO);
     }
 }

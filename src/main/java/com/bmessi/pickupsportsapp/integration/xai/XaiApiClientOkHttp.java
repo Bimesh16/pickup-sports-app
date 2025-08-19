@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -16,27 +17,34 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "xai", name = "enabled", havingValue = "true")
 public class XaiApiClientOkHttp implements XaiApiClient {
 
     private static final Logger log = LoggerFactory.getLogger(XaiApiClientOkHttp.class);
 
+    // Extracted constants for clarity and reuse
+    private static final int DEFAULT_TIMEOUT_MS = 3_000;
+    private static final int MIN_TIMEOUT_MS = 1_000;
+    private static final MediaType JSON = MediaType.parse("application/json");
+
     private final XaiProperties props;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private OkHttpClient client() {
-        int timeout = Math.max(1000, props.timeoutMs()); // guard minimum
+    // Renamed for intent; introduced variables + constants; removed call to non-existent props.timeoutMs()
+    private OkHttpClient buildClient() {
+        int timeoutMs = Math.max(MIN_TIMEOUT_MS, DEFAULT_TIMEOUT_MS);
+        Duration timeout = Duration.ofMillis(timeoutMs);
         return new OkHttpClient.Builder()
-                .callTimeout(Duration.ofMillis(timeout))
-                .connectTimeout(Duration.ofMillis(timeout))
-                .readTimeout(Duration.ofMillis(timeout))
-                .writeTimeout(Duration.ofMillis(timeout))
+                .callTimeout(timeout)
+                .connectTimeout(timeout)
+                .readTimeout(timeout)
+                .writeTimeout(timeout)
                 .build();
     }
 
     @Override
     public Optional<List<RecommendationHint>> getRecommendations(String preferredSport, String location, int page, int size) {
         try {
-            // Build request payload; adjust structure to match your provider
             JsonNode body = objectMapper.createObjectNode()
                     .put("preferredSport", preferredSport != null ? preferredSport : "")
                     .put("location", location != null ? location : "")
@@ -44,28 +52,22 @@ public class XaiApiClientOkHttp implements XaiApiClient {
                     .put("size", Math.max(size, 1));
 
             Request request = new Request.Builder()
-                    .url(props.url())
-                    .header("Authorization", "Bearer " + props.key())
-                    .header("Content-Type", "application/json")
-                    .post(RequestBody.create(objectMapper.writeValueAsBytes(body), MediaType.parse("application/json")))
+                    // Renamed to existing properties
+                    .url(props.baseUrl())
+                    .header("Authorization", "Bearer " + props.apiKey())
+                    .post(RequestBody.create(objectMapper.writeValueAsBytes(body), JSON))
                     .build();
 
-            try (Response response = client().newCall(request).execute()) {
+            try (Response response = buildClient().newCall(request).execute()) {
                 if (!response.isSuccessful() || response.body() == null) {
-                    log.debug("XAI call failed: http={} body={}", response.code(), response.body() != null ? response.body().string() : "null");
+                    log.debug("XAI call failed: http={} body={}", response.code(),
+                            response.body() != null ? response.body().string() : "null");
                     return Optional.empty();
                 }
 
                 String json = response.body().string();
                 JsonNode root = objectMapper.readTree(json);
 
-                // Expected format (example):
-                // {
-                //   "recommendations": [
-                //     { "sport": "Soccer", "location": "Park A", "score": 0.92 },
-                //     { "sport": "Basketball", "location": "Court 3", "score": 0.81 }
-                //   ]
-                // }
                 JsonNode recs = root.get("recommendations");
                 if (recs == null || !recs.isArray()) {
                     log.debug("XAI response missing 'recommendations' array");

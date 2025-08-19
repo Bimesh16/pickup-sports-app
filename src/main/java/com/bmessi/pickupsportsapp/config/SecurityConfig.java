@@ -4,6 +4,7 @@ import com.bmessi.pickupsportsapp.security.JwtAuthenticationFilter;
 import com.bmessi.pickupsportsapp.security.JwtAuthorizationFilter;
 import com.bmessi.pickupsportsapp.security.JwtTokenService;
 import com.bmessi.pickupsportsapp.service.AuthService;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
-    private static final String AUTH_HEADER_NAME = "Authorization";
+    private static final String AUTH_HEADER_NAME   = "Authorization";
     private static final String AUTH_HEADER_PREFIX = "Bearer ";
 
     @Bean
@@ -42,6 +43,7 @@ public class SecurityConfig {
                                                    JwtTokenService jwtTokenService,
                                                    AuthenticationManager authenticationManager,
                                                    AuthService authService) throws Exception {
+
         var jwtAuthorizationFilter =
                 new JwtAuthorizationFilter(userDetailsService, jwtTokenService, AUTH_HEADER_NAME, AUTH_HEADER_PREFIX);
 
@@ -54,15 +56,18 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 🔥 UPDATED: Made auth endpoints more explicit
                         .requestMatchers("/auth/**", "/users/register", "/sports", "/games", "/games/**").permitAll()
-                        .requestMatchers("/notifications/**").authenticated() // Require auth for notifications
+                        .requestMatchers("/ws/**", "/topic/**", "/app/**").permitAll()
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() // static assets
+                        .requestMatchers("/chat-test.html", "/error", "/media/**").permitAll()
+                        .requestMatchers("/notifications/**").authenticated()
                         .anyRequest().authenticated()
                 )
-                // Place login filter at UsernamePasswordAuthenticationFilter position
+                // place the login filter
                 .addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                // Validate JWT before username/password auth
+                // validate JWT before username/password auth
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+                // return 401 instead of redirecting to login page
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
 
         return http.build();

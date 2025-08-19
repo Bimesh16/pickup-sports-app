@@ -1,38 +1,38 @@
 package com.bmessi.pickupsportsapp.controller;
 
-import com.bmessi.pickupsportsapp.dto.ChatMessage;
-import lombok.RequiredArgsConstructor;
+import com.bmessi.pickupsportsapp.dto.ChatMessageDTO;
+import com.bmessi.pickupsportsapp.service.ChatService;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-import java.security.Principal;
+import java.time.Instant;
 
-/**
- * Handles chat messages sent over WebSocket/STOMP.  Clients send
- * messages to /app/games/{gameId}/chat; they are broadcast to
- * /topic/games/{gameId}/chat.
- */
 @Controller
-@RequiredArgsConstructor
 public class ChatController {
 
+    private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/games/{gameId}/chat")
-    public void sendGameChat(
-            @DestinationVariable Long gameId,
-            ChatMessage message,
-            Principal principal
-    ) {
-        // Optional: validate that the principal corresponds to message.sender
-        // and that they are a participant of the game (omitted for brevity).
+    public ChatController(ChatService chatService, SimpMessagingTemplate messagingTemplate) {
+        this.chatService = chatService;
+        this.messagingTemplate = messagingTemplate;
+    }
 
-        // Broadcast the message to all subscribers of this topic
-        messagingTemplate.convertAndSend(
-                "/topic/games/" + gameId + "/chat",
-                message
-        );
+    // Client sends to: /app/games/{gameId}/chat
+    // Server broadcasts on: /topic/games/{gameId}/chat
+    @MessageMapping("/games/{gameId}/chat")
+    public void handle(@DestinationVariable Long gameId,
+                       @Payload ChatMessageDTO msg) {
+        if (msg.getSentAt() == null) {
+            msg.setSentAt(Instant.now());
+        }
+        chatService.record(gameId, msg);
+
+        // Explicitly send to the dynamic destination that matches the client subscription
+        String destination = "/topic/games/" + gameId + "/chat";
+        messagingTemplate.convertAndSend(destination, msg);
     }
 }

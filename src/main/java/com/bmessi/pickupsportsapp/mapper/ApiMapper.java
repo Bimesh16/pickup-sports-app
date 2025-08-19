@@ -10,11 +10,15 @@ import com.bmessi.pickupsportsapp.entity.Notification;
 import com.bmessi.pickupsportsapp.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ApiMapper {
 
     // User mapping
@@ -28,6 +32,14 @@ public interface ApiMapper {
     @Mapping(target = "participants", source = "participants")
     @Mapping(target = "creator", source = "user")
     GameDetailsDTO toGameDetailsDTO(Game game);
+
+    default OffsetDateTime map(Instant value) {
+        return value == null ? null : value.atOffset(ZoneOffset.UTC);
+    }
+
+    default Instant map(OffsetDateTime value) {
+        return value == null ? null : value.toInstant();
+    }
 
     // Notification mapping
     NotificationDTO toNotificationDTO(Notification n);

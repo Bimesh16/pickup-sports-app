@@ -6,25 +6,26 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-/**
- * Configures STOMP over WebSocket for real-time chat.
- * Defines a single endpoint (/ws) and prefixes for topics and app destinations.
- */
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // Client will connect to /ws; SockJS fallback enabled
-        registry.addEndpoint("/ws").setAllowedOrigins("*").withSockJS();
+        registry.addEndpoint("/ws")
+                // Dev-safe: allow your local origins (8080, 8000, IntelliJ preview, etc.)
+                .setAllowedOriginPatterns(
+                        "http://localhost:*",
+                        "http://127.0.0.1:*"
+                )
+                .withSockJS();
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // Messages whose destination starts with /topic will be routed to the broker (broadcast)
-        registry.enableSimpleBroker("/topic");
-        // Messages whose destination starts with /app are mapped to @MessageMapping methods
+        // Client sends to /app/...
         registry.setApplicationDestinationPrefixes("/app");
+        // Server broadcasts on /topic/...
+        registry.enableSimpleBroker("/topic");
     }
 }

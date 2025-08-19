@@ -25,6 +25,8 @@ public class RefreshToken {
     private String tokenHash;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_refresh_token_user"))
     private User user;
 
     @Column(nullable = false)
@@ -34,9 +36,10 @@ public class RefreshToken {
 
     private String replacedByTokenHash;
 
-    // Stop persisting createdAt since the DB column doesn't exist
+    // Not persisted — kept for app logic/logging only
     @Transient
-    private Instant createdAt = Instant.now();
+    @Builder.Default
+    private Instant createdAt = Instant.now(); // @Builder.Default avoids Lombok warning
 
     public boolean isActive() {
         return revokedAt == null && expiresAt != null && expiresAt.isAfter(Instant.now());

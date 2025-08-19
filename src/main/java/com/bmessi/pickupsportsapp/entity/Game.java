@@ -2,6 +2,8 @@ package com.bmessi.pickupsportsapp.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,8 +31,8 @@ public class Game {
     @Column(name = "location", nullable = false, length = 255)
     private String location;
 
-    @Column(name = "time", nullable = false)
-    private OffsetDateTime time;
+    @Column(name = "time", nullable = true) // <-- allow null temporarily
+    private Instant time;
 
     @Column(name = "skill_level", length = 50)
     private String skillLevel;

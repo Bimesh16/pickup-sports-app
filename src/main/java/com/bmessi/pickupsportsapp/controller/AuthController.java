@@ -2,9 +2,10 @@ package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.dto.auth.RefreshRequest;
 import com.bmessi.pickupsportsapp.dto.auth.TokenPairResponse;
-import com.bmessi.pickupsportsapp.security.JwtTokenService;
 import com.bmessi.pickupsportsapp.service.AuthService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,44 +28,52 @@ public class AuthController {
 
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenService jwtTokenService;
 
     @PostMapping("/login")
-    public ResponseEntity<TokenPairResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
             log.debug("Login attempt for user: {}", request.username());
 
-            // Authenticate user
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.username(), request.password())
             );
 
-            // Get username
             String username = authentication.getName();
             if (authentication.getPrincipal() instanceof UserDetails userDetails) {
                 username = userDetails.getUsername();
             }
 
-            // Generate token pair through AuthService
             TokenPairResponse tokens = authService.issueTokensForAuthenticatedUser(username);
 
-            log.debug("Login successful for user: {}", username);
+            log.debug("Login successful");
             return ResponseEntity.ok(tokens);
 
         } catch (BadCredentialsException e) {
-            log.debug("Login failed for user: {} - {}", request.username(), e.getMessage());
-            throw new BadCredentialsException("Invalid username or password");
+            log.debug("Login failed: {}", e.getMessage());
+            return ResponseEntity.status(401)
+                    .body(Map.of(
+                            "error", "invalid_grant",
+                            "message", "Invalid username or password",
+                            "timestamp", System.currentTimeMillis()
+                    ));
         } catch (Exception e) {
-            log.error("Login error for user: {} - {}", request.username(), e.getMessage());
-            throw new BadCredentialsException("Authentication failed");
+            log.error("Login error: {}", e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(Map.of(
+                            "error", "internal_server_error",
+                            "message", "Authentication failed",
+                            "timestamp", System.currentTimeMillis()
+                    ));
         }
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@Valid @RequestBody RefreshRequest request) {
         try {
-            log.debug("Token refresh attempt with refresh token: {}",
-                    request.refreshToken().substring(0, Math.min(10, request.refreshToken().length())) + "...");
+            String tokenPreview = request.refreshToken() != null
+                    ? request.refreshToken().substring(0, Math.min(10, request.refreshToken().length())) + "..."
+                    : "null";
+            log.debug("Token refresh attempt with refresh token: {}", tokenPreview);
 
             TokenPairResponse tokens = authService.refresh(request.refreshToken());
             log.debug("Token refresh successful");
@@ -76,7 +85,6 @@ public class AuthController {
                     .body(Map.of(
                             "error", "invalid_token",
                             "message", "Invalid or expired refresh token",
-                            "details", e.getMessage(),
                             "timestamp", System.currentTimeMillis()
                     ));
         } catch (Exception e) {
@@ -96,20 +104,19 @@ public class AuthController {
             log.debug("Logout attempt");
             authService.logout(request.refreshToken());
             log.debug("Logout successful");
-            return ResponseEntity.ok(Map.of(
-                    "message", "Logged out successfully",
-                    "timestamp", System.currentTimeMillis()
-            ));
         } catch (Exception e) {
             log.error("Logout error: {}", e.getMessage());
-            // Always return success for logout for security reasons
-            return ResponseEntity.ok(Map.of(
-                    "message", "Logout completed",
-                    "timestamp", System.currentTimeMillis()
-            ));
+            // Intentionally returning 200 for logout regardless
         }
+        return ResponseEntity.ok(Map.of(
+                "message", "Logout completed",
+                "timestamp", System.currentTimeMillis()
+        ));
     }
 
     // DTOs for the login endpoint
-    public record LoginRequest(@Valid String username, @Valid String password) {}
+    public record LoginRequest(
+            @NotBlank @Size(max = 255) String username,
+            @NotBlank @Size(max = 255) String password
+    ) {}
 }

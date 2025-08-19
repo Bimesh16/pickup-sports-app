@@ -40,7 +40,7 @@ public class Notification {
     @Column(nullable = false, length = 500)
     private String message;
 
-    // Keep the same column name for backward compatibility with existing schema
+    // NOTE: Keeping column name "timestamp" to match existing schema
     @CreatedDate
     @Column(name = "timestamp", nullable = false, updatable = false)
     private Instant createdAt;
@@ -50,7 +50,7 @@ public class Notification {
     private Instant updatedAt;
 
     @Column(nullable = false)
-    private boolean read = false;
+    private boolean read; // default false; no initializer avoids Lombok @Builder warning
 
     private Instant readAt;
 

@@ -29,7 +29,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    @Value("${security.jwt.expiration-minutes}")
+    // Provide a sane default (e.g., 15 minutes) so missing config doesn't crash startup
+    @Value("${security.jwt.expiration-minutes:15}")
     private int accessTokenMinutes;
 
     @Value("${security.jwt.refresh.expiration-days:14}")

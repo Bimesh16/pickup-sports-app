@@ -63,7 +63,7 @@ public class RatingService {
         }
 
         // Game must be completed (time < now)
-        OffsetDateTime gameTime = game.getTime();
+        OffsetDateTime gameTime = OffsetDateTime.from(game.getTime());
         if (gameTime == null || gameTime.isAfter(OffsetDateTime.now())) {
             throw new IllegalArgumentException("You can only rate after the game is completed");
         }
