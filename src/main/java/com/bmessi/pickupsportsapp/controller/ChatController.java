@@ -1,8 +1,8 @@
 package com.bmessi.pickupsportsapp.controller;
 
-import com.bmessi.pickupsportsapp.service.ChatMessagePublisher;
+import com.bmessi.pickupsportsapp.service.chat.ChatMessagePublisher;
 import com.bmessi.pickupsportsapp.dto.ChatMessageDTO;
-import com.bmessi.pickupsportsapp.service.ChatService;
+import com.bmessi.pickupsportsapp.service.chat.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;

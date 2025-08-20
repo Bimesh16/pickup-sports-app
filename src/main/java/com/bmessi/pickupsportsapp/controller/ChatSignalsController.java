@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.controller;
 
-import com.bmessi.pickupsportsapp.service.ChatMessagePublisher;
+import com.bmessi.pickupsportsapp.service.chat.ChatMessagePublisher;
 import com.bmessi.pickupsportsapp.dto.ReadReceiptDTO;
 import com.bmessi.pickupsportsapp.dto.ReadStatusDTO;
 import com.bmessi.pickupsportsapp.dto.TypingEventDTO;

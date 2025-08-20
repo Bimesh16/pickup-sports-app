@@ -1,11 +1,10 @@
-package com.bmessi.pickupsportsapp.service;
+package com.bmessi.pickupsportsapp.service.chat;
 
 import com.bmessi.pickupsportsapp.dto.ChatMessageDTO;
 import com.bmessi.pickupsportsapp.entity.ChatMessage;
 import com.bmessi.pickupsportsapp.entity.Game;
 import com.bmessi.pickupsportsapp.repository.ChatMessageRepository;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
-import com.bmessi.pickupsportsapp.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;

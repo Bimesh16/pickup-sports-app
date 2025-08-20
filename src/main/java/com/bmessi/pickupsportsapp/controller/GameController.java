@@ -9,7 +9,7 @@ import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.mapper.ApiMapper;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
-import com.bmessi.pickupsportsapp.service.ChatService;                 // <- NEW
+import com.bmessi.pickupsportsapp.service.chat.ChatService;                 // <- NEW
 import com.bmessi.pickupsportsapp.service.NotificationService;
 import com.bmessi.pickupsportsapp.service.XaiRecommendationService;
 import jakarta.validation.Valid;

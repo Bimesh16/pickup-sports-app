@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.service;
+package com.bmessi.pickupsportsapp.service.chat;
 
 import com.bmessi.pickupsportsapp.model.OutboundMessage; // <-- updated import
 import com.fasterxml.jackson.databind.ObjectMapper;
