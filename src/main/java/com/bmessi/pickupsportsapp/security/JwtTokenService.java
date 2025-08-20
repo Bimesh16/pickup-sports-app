@@ -38,6 +38,27 @@ public class JwtTokenService {
         this.parser = buildParser();
     }
 
+    public String generateWithClaims(String subject, java.util.Map<String, Object> extraClaims) {
+        if (subject == null || subject.isBlank()) {
+            throw new IllegalArgumentException("subject must not be null or blank");
+        }
+        java.time.Instant now = java.time.Instant.now();
+        java.util.Date issuedAt = java.util.Date.from(now);
+        java.util.Date expiresAt = java.util.Date.from(now.plus(expiration));
+
+        var builder = Jwts.builder()
+                .subject(subject)
+                .issuer(issuer)
+                .audience().add(audience).and()
+                .issuedAt(issuedAt)
+                .expiration(expiresAt);
+
+        if (extraClaims != null) {
+            extraClaims.forEach(builder::claim);
+        }
+        return builder.signWith(signingKey).compact();
+    }
+
     private JwtParser buildParser() {
         // Build and cache a parser with all invariants configured once.
         return Jwts.parser()

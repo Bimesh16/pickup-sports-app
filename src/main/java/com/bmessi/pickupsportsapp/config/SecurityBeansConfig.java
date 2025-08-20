@@ -25,8 +25,18 @@ public class SecurityBeansConfig {
     @Bean
     public SecretKey jwtSecretKey(JwtProperties props) {
         Assert.hasText(props.secret(), "security.jwt.secret must not be empty");
-        byte[] keyBytes = props.secret().getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+        byte[] keyBytes;
+        try {
+            // Try Base64 first
+            keyBytes = io.jsonwebtoken.io.Decoders.BASE64.decode(props.secret());
+        } catch (IllegalArgumentException ignore) {
+            // Fallback to raw string
+            keyBytes = props.secret().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        }
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException("JWT secret must be at least 32 bytes (256 bits).");
+        }
+        return io.jsonwebtoken.security.Keys.hmacShaKeyFor(keyBytes);
     }
 
     @Bean

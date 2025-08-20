@@ -18,3 +18,14 @@ spring:
 xai:
   enabled: true
 
+security:
+  jwt:
+    secret: "change-me-32+chars-or-base64-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    issuer: pickup sports
+    audience: web             # any label you check on both sides
+    expirationMinutes: 60
+    clockSkewSeconds: 120
+    header: Authorization   # <- used in CONNECT headers
+    prefix: "Bearer "       # <- removed when parsing
+
+
