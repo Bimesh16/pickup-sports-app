@@ -13,7 +13,6 @@ spring:
     port: 6379
     # password: yourpass # if you set one
 
-
 xai:
   enabled: true
 
@@ -26,9 +25,20 @@ security:
     header: "Authorization"
     prefix: "Bearer "
 
-# application-prod.yml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  endpoint:
+    health:
+      show-details: "never"   # set 'always' if you want details in dev
+  server:
+    base-path: /actuator      # default, explicit for clarity
+
+# Swagger/OpenAPI enabled in dev
 springdoc:
-  swagger-ui.enabled: false
-  api-docs.enabled: false
+  swagger-ui.enabled: true
+  api-docs.enabled: true
 
 

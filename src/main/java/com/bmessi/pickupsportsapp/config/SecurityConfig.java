@@ -60,9 +60,9 @@ public class SecurityConfig {
                         // static and SPA entry
                     .requestMatchers("/", "/index.html", "/chat-test.html").permitAll()
                     .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                    // API docs and health
+                    // API docs and actuator
                     .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                    .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                    .requestMatchers("/actuator/**").permitAll()
                     // error endpoint (allow internal forwards without authentication)
                     .requestMatchers("/error").permitAll()
                         // public REST
