@@ -7,26 +7,25 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
-    // ✅ infinite scroll "older" (<= before), DB order DESC
+    // infinite scroll "older" (<= before), DB order DESC
     List<ChatMessage> findByGameAndSentAtLessThanEqualOrderBySentAtDesc(
             Game game, Instant before, Pageable pageable
     );
 
-    // ✅ Latest N for a room (DB order DESC). Use when opening the room.
-    List<ChatMessage> findByGame_IdOrderBySentAtDesc(
-            Long gameId, Pageable pageable
-    );
+    // latest N for a room (DB order DESC)
+    List<ChatMessage> findByGame_IdOrderBySentAtDesc(Long gameId, Pageable pageable);
 
-    // ✅ Reconnect/missed messages after a point (server returns ASC for natural reading)
-    List<ChatMessage> findByGame_IdAndSentAtAfterOrderBySentAtAsc(
-            Long gameId, Instant after, Pageable pageable
-    );
+    // reconnect/missed after a point (ASC)
+    List<ChatMessage> findByGame_IdAndSentAtAfterOrderBySentAtAsc(Long gameId, Instant after, Pageable pageable);
 
-    // (Optional mirror of your existing method, if you ever want id-based “older” lookups)
-    List<ChatMessage> findByGame_IdAndSentAtBeforeOrderBySentAtDesc(
-            Long gameId, Instant before, Pageable pageable
-    );
+    // optional id-based older
+    List<ChatMessage> findByGame_IdAndSentAtBeforeOrderBySentAtDesc(Long gameId, Instant before, Pageable pageable);
+
+    // idempotency by (game_id, client_id)
+    Optional<ChatMessage> findByGame_IdAndClientId(Long gameId, String clientId);
+    Optional<ChatMessage> findByGameAndClientId(Game game, String clientId);
 }

@@ -3,78 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <title>Chat Test</title>
-    <!-- SockJS + classic STOMP v2 (works great with Spring) -->
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <style>
         body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 16px; }
         #messages { border:1px solid #ccc; height:220px; overflow-y:auto; padding:8px; margin-bottom:8px; }
         #status { font-size:12px; color:#666; margin-bottom:8px; }
-        #sendBtn[disabled] { opacity:.6; cursor:not-allowed; }
+        #sendBtn[disabled], #connectBtn[disabled] { opacity:.6; cursor:not-allowed; }
+        .row { margin-bottom: 8px; }
+        label { display:inline-block; min-width:110px; }
+        input[type="text"] { width: 420px; max-width: 90vw; }
     </style>
 </head>
 <body>
 <h3>Chat Tester</h3>
-<div id="status">Connecting…</div>
+
+<div class="row">
+    <label>Game ID:</label>
+    <input id="gameIdInput" type="text" value="10">
+</div>
+<div class="row">
+    <label>Username:</label>
+    <input id="usernameInput" type="text" value="denveruser@example.com">
+</div>
+<div class="row">
+    <label>JWT Access Token:</label>
+    <input id="tokenInput" type="text" placeholder="Paste Bearer token here">
+</div>
+<div class="row">
+    <button id="connectBtn">Connect</button>
+    <button id="disconnectBtn" disabled>Disconnect</button>
+</div>
+
+<div id="status">Disconnected</div>
 <div id="messages"></div>
-<input id="messageInput" type="text" placeholder="Type a message…" />
-<button id="sendBtn" disabled>Send</button>
+
+<div class="row">
+    <input id="messageInput" type="text" placeholder="Type a message…"/>
+    <button id="sendBtn" disabled>Send</button>
+</div>
 
 <script>
-    // Use a real game id and your username/email
-    const gameId   = 10;
-    const username = 'denveruser@example.com';
+    const statusEl = document.getElementById('status');
+    const msgs     = document.getElementById('messages');
+    const input    = document.getElementById('messageInput');
+    const sendBtn  = document.getElementById('sendBtn');
+    const connectBtn = document.getElementById('connectBtn');
+    const disconnectBtn = document.getElementById('disconnectBtn');
 
-    const status  = document.getElementById('status');
-    const msgs    = document.getElementById('messages');
-    const input   = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
+    const tokenInput = document.getElementById('tokenInput');
+    const gameIdInput = document.getElementById('gameIdInput');
+    const usernameInput = document.getElementById('usernameInput');
+
+    let stompClient = null;
 
     function append(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      msgs.appendChild(div);
-      msgs.scrollTop = msgs.scrollHeight;
+        const div = document.createElement('div');
+        div.textContent = text;
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
     }
 
-    // 1) Open SockJS to the same-origin endpoint
-    const socket = new SockJS('/ws');
+    function setConnected(connected) {
+        statusEl.textContent = connected ? 'Connected' : 'Disconnected';
+        sendBtn.disabled = !connected;
+        connectBtn.disabled = connected;
+        disconnectBtn.disabled = !connected;
+    }
 
-    // 2) Wrap with classic STOMP client
-    const stompClient = Stomp.over(socket);
-    // optional: reduce console noise
-    // stompClient.debug = null;
+    function connect() {
+        const token = tokenInput.value.trim();
+        const gameId = gameIdInput.value.trim();
+        const username = usernameInput.value.trim();
 
-    // 3) CONNECT (STOMP v1.1/1.2)
-    stompClient.connect(
-      {}, // no headers
-      function onConnect(frame) {
-        console.log('CONNECTED frame:', frame);
-        status.textContent = 'Connected';
-        sendBtn.disabled = false;
+        if (!gameId) { alert('Enter gameId'); return; }
+        if (!token)  { alert('Paste a JWT access token'); return; }
 
-        stompClient.subscribe('/topic/games/' + gameId + '/chat', function (message) {
-          const body = JSON.parse(message.body);
-          append(body.sender + ': ' + body.content);
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        // stompClient.debug = null; // uncomment to reduce console noise
+
+        const headers = { Authorization: 'Bearer ' + token };
+
+        stompClient.connect(headers, function onConnect(frame) {
+            setConnected(true);
+            append('CONNECTED: ' + (frame && frame.headers ? JSON.stringify(frame.headers) : 'OK'));
+
+            stompClient.subscribe('/topic/games/' + gameId + '/chat', function (message) {
+                try {
+                    const body = JSON.parse(message.body);
+                    append((body.sender || 'unknown') + ': ' + body.content);
+                } catch (e) {
+                    append('Received: ' + message.body);
+                }
+            });
+
+            // Optional: announce ready or do nothing
+        }, function onError(error) {
+            setConnected(false);
+            const body = error && error.body ? error.body : ('' + error);
+            append('ERROR: ' + body);
         });
-      },
-      function onError(error) {
-        console.error('STOMP ERROR:', error);
-        status.textContent = 'Disconnected: ' + (error && error.body ? error.body : error);
-        sendBtn.disabled = true;
-      }
-    );
 
-    // 4) Send message to @MessageMapping("/games/{gameId}/chat")
-    sendBtn.addEventListener('click', function () {
-      const content = input.value.trim();
-      if (!content) return;
-      stompClient.send('/app/games/' + gameId + '/chat', {}, JSON.stringify({
-        gameId, sender: username, content
-      }));
-      input.value = '';
-      input.focus();
-    });
+        sendBtn.onclick = function () {
+            const content = input.value.trim();
+            if (!content) return;
+            const payload = {
+                gameId: Number(gameId),
+                sender: username || 'anonymous',
+                content: content
+            };
+            stompClient.send('/app/games/' + gameId + '/chat', {}, JSON.stringify(payload));
+            input.value = '';
+            input.focus();
+        };
+    }
+
+    function disconnect() {
+        if (stompClient && stompClient.connected) {
+            stompClient.disconnect(function () {
+                append('Disconnected');
+                setConnected(false);
+            });
+        } else {
+            setConnected(false);
+        }
+    }
+
+    connectBtn.addEventListener('click', connect);
+    disconnectBtn.addEventListener('click', disconnect);
 </script>
 </body>
 </html>

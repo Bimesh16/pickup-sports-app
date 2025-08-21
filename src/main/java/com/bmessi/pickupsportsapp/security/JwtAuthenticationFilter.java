@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.*;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -89,6 +91,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             Object principal = auth.getPrincipal();
             String username = (principal instanceof UserDetails ud) ? ud.getUsername() : auth.getName();
 
+            // Set a fresh concrete context (do not read the current one)
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(auth);
+            SecurityContextHolder.setContext(context);
+
             log.debug("Authentication successful for user: {}, generating tokens...", username);
 
             TokenPairResponse tokens = authService.issueTokensForAuthenticatedUser(username);
@@ -112,20 +119,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         } catch (Exception e) {
             log.error("Failed to generate tokens for authenticated user: {}", e.getMessage(), e);
-
             try {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.setContentType("application/json");
-
                 String errorResponse = String.format(
                         "{\"error\":\"token_generation_failed\",\"message\":\"Failed to generate authentication tokens\",\"details\":\"%s\",\"timestamp\":%d}",
-                        e.getMessage().replace("\"", "'"), // Escape quotes in error message
+                        e.getMessage().replace("\"", "'"),
                         System.currentTimeMillis()
                 );
-
                 response.getWriter().write(errorResponse);
                 response.getWriter().flush();
-
             } catch (Exception writeException) {
                 log.error("Failed to write error response: {}", writeException.getMessage());
             }
@@ -138,19 +141,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                               org.springframework.security.core.AuthenticationException failed) {
         try {
             log.debug("Authentication failed: {}", failed.getMessage());
-
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
-
             String errorResponse = String.format(
                     "{\"error\":\"authentication_failed\",\"message\":\"%s\",\"timestamp\":%d}",
-                    failed.getMessage().replace("\"", "'"), // Escape quotes
+                    failed.getMessage().replace("\"", "'"),
                     System.currentTimeMillis()
             );
-
             response.getWriter().write(errorResponse);
             response.getWriter().flush();
-
         } catch (Exception e) {
             log.error("Failed to write unsuccessful authentication response: {}", e.getMessage());
         }

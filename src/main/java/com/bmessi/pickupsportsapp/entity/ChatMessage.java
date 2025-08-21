@@ -7,10 +7,18 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
 
 @Entity
-@Table(name = "chat_messages", indexes = {
-        @Index(name = "idx_chat_game", columnList = "game_id"),
-        @Index(name = "idx_chat_sent_at", columnList = "sent_at")
-})
+@Table(
+        name = "chat_messages",
+        indexes = {
+                @Index(name = "idx_chat_game", columnList = "game_id"),
+                @Index(name = "idx_chat_sent_at", columnList = "sent_at"),
+                @Index(name = "idx_chat_client", columnList = "client_id")
+        },
+        uniqueConstraints = {
+                // enables idempotency by (game_id, client_id)
+                @UniqueConstraint(name = "uk_chat_game_client", columnNames = {"game_id", "client_id"})
+        }
+)
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class ChatMessage {
 
@@ -18,7 +26,11 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // keep it simple: we just store sender username text (no FK), so system messages are easy
+    /** optional client-generated UUID for idempotency */
+    @Column(name = "client_id", length = 64)
+    private String clientId;
+
+    // keep it simple: store sender text (no FK), so system messages are easy
     @Column(nullable = false, length = 100)
     private String sender;
 

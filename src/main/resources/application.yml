@@ -3,10 +3,9 @@ chat:
   redis:
     enabled: false         # <— run fine without Redis in dev
     channel: chat-messages
-
-rate limit:
-  enabled: true
-  perSecond: 10
+  ratelimit:
+    enabled: true
+    perSecond: 10
 
 spring:
   redis:
@@ -20,12 +19,16 @@ xai:
 
 security:
   jwt:
-    secret: "change-me-32+chars-or-base64-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-    issuer: pickup sports
-    audience: web             # any label you check on both sides
-    expirationMinutes: 60
-    clockSkewSeconds: 120
-    header: Authorization   # <- used in CONNECT headers
-    prefix: "Bearer "       # <- removed when parsing
+    secret: "this-is-my-local-dev-secret-change-me"
+    issuer: "pickup-sports-app"
+    audience: "pickup-sports-clients"
+    expirationMinutes: 120
+    header: "Authorization"
+    prefix: "Bearer "
+
+# application-prod.yml
+springdoc:
+  swagger-ui.enabled: false
+  api-docs.enabled: false
 
 

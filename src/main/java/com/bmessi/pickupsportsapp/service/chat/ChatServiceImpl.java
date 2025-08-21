@@ -7,11 +7,14 @@ import com.bmessi.pickupsportsapp.repository.ChatMessageRepository;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -24,84 +27,106 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
-    public void record(Long gameId, ChatMessageDTO dto) {
-        if (dto.getSentAt() == null) {
-            dto.setSentAt(Instant.now());
+    public ChatMessageDTO record(Long gameId, ChatMessageDTO dto) {
+        if (dto.getSentAt() == null) dto.setSentAt(Instant.now());
+
+        // Fast idempotency check without loading the Game entity first.
+        if (dto.getClientId() != null && !dto.getClientId().isBlank()) {
+            var existing = chatRepo.findByGame_IdAndClientId(gameId, dto.getClientId());
+            if (existing.isPresent()) {
+                return toDto(existing.get());
+            }
         }
+
         Game game = gameRepo.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("Game not found: " + gameId));
 
         ChatMessage entity = ChatMessage.builder()
                 .game(game)
+                .clientId(blankToNull(dto.getClientId()))
                 .sender(dto.getSender())
                 .content(dto.getContent())
                 .sentAt(dto.getSentAt())
                 .build();
 
-        chatRepo.save(entity);
-        log.debug("Saved chat message for game {} from {} at {}", gameId, dto.getSender(), dto.getSentAt());
+        try {
+            entity = chatRepo.save(entity);
+        } catch (DataIntegrityViolationException e) {
+            // Race on unique (game_id, client_id): load the winner and return it.
+            if (entity.getClientId() != null) {
+                var winner = chatRepo.findByGame_IdAndClientId(gameId, entity.getClientId())
+                        .orElseThrow(() -> e);
+                return toDto(winner);
+            }
+            throw e;
+        }
+
+        log.debug("Saved chat message id={} game={} from {} at {}",
+                entity.getId(), gameId, dto.getSender(), dto.getSentAt());
+        return toDto(entity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ChatMessageDTO> history(Long gameId, Instant before, int limit) {
         Instant cutoff = (before != null) ? before : Instant.now();
-        int pageSize = Math.max(1, Math.min(200, limit <= 0 ? 50 : limit));
+        int size = clamp(limit, 1, 200, 50);
 
         Game game = gameRepo.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("Game not found: " + gameId));
 
         return chatRepo
                 .findByGameAndSentAtLessThanEqualOrderBySentAtDesc(
-                        game, cutoff, PageRequest.of(0, pageSize)
+                        game, cutoff, PageRequest.of(0, size)
                 )
                 .stream()
-                .map(m -> {
-                    ChatMessageDTO dto = new ChatMessageDTO();
-                    dto.setSender(m.getSender());
-                    dto.setContent(m.getContent());
-                    dto.setSentAt(m.getSentAt());
-                    return dto;
-                })
+                .map(this::toDto)
                 .toList();
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public List<ChatMessageDTO> latest(Long gameId, int limit) {
-        int size = Math.max(1, Math.min(200, limit <= 0 ? 50 : limit));
-        var page = org.springframework.data.domain.PageRequest.of(0, size);
+        int size = clamp(limit, 1, 200, 50);
+        var page = PageRequest.of(0, size);
+
         var desc = chatRepo.findByGame_IdOrderBySentAtDesc(gameId, page);
-
-        // return ASC for natural render (oldest → newest)
-        java.util.List<ChatMessage> asc = new java.util.ArrayList<>(desc);
-        java.util.Collections.reverse(asc);
-
-        return asc.stream().map(m -> {
-            ChatMessageDTO dto = new ChatMessageDTO();
-            dto.setSender(m.getSender());
-            dto.setContent(m.getContent());
-            dto.setSentAt(m.getSentAt());
-            return dto;
-        }).toList();
+        var asc = new ArrayList<>(desc);
+        Collections.reverse(asc); // return oldest -> newest
+        return asc.stream().map(this::toDto).toList();
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public List<ChatMessageDTO> since(Long gameId, Instant after, int limit) {
-        if (after == null) after = Instant.EPOCH;
-        int size = Math.max(1, Math.min(500, limit <= 0 ? 100 : limit));
-        var page = org.springframework.data.domain.PageRequest.of(0, size);
+        Instant cutoff = (after == null) ? Instant.EPOCH : after;
+        int size = clamp(limit, 1, 500, 100);
+        var page = PageRequest.of(0, size);
 
-        return chatRepo.findByGame_IdAndSentAtAfterOrderBySentAtAsc(gameId, after, page)
+        return chatRepo.findByGame_IdAndSentAtAfterOrderBySentAtAsc(gameId, cutoff, page)
                 .stream()
-                .map(m -> {
-                    ChatMessageDTO dto = new ChatMessageDTO();
-                    dto.setSender(m.getSender());
-                    dto.setContent(m.getContent());
-                    dto.setSentAt(m.getSentAt());
-                    return dto;
-                })
+                .map(this::toDto)
                 .toList();
+    }
+
+    // ---------- helpers ----------
+
+    private int clamp(int requested, int min, int max, int dflt) {
+        int v = (requested <= 0) ? dflt : requested;
+        return Math.min(max, Math.max(min, v));
+    }
+
+    private String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s;
+    }
+
+    private ChatMessageDTO toDto(ChatMessage m) {
+        ChatMessageDTO dto = new ChatMessageDTO();
+        dto.setMessageId(m.getId());
+        dto.setClientId(m.getClientId());
+        dto.setSender(m.getSender());
+        dto.setContent(m.getContent());
+        dto.setSentAt(m.getSentAt());
+        return dto;
     }
 }

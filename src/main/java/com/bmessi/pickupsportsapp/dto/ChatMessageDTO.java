@@ -1,18 +1,21 @@
 package com.bmessi.pickupsportsapp.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChatMessageDTO {
+    private Long messageId;   // server DB id
+    private String clientId;  // client-generated UUID for idempotency
     private String sender;
     private String content;
     private Instant sentAt;
 
-    public ChatMessageDTO() {}
-    public ChatMessageDTO(String sender, String content, Instant sentAt) {
-        this.sender = sender;
-        this.content = content;
-        this.sentAt = sentAt;
-    }
+    public Long getMessageId() { return messageId; }
+    public void setMessageId(Long messageId) { this.messageId = messageId; }
+
+    public String getClientId() { return clientId; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
 
     public String getSender() { return sender; }
     public void setSender(String sender) { this.sender = sender; }
