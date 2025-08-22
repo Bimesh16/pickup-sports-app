@@ -3,9 +3,9 @@ services:
     image: postgres:16
     container_name: pickup_db
     environment:
-      POSTGRES_DB: soccer_app
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: ${POSTGRES_DB:-soccer_app}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-yourpassword}
     ports:
       - "5433:5432"
     volumes:
@@ -31,32 +31,35 @@ services:
       - db
       - mailhog
       - redis
+    env_file:
+      - .env.local
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/soccer_app
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: yourpassword
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/soccer_app}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-none}
 
       # Mail (acts as health source and for welcome emails)
-      SPRING_MAIL_HOST: mailhog
-      SPRING_MAIL_PORT: "1025"
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-mailhog}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-1025}
 
       # Redis (available for staging/scale; disabled below by default)
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: "6379"
-      CHAT_REDIS_ENABLED: "false"   # flip to "true" when you want to fan-out via Redis
+      SPRING_DATA_REDIS_HOST: ${SPRING_DATA_REDIS_HOST:-redis}
+      SPRING_DATA_REDIS_PORT: ${SPRING_DATA_REDIS_PORT:-6379}
+      CHAT_REDIS_ENABLED: ${CHAT_REDIS_ENABLED:-false}
 
-      # JWT secret (use a long random value in real environments)
-      SECURITY_JWT_SECRET: "7MK86VAi8Gj2wbbg6f0Ozob-RCAFdY4r_Tkrj5H4y6UaNPNi0_uRHV5zUCJxL0x9"
+      # JWT secret (REQUIRED; no default for safety)
+      SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET}
 
       # Swagger in dev
-      SPRINGDOC_SWAGGER_UI_ENABLED: "true"
-      SPRINGDOC_API_DOCS_ENABLED: "true"
+      SPRINGDOC_SWAGGER_UI_ENABLED: ${SPRINGDOC_SWAGGER_UI_ENABLED:-true}
+      SPRINGDOC_API_DOCS_ENABLED: ${SPRINGDOC_API_DOCS_ENABLED:-true}
 
       # Login rate limit (per IP per minute)
-      SECURITY_LOGIN_RATE_LIMIT: "20"
+      SECURITY_LOGIN_RATE_LIMIT: ${SECURITY_LOGIN_RATE_LIMIT:-20}
+
       # Activate dev profile to expose Prometheus/metrics and dev settings
-      SPRING_PROFILES_ACTIVE: dev
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
     ports:
       - "8081:8080"
 

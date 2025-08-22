@@ -31,3 +31,30 @@ build/
 
 ### VS Code ###
 .vscode/
+# Build
+target/
+out/
+build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Env and secrets
+.env
+.env.*
+!.env.local.example
+
+# Node (if any frontend present later)
+node_modules/
+
+# Docker artifacts
+*.pid
