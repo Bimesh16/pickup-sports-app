@@ -12,6 +12,7 @@ import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.service.chat.ChatService;                 // <- NEW
 import com.bmessi.pickupsportsapp.service.NotificationService;
 import com.bmessi.pickupsportsapp.service.XaiRecommendationService;
+import com.bmessi.pickupsportsapp.service.SportResolverService;             // <- NEW
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -43,6 +44,7 @@ public class GameController {
     private final XaiRecommendationService xaiRecommendationService;
     private final ApiMapper mapper;
     private final ChatService chatService;                            // <- NEW
+    private final SportResolverService sportResolver;                 // <- NEW
 
     // ---------------- Chat history endpoint (works under /games) ----------------
 
@@ -94,8 +96,12 @@ public class GameController {
         if (owner == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
         }
+
+        // Normalize and ensure sport exists in catalog; returns canonical display name.
+        String canonicalSport = sportResolver.resolveOrCreateCanonical(request.sport());
+
         Game game = Game.builder()
-                .sport(request.sport())
+                .sport(canonicalSport)
                 .location(request.location())
                 .time(request.time().toInstant())
                 .skillLevel(request.skillLevel())

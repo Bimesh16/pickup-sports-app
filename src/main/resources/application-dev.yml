@@ -1,0 +1,39 @@
+# Dev-only OpenAPI/Swagger
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true
+
+# Actuator exposure in dev
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,prometheus"
+  endpoint:
+    health:
+      show-details: always
+
+# WebSocket/chat dev behavior
+chat:
+  redis:
+    enabled: false
+
+# CORS for local React dev server
+app:
+  cors:
+    allowed-origins: "http://localhost:3000"
+    allowed-methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+    allowed-headers: "*"
+    exposed-headers: "Authorization,Content-Type"
+    allow-credentials: false
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
+    com.bmessi.pickupsportsapp: DEBUG

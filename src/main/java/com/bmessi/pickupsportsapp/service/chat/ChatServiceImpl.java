@@ -12,6 +12,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.micrometer.core.annotation.Timed;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +29,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
+    @Timed(value = "chat.record", description = "Time to persist a chat message")
     public ChatMessageDTO record(Long gameId, ChatMessageDTO dto) {
         if (dto.getSentAt() == null) dto.setSentAt(Instant.now());
 
@@ -68,6 +71,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional(readOnly = true)
+    @Timed(value = "chat.history", description = "Time to fetch chat history (before)")
     public List<ChatMessageDTO> history(Long gameId, Instant before, int limit) {
         Instant cutoff = (before != null) ? before : Instant.now();
         int size = clamp(limit, 1, 200, 50);
@@ -86,6 +90,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional(readOnly = true)
+    @Timed(value = "chat.latest", description = "Time to fetch latest chat messages")
     public List<ChatMessageDTO> latest(Long gameId, int limit) {
         int size = clamp(limit, 1, 200, 50);
         var page = PageRequest.of(0, size);
@@ -98,6 +103,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional(readOnly = true)
+    @Timed(value = "chat.since", description = "Time to fetch messages since timestamp")
     public List<ChatMessageDTO> since(Long gameId, Instant after, int limit) {
         Instant cutoff = (after == null) ? Instant.EPOCH : after;
         int size = clamp(limit, 1, 500, 100);

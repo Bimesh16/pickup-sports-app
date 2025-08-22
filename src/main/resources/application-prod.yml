@@ -1,0 +1,36 @@
+# Disable Swagger in prod by default
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,prometheus"
+  endpoint:
+    health:
+      show-details: never
+
+# Keep Redis toggle explicit for prod; set via environment variables in your platform
+chat:
+  redis:
+    enabled: false
+
+# CORS should be restricted to your real frontend domains in prod (set via env)
+app:
+  cors:
+    allowed-origins: "https://your-frontend.example.com"
+    allowed-methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+    allowed-headers: "*"
+    exposed-headers: "Authorization,Content-Type"
+    allow-credentials: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    com.bmessi.pickupsportsapp: INFO
