@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp;
+package com.bmessi.pickupsportsapp.controller;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -9,7 +10,7 @@ import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        classes = PickupSportsAppApplicationTests.MinimalBootConfig.class
+        classes = GameControllerIntegrationTest.MinimalBootConfig.class
 )
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
@@ -29,10 +30,10 @@ import org.springframework.test.context.TestPropertySource;
                 "org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration," +
                 "org.springframework.boot.autoconfigure.websocket.servlet.WebSocketMessagingAutoConfiguration," +
                 "org.springframework.boot.autoconfigure.websocket.reactive.WebSocketReactiveAutoConfiguration",
-        "spring.jpa.hibernate.ddl-auto=none",
-        "spring.flyway.enabled=false"
+        "spring.jpa.hibernate.ddl-auto=none"
 })
-class PickupSportsAppApplicationTests {
+@DisplayName("DB-less context smoke test")
+class GameControllerIntegrationTest {
 
     @Test
     void contextLoads() { }

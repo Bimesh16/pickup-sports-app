@@ -1,11 +1,16 @@
+
 package com.bmessi.pickupsportsapp.repository;
 
 import com.bmessi.pickupsportsapp.entity.Game;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +18,7 @@ import java.util.Set;
 
 /**
  * Repository for Game entities. Includes search, participant checks,
- * eager loading for "my games", and a location-based query.
+ * eager loading for "my games", and location-based query.
  */
 public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificationExecutor<Game> {
 
@@ -87,22 +92,17 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
     boolean existsParticipant(@Param("gameId") Long gameId, @Param("userId") Long userId);
 
     /**
-     * Find games within a radius (km) of given coordinates using a simplified Haversine formula.
+     * Find games within a radius (simplified without PostGIS for now)
      */
     @Query("""
-        select g from Game g
-        where g.latitude is not null and g.longitude is not null and
-              (6371 * acos(
-                   cos(radians(:lat)) *
-                   cos(radians(g.latitude)) *
-                   cos(radians(g.longitude) - radians(:lon)) +
-                   sin(radians(:lat)) *
-                   sin(radians(g.latitude))
-              )) <= :radius
+        SELECT g FROM Game g 
+        WHERE g.latitude IS NOT NULL AND g.longitude IS NOT NULL
+        AND (6371 * acos(cos(radians(:lat)) * cos(radians(g.latitude)) * 
+        cos(radians(g.longitude) - radians(:lng)) + sin(radians(:lat)) * 
+        sin(radians(g.latitude)))) <= :radiusKm
+        ORDER BY (6371 * acos(cos(radians(:lat)) * cos(radians(g.latitude)) * 
+        cos(radians(g.longitude) - radians(:lng)) + sin(radians(:lat)) * 
+        sin(radians(g.latitude))))
         """)
-    List<Game> findByLocationWithinRadius(
-            @Param("lat") double latitude,
-            @Param("lon") double longitude,
-            @Param("radius") double radiusKm
-    );
+    List<Game> findByLocationWithinRadius(@Param("lat") double lat, @Param("lng") double lng, @Param("radiusKm") double radiusKm);
 }

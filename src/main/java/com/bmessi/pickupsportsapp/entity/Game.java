@@ -1,3 +1,4 @@
+
 package com.bmessi.pickupsportsapp.entity;
 
 import jakarta.persistence.*;
@@ -9,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Entity representing a pickup game.  Includes GPS coordinates so
+ * Entity representing a pickup game. Includes GPS coordinates so
  * games can be filtered by proximity.
  */
 @Entity
@@ -31,7 +32,7 @@ public class Game {
     @Column(name = "location", nullable = false, length = 255)
     private String location;
 
-    @Column(name = "time", nullable = true) // <-- allow null temporarily
+    @Column(name = "time", nullable = true)
     private Instant time;
 
     @Column(name = "skill_level", length = 50)
@@ -62,7 +63,7 @@ public class Game {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "game_participants",
             joinColumns = @JoinColumn(name = "game_id"),
@@ -71,22 +72,30 @@ public class Game {
     @Builder.Default
     private Set<User> participants = new HashSet<>();
 
+    // Helper methods for participants
     public void addParticipant(User user) {
+        if (participants == null) {
+            participants = new HashSet<>();
+        }
         participants.add(user);
     }
 
     public void removeParticipant(User user) {
-        participants.remove(user);
+        if (participants != null) {
+            participants.remove(user);
+        }
     }
 
     @PrePersist
-    void onCreate() {
-        createdAt = OffsetDateTime.now();
-        updatedAt = createdAt;
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = OffsetDateTime.now();
+        }
+        updatedAt = OffsetDateTime.now();
     }
 
     @PreUpdate
-    void onUpdate() {
+    protected void onUpdate() {
         updatedAt = OffsetDateTime.now();
     }
 }
