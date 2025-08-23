@@ -70,10 +70,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest req) {
         Map<String, Object> body = baseBody("validation_error", "Validation failed", HttpStatus.BAD_REQUEST.value(), req);
         Map<String, String> errors = new HashMap<>();
-        ex.getConstraintViolations().forEach(v -> errors.put(
-                v.getPropertyPath() != null ? v.getPropertyPath().toString() : "param",
-                v.getMessage()
-        ));
+        for (var v : ex.getConstraintViolations()) {
+            String field = (v.getPropertyPath() != null) ? v.getPropertyPath().toString() : "param";
+            errors.put(field, v.getMessage());
+        }
         body.put("errors", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).headers(noStoreHeaders()).body(body);
     }

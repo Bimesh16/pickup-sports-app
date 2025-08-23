@@ -6,8 +6,15 @@ chat:
   ratelimit:
     enabled: true
     perSecond: 10
+    userBurst: 20
+    userBurstWindowMillis: 10000
   subscription:
     max: 50
+  moderation:
+    enabled: true
+    reject: false
+    words: ["badword"]
+    # dictionaryPath: "classpath:moderation/profanity.txt"
 
 spring:
   redis:
@@ -17,6 +24,7 @@ spring:
 
 xai:
   enabled: true
+
 security:
   jwt:
     secret: "this-is-my-local-dev-secret-change-me"
@@ -34,6 +42,13 @@ management:
   endpoint:
     health:
       show-details: "never"   # set 'always' if you want details in dev
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
   server:
     base-path: /actuator      # default, explicit for clarity
 
@@ -41,8 +56,6 @@ management:
 springdoc:
   swagger-ui.enabled: true
   api-docs.enabled: true
-
-# Existing settings remain above/below as-is
 
 resilience4j:
   retry:
@@ -71,5 +84,64 @@ resilience4j:
         limit-for-period: 20
         limit-refresh-period: 1s
         timeout-duration: 0
+
+# ------------------------------
+# App configuration (new defaults)
+# ------------------------------
+auth:
+  verification-required: false
+  verification-ttl-hours: 24
+  reset-ttl-hours: 2
+  app-url: "http://localhost:8080"
+  change-email-invalidate-sessions: true
+  resend:
+    max-per-user-per-minute: 3
+    max-per-ip-per-minute: 10
+  login:
+    distributed-enabled: false
+    max-failures-per-user: 5
+    max-failures-per-ip: 30
+    lockout-minutes: 15
+    ip-window-minutes: 10
+  rate-limit:
+    distributed:
+      enabled: false
+    window-seconds: 60
+
+media:
+  avatar:
+    max-bytes: 2097152
+    allowed-types: "image/png,image/jpeg,image/webp"
+    thumbnail:
+      enabled: true
+      width: 200
+      height: 200
+    max-width: 2000
+    max-height: 2000
+    absolute-max-width: 8000
+    absolute-max-height: 8000
+    strip-metadata: true
+    include-thumbnail-header: false
+
+app:
+  media:
+    storage:
+      provider: local
+    s3:
+      bucket: your-bucket
+      region: us-east-1
+      endpoint:
+      prefix:
+      public-base-url:
+      presign:
+        enabled: false
+        ttlSeconds: 900
+
+retention:
+  chat:
+    messages:
+      days: 60
+    read-receipts:
+      days: 60
 
 

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>Verify your email</title>
+  <style>
+    body { font-family: Arial, sans-serif; color:#222; }
+    .btn { background:#1a73e8; color:#fff; padding:10px 16px; text-decoration:none; border-radius:4px; }
+    .box { border:1px solid #eee; padding:20px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Verify your email</h2>
+    <p>Welcome to {{appName}}! Please verify your email address by clicking the button below.</p>
+    <p><a class="btn" href="{{link}}">Verify email</a></p>
+    <p>This link will expire in {{expiryHours}} hours.</p>
+    <p>If you did not create an account, you can ignore this message.</p>
+  </div>
+</body>
+</html>

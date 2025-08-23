@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/games/{gameId}/chat")
+@RequestMapping({"/api/games/{gameId}/chat", "/games/{gameId}/chat"})
 public class ReadStatusController {
 
     private final ReadReceiptService readReceiptService;

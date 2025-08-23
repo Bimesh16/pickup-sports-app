@@ -27,15 +27,24 @@ public class AiRecommendationResilientService {
     private final GameRepository gameRepository;
     private final ApiMapper mapper;
     private final Executor xaiExecutor;
+    private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
+
+    private static final ThreadLocal<String> LAST_SOURCE = new ThreadLocal<>();
+
+    public String getLastSource() {
+        String v = LAST_SOURCE.get();
+        return v == null ? "fallback" : v;
+    }
 
     public AiRecommendationResilientService(Optional<XaiRecommendationService> delegate,
                                             GameRepository gameRepository,
                                             ApiMapper mapper,
-                                            @Qualifier("xaiExecutor") Executor xaiExecutor) {
+                                            @Qualifier("xaiExecutor") Executor xaiExecutor, io.micrometer.core.instrument.MeterRegistry meterRegistry) {
         this.delegate = delegate;
         this.gameRepository = gameRepository;
         this.mapper = mapper;
         this.xaiExecutor = xaiExecutor;
+        this.meterRegistry = meterRegistry;
     }
 
     @Retry(name = "xai")
@@ -48,13 +57,21 @@ public class AiRecommendationResilientService {
                                                              Pageable pageable) {
         return CompletableFuture.supplyAsync(() -> {
             if (delegate.isPresent()) {
-                // Delegate returns Page<Game>; map to Page<GameSummaryDTO>
-                return delegate.get()
+                var page = delegate.get()
                         .getRecommendations(sport, location, skillLevel, pageable)
                         .map(mapper::toGameSummaryDTO);
+                LAST_SOURCE.set("xai");
+                try { meterRegistry.counter("recommendations.source", "source", "xai").increment(); } catch (Exception ignore) {}
+                return page;
             }
+            LAST_SOURCE.set("fallback");
+            try { meterRegistry.counter("recommendations.source", "source", "fallback").increment(); } catch (Exception ignore) {}
             return fallbackRecommend(sport, location, skillLevel, pageable);
-        }, xaiExecutor).exceptionally(ex -> fallbackRecommend(sport, location, skillLevel, pageable));
+        }, xaiExecutor).exceptionally(ex -> {
+            LAST_SOURCE.set("fallback");
+            try { meterRegistry.counter("recommendations.source", "source", "fallback").increment(); } catch (Exception ignore) {}
+            return fallbackRecommend(sport, location, skillLevel, pageable);
+        });
     }
 
     // Fallback for CircuitBreaker short-circuits (must match method signature + Throwable tail param)

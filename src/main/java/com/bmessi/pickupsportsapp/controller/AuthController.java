@@ -30,10 +30,24 @@ public class AuthController {
 
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
+    private final com.bmessi.pickupsportsapp.config.properties.RefreshCookieProperties cookieProps;
+    private final com.bmessi.pickupsportsapp.config.properties.AuthFlowProperties authProps;
+    private final com.bmessi.pickupsportsapp.service.VerificationService verificationService;
+    private final com.bmessi.pickupsportsapp.service.PasswordResetService passwordResetService;
+    private final com.bmessi.pickupsportsapp.service.EmailService emailService;
+    private final com.bmessi.pickupsportsapp.security.LoginAttemptService loginAttemptService;
+    private final com.bmessi.pickupsportsapp.security.SecurityAuditService securityAuditService;
+    private final com.bmessi.pickupsportsapp.repository.UserRepository userRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final com.bmessi.pickupsportsapp.service.ChangeEmailService changeEmailService;
+    private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
+    private final java.util.Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> redisRateLimiter; // optional
+    private final com.bmessi.pickupsportsapp.config.properties.LoginPolicyProperties loginPolicyProperties;
 
     @PostMapping("/login")
     @RateLimiter(name = "auth")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request,
+                                   jakarta.servlet.http.HttpServletRequest httpRequest) {
         try {
             log.debug("Login attempt for user: {}", request.username());
 
@@ -46,11 +60,27 @@ public class AuthController {
                 username = userDetails.getUsername();
             }
 
+            // Enforce verification if required
+            if (authProps.isVerificationRequired() && !verificationService.isVerified(username)) {
+                return ResponseEntity.status(403)
+                        .headers(noStoreHeaders())
+                        .body(Map.of(
+                                "error", "email_unverified",
+                                "message", "Please verify your email before logging in",
+                                "timestamp", System.currentTimeMillis()
+                        ));
+            }
+
             TokenPairResponse tokens = authService.issueTokensForAuthenticatedUser(username);
 
             log.debug("Login successful");
+            HttpHeaders headers = noStoreHeaders();
+            // Issue refresh cookie if enabled
+            if (cookieProps.isEnabled()) {
+                headers.add(HttpHeaders.SET_COOKIE, buildRefreshCookie(tokens.refreshToken(), false, httpRequest));
+            }
             return ResponseEntity.ok()
-                    .headers(noStoreHeaders())
+                    .headers(headers)
                     .body(tokens);
 
         } catch (BadCredentialsException e) {
@@ -76,17 +106,35 @@ public class AuthController {
 
     @PostMapping("/refresh")
     @RateLimiter(name = "auth")
-    public ResponseEntity<?> refresh(@Valid @RequestBody RefreshRequest request) {
+    public ResponseEntity<?> refresh(@Valid @RequestBody RefreshRequest request,
+                                     @CookieValue(name = "refreshToken", required = false) String refreshCookie,
+                                     jakarta.servlet.http.HttpServletRequest httpRequest) {
         try {
-            String tokenPreview = request.refreshToken() != null
-                    ? request.refreshToken().substring(0, Math.min(10, request.refreshToken().length())) + "..."
-                    : "null";
+            String provided = (request != null && request.refreshToken() != null && !request.refreshToken().isBlank())
+                    ? request.refreshToken()
+                    : refreshCookie;
+
+            if (provided == null || provided.isBlank()) {
+                return ResponseEntity.status(400)
+                        .headers(noStoreHeaders())
+                        .body(Map.of(
+                                "error", "invalid_request",
+                                "message", "Missing refresh token (body or cookie 'refreshToken')",
+                                "timestamp", System.currentTimeMillis()
+                        ));
+            }
+
+            String tokenPreview = provided.substring(0, Math.min(10, provided.length())) + "...";
             log.debug("Token refresh attempt with refresh token: {}", tokenPreview);
 
-            TokenPairResponse tokens = authService.refresh(request.refreshToken());
+            TokenPairResponse tokens = authService.refresh(provided);
             log.debug("Token refresh successful");
+            HttpHeaders headers = noStoreHeaders();
+            if (cookieProps.isEnabled()) {
+                headers.add(HttpHeaders.SET_COOKIE, buildRefreshCookie(tokens.refreshToken(), false, httpRequest));
+            }
             return ResponseEntity.ok()
-                    .headers(noStoreHeaders())
+                    .headers(headers)
                     .body(tokens);
 
         } catch (BadCredentialsException e) {
@@ -120,8 +168,11 @@ public class AuthController {
             log.error("Logout error: {}", e.getMessage());
             // Intentionally returning 200 for logout regardless
         }
+        HttpHeaders headers = noStoreHeaders();
+        // Help clients clear local caches/storage if they opt-in to using cookies/local storage
+        headers.add("Clear-Site-Data", "\"cache\", \"storage\"");
         return ResponseEntity.ok()
-                .headers(noStoreHeaders())
+                .headers(headers)
                 .body(Map.of(
                         "message", "Logout completed",
                         "timestamp", System.currentTimeMillis()
@@ -133,6 +184,60 @@ public class AuthController {
         h.add(HttpHeaders.CACHE_CONTROL, "no-store");
         h.add(HttpHeaders.PRAGMA, "no-cache");
         return h;
+    }
+
+    private String buildRefreshCookie(String value, boolean delete, jakarta.servlet.http.HttpServletRequest req) {
+        String name = cookieProps.getName();
+        String path = cookieProps.getPath();
+        String domain = cookieProps.getDomain();
+        String sameSite = cookieProps.getSameSite();
+        boolean httpOnly = cookieProps.isHttpOnly();
+        int maxAge = delete ? 0 : Math.max(0, cookieProps.getMaxAgeDays() * 24 * 60 * 60);
+
+        boolean secure = cookieProps.getSecure() != null
+                ? cookieProps.getSecure()
+                : (req.isSecure() || "https".equalsIgnoreCase(req.getHeader("X-Forwarded-Proto")));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(name).append("=").append(delete ? "" : value).append("; ")
+                .append("Path=").append(path).append("; ");
+        if (domain != null && !domain.isBlank()) {
+            sb.append("Domain=").append(domain).append("; ");
+        }
+        sb.append("SameSite=").append(sameSite).append("; ");
+        if (secure) sb.append("Secure; ");
+        if (httpOnly) sb.append("HttpOnly; ");
+        sb.append("Max-Age=").append(maxAge);
+        return sb.toString().trim();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> me(java.security.Principal principal,
+                                                  org.springframework.security.core.Authentication auth) {
+        if (principal == null || principal.getName() == null || principal.getName().isBlank() || auth == null) {
+            return ResponseEntity.status(401)
+                    .headers(noStoreHeaders())
+                    .body(Map.of(
+                            "error", "unauthorized",
+                            "message", "Authentication required",
+                            "timestamp", System.currentTimeMillis()
+                    ));
+        }
+        java.util.List<String> roles = auth.getAuthorities() == null
+                ? java.util.List.of()
+                : auth.getAuthorities().stream()
+                    .map(org.springframework.security.core.GrantedAuthority::getAuthority)
+                    .sorted()
+                    .toList();
+
+        return ResponseEntity.ok()
+                .headers(noStoreHeaders())
+                .body(Map.of(
+                        "username", principal.getName(),
+                        "roles", roles,
+                        "authenticated", auth.isAuthenticated(),
+                        "timestamp", System.currentTimeMillis()
+                ));
     }
 
     // DTOs for the login endpoint

@@ -32,7 +32,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         var simpleBroker = registry.enableSimpleBroker("/topic");
         simpleBroker.setHeartbeatValue(new long[]{10_000, 10_000}); // 10s send/receive
-        simpleBroker.setTaskScheduler(messageBrokerTaskScheduler());
+        simpleBroker.setTaskScheduler(wsBrokerTaskScheduler());
 
         registry.setPreservePublishOrder(true);
     }
@@ -46,7 +46,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
     @Bean
-    public ThreadPoolTaskScheduler messageBrokerTaskScheduler() {
+    public ThreadPoolTaskScheduler wsBrokerTaskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(2);
         scheduler.setThreadNamePrefix("ws-broker-");

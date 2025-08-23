@@ -224,6 +224,11 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>s3</artifactId>
+        <version>2.25.63</version>
+    </dependency>
     </dependencies>
 
     <build>
@@ -276,4 +281,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

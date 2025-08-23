@@ -61,18 +61,12 @@ public class NotificationController {
         String username = principal.getName();
         log.debug("Getting notifications for user: {}, unreadOnly: {}", username, unreadOnly);
 
-        List<com.bmessi.pickupsportsapp.entity.Notification> all = notificationService.getUserNotifications(username);
-        List<com.bmessi.pickupsportsapp.entity.Notification> filtered = unreadOnly
-                ? all.stream().filter(n -> !n.isRead()).toList()
-                : all;
+        Page<com.bmessi.pickupsportsapp.entity.Notification> pageEntities =
+                notificationService.getUserNotifications(username, unreadOnly, pageable);
 
-        int start = Math.min((int) pageable.getOffset(), filtered.size());
-        int end = Math.min(start + pageable.getPageSize(), filtered.size());
-        var slice = filtered.subList(start, end);
+        Page<NotificationDTO> page = pageEntities.map(mapper::toNotificationDTO);
 
-        var page = new PageImpl<>(mapper.toNotificationDTOs(slice), pageable, filtered.size());
-
-        long lastMod = filtered.stream()
+        long lastMod = pageEntities.getContent().stream()
                 .mapToLong(NotificationController::lastModifiedEpochMilli)
                 .max()
                 .orElse(System.currentTimeMillis());
@@ -88,8 +82,18 @@ public class NotificationController {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).headers(headers).build();
         }
 
-        log.debug("Returning {} notifications for user {}", slice.size(), username);
+        log.debug("Returning {} notifications for user {}", page.getNumberOfElements(), username);
         return ResponseEntity.ok().headers(headers).body(page);
+    }
+
+    // Quick unread count for badge updates
+    @GetMapping("/unread-count")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Object>> getUnreadCount(Principal principal) {
+        String username = principal.getName();
+        var all = notificationService.getUserNotifications(username);
+        long unread = all.stream().filter(n -> !n.isRead()).count();
+        return ResponseEntity.ok(Map.of("unread", unread));
     }
 
     // Mark notification as read using the improved service method

@@ -29,6 +29,7 @@ public class AuthService {
     private final JwtTokenService tokenService;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final com.bmessi.pickupsportsapp.security.SecurityAuditService audit;
 
     // Provide a sane default (e.g., 15 minutes) so missing config doesn't crash startup
     @Value("${security.jwt.expiration-minutes:15}")
@@ -83,7 +84,9 @@ public class AuthService {
         }
 
         try {
-            return issueNewPair(stored);
+            var pair = issueNewPair(stored);
+            try { audit.refreshIssued(stored.getUser().getUsername()); } catch (Exception ignore) {}
+            return pair;
         } catch (OptimisticLockingFailureException e) {
             throw new BadCredentialsException("Invalid refresh token");
         } catch (DataAccessException dae) {

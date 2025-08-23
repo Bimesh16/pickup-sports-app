@@ -19,6 +19,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final ApiMapper mapper;
     private final EmailService emailService; // <-- add this
+    private final VerificationService verificationService;
+    private final com.bmessi.pickupsportsapp.config.properties.AuthFlowProperties authProps;
 
     @Transactional
     public UserDTO register(CreateUserRequest request) {
@@ -34,6 +36,13 @@ public class UserService {
 
         // Send welcome email asynchronously
         emailService.sendWelcomeEmail(user);
+
+        // Generate email verification token and send link
+        String token = verificationService.createTokenFor(user.getUsername());
+        String base = authProps.getAppUrl();
+        if (base.endsWith("/")) base = base.substring(0, base.length() - 1);
+        String link = base + "/auth/verify?token=" + token;
+        emailService.sendVerificationEmail(user.getUsername(), link);
 
         return mapper.toUserDTO(user);
     }

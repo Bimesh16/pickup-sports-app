@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>Confirm your new email</title>
+  <style>
+    body { font-family: Arial, sans-serif; color:#222; }
+    .btn { background:#1a73e8; color:#fff; padding:10px 16px; text-decoration:none; border-radius:4px; }
+    .box { border:1px solid #eee; padding:20px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Confirm your new email</h2>
+    <p>You requested to change your {{appName}} account email. Click the button below to confirm.</p>
+    <p><a class="btn" href="{{link}}">Confirm new email</a></p>
+    <p>This link will expire in {{expiryHours}} hours.</p>
+    <p>If you did not request this change, you can ignore this message.</p>
+  </div>
+</body>
+</html>

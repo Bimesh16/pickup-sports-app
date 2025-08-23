@@ -27,6 +27,8 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
+    private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
 
     @Timed(value = "notifications.create", description = "Time to create a notification")
     @Transactional
@@ -42,6 +44,16 @@ public class NotificationService {
 
         Notification savedNotification = notificationRepository.save(notification);
         log.debug("Created notification {} for user {}", savedNotification.getId(), username);
+
+        // WS event
+        try {
+            broker.convertAndSendToUser(user.getUsername(), "/queue/notifications",
+                    com.bmessi.pickupsportsapp.dto.NotificationEvent.created(savedNotification));
+            meterRegistry.counter("notifications.ws.sent", "type", "created").increment();
+        } catch (Exception ignore) {
+            meterRegistry.counter("notifications.ws.failed", "type", "created").increment();
+            // do not fail user flow on WS issues
+        }
         return savedNotification;
     }
 
@@ -88,7 +100,16 @@ public class NotificationService {
         Notification notification = notificationRepository.findByIdAndUser_Id(id, user.getId())
                 .orElseThrow(() -> new IllegalArgumentException(String.format(ERR_NOTIFICATION_NOT_FOUND, id)));
         notification.markRead();
-        return notificationRepository.save(notification);
+        Notification saved = notificationRepository.save(notification);
+        // WS event
+        try {
+            broker.convertAndSendToUser(user.getUsername(), "/queue/notifications",
+                    com.bmessi.pickupsportsapp.dto.NotificationEvent.read(saved));
+            meterRegistry.counter("notifications.ws.sent", "type", "read").increment();
+        } catch (Exception ignore) {
+            meterRegistry.counter("notifications.ws.failed", "type", "read").increment();
+        }
+        return saved;
     }
 
     @Timed(value = "notifications.read.all", description = "Time to mark all notifications read")
@@ -107,6 +128,14 @@ public class NotificationService {
         int deleted = notificationRepository.deleteByIdAndUser_Id(id, user.getId());
         if (deleted == 0) {
             throw new IllegalArgumentException(String.format(ERR_NOTIFICATION_NOT_FOUND, id));
+        }
+        // WS event
+        try {
+            broker.convertAndSendToUser(user.getUsername(), "/queue/notifications",
+                    com.bmessi.pickupsportsapp.dto.NotificationEvent.deleted(id));
+            meterRegistry.counter("notifications.ws.sent", "type", "deleted").increment();
+        } catch (Exception ignore) {
+            meterRegistry.counter("notifications.ws.failed", "type", "deleted").increment();
         }
     }
 

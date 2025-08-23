@@ -74,6 +74,7 @@ public class GameController {
     private final ChatService chatService;
     private final SportResolverService sportResolver;
     private final com.bmessi.pickupsportsapp.service.IdempotencyService idempotencyService;
+    private final com.bmessi.pickupsportsapp.service.gameaccess.GameAccessService gameAccessService;
 
     // Configuration properties
     @Value("${app.games.default-recommendation-sport:Soccer}")
@@ -105,20 +106,6 @@ public class GameController {
     ) {
         validateGameAccess(gameId, principal.getName());
         return chatService.history(gameId, before, limit);
-    }
-
-    /**
-     * Retrieves latest chat messages for a specific game.
-     */
-    @GetMapping("/{gameId}/chat/latest")
-    @PreAuthorize("isAuthenticated()")
-    public List<ChatMessageDTO> getLatestChatMessages(
-            @PathVariable Long gameId,
-            @RequestParam(defaultValue = "50") int limit,
-            Principal principal
-    ) {
-        validateGameAccess(gameId, principal.getName());
-        return chatService.latest(gameId, limit);
     }
 
     // ================================================================================
@@ -480,6 +467,8 @@ public class GameController {
         );
 
         gameRepository.delete(game);
+        // Invalidate access cache as the game is gone
+        gameAccessService.invalidateForGame(game.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -556,6 +545,10 @@ public class GameController {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).headers(headers).build();
         }
 
+        // Expose recommendation source header
+        String source = xaiRecommendationService.getLastSource();
+        headers.add("X-Recommendation-Source", source);
+
         return ResponseEntity.ok().headers(headers).body(body);
     }
 
@@ -629,6 +622,12 @@ public class GameController {
         Game saved = gameRepository.save(game);
 
         notifyGameCreatorOfParticipation(game, user, "left");
+
+// Invalidate access cache for this game to reflect participant removal
+gameAccessService.invalidateForGame(game.getId());
+
+        // Invalidate access cache for this game to reflect new participant
+        gameAccessService.invalidateForGame(game.getId());
 
         String etag = toEtag(saved.getVersion());
         long lastMod = lastModifiedEpochMilli(saved);

@@ -28,15 +28,18 @@ public class ChatInboundChannelConfig implements WebSocketMessageBrokerConfigure
     private final WebSocketJwtAuthInterceptor jwtAuthInterceptor;
     private final WebSocketDestinationAuthInterceptor destinationAuthInterceptor;
     private final ChatRateLimitInterceptor chatRateLimitInterceptor; // optional
+    private final ChatBurstLimitInterceptor chatBurstLimitInterceptor; // per-user burst
     private final MeterRegistry meterRegistry;
 
     public ChatInboundChannelConfig(WebSocketJwtAuthInterceptor jwtAuthInterceptor,
                                     WebSocketDestinationAuthInterceptor destinationAuthInterceptor,
                                     ChatRateLimitInterceptor chatRateLimitInterceptor,
+                                    ChatBurstLimitInterceptor chatBurstLimitInterceptor,
                                     MeterRegistry meterRegistry) {
         this.jwtAuthInterceptor = jwtAuthInterceptor;
         this.destinationAuthInterceptor = destinationAuthInterceptor;
         this.chatRateLimitInterceptor = chatRateLimitInterceptor;
+        this.chatBurstLimitInterceptor = chatBurstLimitInterceptor;
         this.meterRegistry = meterRegistry;
     }
 
@@ -131,6 +134,7 @@ public class ChatInboundChannelConfig implements WebSocketMessageBrokerConfigure
                     jwtAuthInterceptor,
                     destinationAuthInterceptor,
                     chatRateLimitInterceptor,
+                    chatBurstLimitInterceptor,
                     stompMdcInterceptor(),
                     subscriptionLimiterInterceptor()
             );
@@ -138,6 +142,7 @@ public class ChatInboundChannelConfig implements WebSocketMessageBrokerConfigure
             registration.interceptors(
                     jwtAuthInterceptor,
                     destinationAuthInterceptor,
+                    chatBurstLimitInterceptor,
                     stompMdcInterceptor(),
                     subscriptionLimiterInterceptor()
             );

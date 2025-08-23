@@ -22,6 +22,7 @@ public class ChatController {
     private final ChatService chatService;
     private final ChatMessagePublisher publisher;
     private final GameAccessService gameAccessService;
+    private final com.bmessi.pickupsportsapp.service.chat.ProfanityFilterService profanityFilter;
 
     // Client sends to: /app/games/{gameId}/chat
     // Server broadcasts on: /topic/games/{gameId}/chat
@@ -68,6 +69,12 @@ public class ChatController {
         }
         if (content.length() > 1000) {
             content = content.substring(0, 1000);
+        }
+        if (profanityFilter.isEnabled()) {
+            if (profanityFilter.shouldReject() && profanityFilter.containsProfanity(content)) {
+                throw new org.springframework.messaging.MessagingException("Message rejected by moderation policy");
+            }
+            content = profanityFilter.sanitize(content);
         }
         msg.setContent(content);
 

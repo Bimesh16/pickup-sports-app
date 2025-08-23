@@ -14,8 +14,17 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameAccessServiceImpl implements GameAccessService {
 
     private final GameRepository gameRepository;
+    private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
 
-    private static final long TTL_SECONDS = 30;
+    @org.springframework.beans.factory.annotation.Value("${app.games.access.cache-ttl-seconds:30}")
+    private long ttlSeconds = 30;
+
+    @jakarta.annotation.PostConstruct
+    void initMetrics() {
+        io.micrometer.core.instrument.Gauge.builder("game.access.cache.size", cache, Map::size)
+                .description("Entries in the game access cache")
+                .register(meterRegistry);
+    }
 
     private static final class Entry {
         final boolean allowed;
@@ -35,8 +44,10 @@ public class GameAccessServiceImpl implements GameAccessService {
 
         Entry e = cache.get(key);
         if (e != null && e.expiresAtEpochSec > now) {
+            meterRegistry.counter("game.access.cache", "result", "hit").increment();
             return e.allowed;
         }
+        meterRegistry.counter("game.access.cache", "result", "miss").increment();
 
         // Fetch game with participants and creator eagerly
         var gameOpt = gameRepository.findWithParticipantsById(gameId);
@@ -49,7 +60,23 @@ public class GameAccessServiceImpl implements GameAccessService {
                     .anyMatch(u -> username.equals(u.getUsername()));
         }).orElse(false);
 
-        cache.put(key, new Entry(allowed, now + TTL_SECONDS));
+        long ttl = (ttlSeconds <= 0 ? 30 : ttlSeconds);
+        cache.put(key, new Entry(allowed, now + ttl));
         return allowed;
+    }
+
+    @Override
+    public void invalidateForGame(Long gameId) {
+        if (gameId == null) return;
+        long start = System.nanoTime();
+        String prefix = String.valueOf(gameId) + "|";
+        int before = cache.size();
+        cache.keySet().removeIf(k -> k.startsWith(prefix));
+        int evicted = Math.max(0, before - cache.size());
+        try {
+            meterRegistry.counter("game.access.cache.evictions").increment(evicted);
+            meterRegistry.counter("game.access.cache.invalidate", "gameId", String.valueOf(gameId)).increment();
+            meterRegistry.timer("game.access.cache.invalidate.time").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
+        } catch (Exception ignore) {}
     }
 }
