@@ -9,6 +9,7 @@ import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.PlayerRatingRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,7 @@ public class RatingService {
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
 
+    @Timed(value = "ratings.rate", description = "Time to rate a user")
     @Transactional
     public RatingDTO rateUser(String raterUsername, RateUserRequest req) {
         if (req.ratedUserId() == null || req.gameId() == null) {
@@ -97,6 +99,7 @@ public class RatingService {
         );
     }
 
+    @Timed(value = "ratings.summary", description = "Time to compute user rating summary")
     @Transactional(readOnly = true)
     public UserRatingSummaryDTO getSummary(Long userId) {
         Double avg = ratingRepository.computeAverageForRated(userId);
@@ -104,6 +107,7 @@ public class RatingService {
         return new UserRatingSummaryDTO(userId, avg == null ? 0.0 : round1(avg), cnt == null ? 0 : cnt);
     }
 
+    @Timed(value = "ratings.recent", description = "Time to fetch recent ratings")
     @Transactional(readOnly = true)
     public List<RatingDTO> getRecentRatings(Long userId, int limit) {
         int size = limit <= 0 ? 1 : limit;

@@ -28,7 +28,7 @@ public class SearchController {
     private final ApiMapper mapper;
 
     @GetMapping("/games")
-    public Page<GameSummaryDTO> searchGames(
+    public org.springframework.http.ResponseEntity<Page<GameSummaryDTO>> searchGames(
             @RequestParam(required = false) String sport,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String skillLevel,
@@ -39,22 +39,59 @@ public class SearchController {
             @RequestParam(required = false) Double lat,
             @RequestParam(required = false) Double lng,
             @RequestParam(required = false, defaultValue = "10.0") Double radiusKm,
-            @PageableDefault(size = 20) Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable,
+            jakarta.servlet.http.HttpServletRequest request,
+            @org.springframework.web.bind.annotation.RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSince
     ) {
-        // Simplified - use existing search method
-        Page<Game> games = gameRepository.search(sport, location, fromDate, toDate, skillLevel, pageable);
-        return games.map(mapper::toGameSummaryDTO);
+        // Normalize and validate filters
+        String nsport = normalize(sport);
+        String nloc = normalize(location);
+        validateTimeRange(fromDate, toDate);
+
+        Page<Game> games = gameRepository.search(nsport, nloc, fromDate, toDate, skillLevel, pageable);
+        Page<GameSummaryDTO> body = games.map(mapper::toGameSummaryDTO);
+
+        // Compute Last-Modified from entities (max of updatedAt/createdAt/time)
+        long lastMod = games.getContent().stream()
+                .mapToLong(SearchController::lastModifiedEpochMilli)
+                .max()
+                .orElse(System.currentTimeMillis());
+
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        addPaginationLinks(request, headers, games);
+        headers.add("X-Total-Count", String.valueOf(body.getTotalElements()));
+        headers.add("Cache-Control", "private, max-age=30");
+        headers.add("Last-Modified", httpDate(lastMod));
+
+        Long clientMillis = parseIfModifiedSince(ifModifiedSince);
+        if (clientMillis != null && lastMod <= clientMillis) {
+            return org.springframework.http.ResponseEntity.status(304).headers(headers).build();
+        }
+
+        return org.springframework.http.ResponseEntity.ok().headers(headers).body(body);
     }
 
     @GetMapping("/users")
-    public Page<UserDTO> searchUsers(
+    public org.springframework.http.ResponseEntity<Page<UserDTO>> searchUsers(
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String preferredSport,
             @RequestParam(required = false) String location,
-            @PageableDefault(size = 20) Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable,
+            jakarta.servlet.http.HttpServletRequest request
     ) {
-        Page<User> users = userRepository.search(preferredSport, location, username, pageable);
-        return users.map(mapper::toUserDTO);
+        // Normalize inputs
+        String nuser = normalize(username);
+        String nsport = normalize(preferredSport);
+        String nloc = normalize(location);
+
+        Page<User> users = userRepository.search(nsport, nloc, nuser, pageable);
+        Page<UserDTO> body = users.map(mapper::toUserDTO);
+
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        addPaginationLinks(request, headers, users);
+        headers.add("X-Total-Count", String.valueOf(body.getTotalElements()));
+        headers.add("Cache-Control", "private, max-age=30");
+        return org.springframework.http.ResponseEntity.ok().headers(headers).body(body);
     }
 
     @GetMapping("/filters")
@@ -67,6 +104,82 @@ public class SearchController {
                 locations.stream().sorted().toList(),
                 List.of("Beginner", "Intermediate", "Advanced", "Pro")
         );
+    }
+
+    // ===========================
+    // Private helper methods
+    // ===========================
+    private static String normalize(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    private static void validateTimeRange(OffsetDateTime from, OffsetDateTime to) {
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "fromDate must be <= toDate");
+        }
+    }
+
+    private static void addPaginationLinks(
+            jakarta.servlet.http.HttpServletRequest request,
+            org.springframework.http.HttpHeaders headers,
+            Page<?> page
+    ) {
+        if (page == null) return;
+        org.springframework.web.util.UriComponentsBuilder base =
+                org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromRequest(request);
+
+        int number = page.getNumber();
+        int size = page.getSize();
+        int totalPages = page.getTotalPages();
+
+        java.util.List<String> links = new java.util.ArrayList<>();
+        links.add(buildLink(base, number, size, "self"));
+        if (number > 0) {
+            links.add(buildLink(base, 0, size, "first"));
+            links.add(buildLink(base, number - 1, size, "prev"));
+        }
+        if (number + 1 < totalPages) {
+            links.add(buildLink(base, number + 1, size, "next"));
+            links.add(buildLink(base, totalPages - 1, size, "last"));
+        }
+        if (!links.isEmpty()) {
+            headers.add(org.springframework.http.HttpHeaders.LINK, String.join(", ", links));
+        }
+    }
+
+    private static String buildLink(org.springframework.web.util.UriComponentsBuilder base, int page, int size, String rel) {
+        String url = base.replaceQueryParam("page", page)
+                .replaceQueryParam("size", size)
+                .build(true)
+                .toUriString();
+        return "<" + url + ">; rel=\"" + rel + "\"";
+    }
+
+    private static long lastModifiedEpochMilli(Game g) {
+        if (g.getUpdatedAt() != null) return g.getUpdatedAt().toInstant().toEpochMilli();
+        if (g.getCreatedAt() != null) return g.getCreatedAt().toInstant().toEpochMilli();
+        if (g.getTime() != null) return g.getTime().toEpochMilli();
+        return System.currentTimeMillis();
+    }
+
+    private static String httpDate(long epochMillis) {
+        return java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
+                .withZone(java.time.ZoneOffset.UTC)
+                .format(java.time.Instant.ofEpochMilli(epochMillis));
+    }
+
+    private static Long parseIfModifiedSince(String header) {
+        if (header == null || header.isBlank()) return null;
+        try {
+            var zdt = java.time.ZonedDateTime.parse(header.trim(),
+                    java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME);
+            return zdt.toInstant().toEpochMilli();
+        } catch (Exception ignore) {
+            return null;
+        }
     }
 
     public record SearchFiltersResponse(

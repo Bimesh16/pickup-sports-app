@@ -5,6 +5,7 @@ import com.bmessi.pickupsportsapp.dto.CreateGameRequest;
 import com.bmessi.pickupsportsapp.dto.GameDetailsDTO;
 import com.bmessi.pickupsportsapp.dto.GameSummaryDTO;
 import com.bmessi.pickupsportsapp.dto.UpdateGameRequest;
+import com.bmessi.pickupsportsapp.dto.UserDTO;
 import com.bmessi.pickupsportsapp.entity.Game;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.mapper.ApiMapper;
@@ -12,7 +13,7 @@ import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.service.NotificationService;
 import com.bmessi.pickupsportsapp.service.SportResolverService;
-import com.bmessi.pickupsportsapp.service.XaiRecommendationService;
+import com.bmessi.pickupsportsapp.service.AiRecommendationResilientService;
 import com.bmessi.pickupsportsapp.service.chat.ChatService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
@@ -21,11 +22,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -36,7 +42,9 @@ import java.net.URI;
 import java.security.Principal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * REST Controller for game management operations.
@@ -50,19 +58,22 @@ public class GameController {
 
     // Constants
     private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 50;
     private static final int DEFAULT_NEARBY_RADIUS_KM = 5;
     private static final String CACHE_CONTROL_HEADER = "private, max-age=30";
     private static final String DEFAULT_RECOMMENDATION_SPORT = "Soccer";
     private static final String DEFAULT_RECOMMENDATION_LOCATION = "Park A";
+    private static final Set<String> ALLOWED_SKILL_LEVELS = Set.of("Beginner", "Intermediate", "Advanced", "Pro");
 
     // Dependencies
     private final GameRepository gameRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
-    private final XaiRecommendationService xaiRecommendationService;
+    private final AiRecommendationResilientService xaiRecommendationService;
     private final ApiMapper mapper;
     private final ChatService chatService;
     private final SportResolverService sportResolver;
+    private final com.bmessi.pickupsportsapp.service.IdempotencyService idempotencyService;
 
     // Configuration properties
     @Value("${app.games.default-recommendation-sport:Soccer}")
@@ -70,6 +81,11 @@ public class GameController {
 
     @Value("${app.games.default-recommendation-location:Park A}")
     private String defaultRecommendationLocation;
+
+    // Enforce preconditions for PUT/PATCH/DELETE; can be relaxed in non-prod
+    @Value("${app.http.allow-unsafe-write:false}")
+    private boolean allowUnsafeWrite;
+
 
     // ================================================================================
     // Chat Endpoints
@@ -113,7 +129,7 @@ public class GameController {
      * Retrieves a paginated list of games with optional filtering.
      */
     @GetMapping
-    public Page<GameSummaryDTO> getGames(
+    public ResponseEntity<Page<GameSummaryDTO>> getGames(
             @RequestParam(required = false) String sport,
             @RequestParam(required = false) String location,
             @RequestParam(required = false)
@@ -121,12 +137,113 @@ public class GameController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toTime,
             @RequestParam(required = false) String skillLevel,
-            @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "time") Pageable pageable
+            @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lon,
+            @RequestParam(required = false) Double radiusKm,
+            @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "time") Pageable pageable,
+            HttpServletRequest request,
+            @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSinceList
     ) {
-        Page<Game> page = hasAnyFilter(sport, location, fromTime, toTime, skillLevel)
-                ? gameRepository.search(sport, location, fromTime, toTime, skillLevel, pageable)
-                : gameRepository.findAll(pageable);
-        return page.map(mapper::toGameSummaryDTO);
+        Pageable effective = sanitizePageable(pageable);
+        String normalizedSkill = canonicalizeSkill(skillLevel);
+        String nsport = normalizeFilter(sport);
+        String nloc = normalizeFilter(location);
+        validateTimeRange(fromTime, toTime);
+        validateGeoParams(lat, lon, radiusKm);
+
+        // Branch: geo-filtered list (in-memory pagination)
+        if (lat != null && lon != null && radiusKm != null) {
+            validateRadius(radiusKm);
+            List<Game> all = gameRepository.findByLocationWithinRadius(lat, lon, radiusKm);
+
+            // Apply filters
+            all = filterGames(all, nsport, nloc, normalizedSkill, fromTime, toTime);
+
+            // Precompute distances (km) for sort and DTO enrichment
+            java.util.Map<Long, Double> distanceById = new java.util.HashMap<>(all.size());
+            for (Game g : all) {
+                Double d = (g.getLatitude() != null && g.getLongitude() != null)
+                        ? distanceKm(lat, lon, g.getLatitude(), g.getLongitude())
+                        : Double.POSITIVE_INFINITY;
+                distanceById.put(g.getId(), d);
+            }
+
+            // Sort: use whitelisted comparator or default to nearest-first
+            Sort sort = effective.getSort();
+            Comparator<Game> cmp = buildGameComparator(sort, distanceById);
+            if (cmp != null) {
+                all = all.stream().sorted(cmp).toList();
+            } else {
+                // Default to nearest-first when geo filter used and no explicit sort
+                all = all.stream()
+                        .sorted(Comparator.comparing(g -> distanceById.getOrDefault(g.getId(), Double.POSITIVE_INFINITY)))
+                        .toList();
+            }
+
+            Page<Game> page = pageSlice(all, effective);
+
+            // Build DTOs with distanceKm
+            java.util.List<GameSummaryDTO> dtos = page.getContent().stream()
+                    .map(g -> new GameSummaryDTO(
+                            g.getId(),
+                            g.getSport(),
+                            g.getLocation(),
+                            g.getTime() != null ? g.getTime().atOffset(java.time.ZoneOffset.UTC) : null,
+                            g.getSkillLevel(),
+                            g.getLatitude(),
+                            g.getLongitude(),
+                            distanceById.getOrDefault(g.getId(), Double.POSITIVE_INFINITY).isInfinite() ? null
+                                    : roundDistance(distanceById.get(g.getId()))
+                    ))
+                    .toList();
+
+            Page<GameSummaryDTO> body = new org.springframework.data.domain.PageImpl<>(dtos, effective, all.size());
+
+            // Compute Last-Modified from page (max of updatedAt/createdAt/time)
+            long lastMod = page.getContent().stream()
+                    .mapToLong(GameController::lastModifiedEpochMilli)
+                    .max()
+                    .orElse(System.currentTimeMillis());
+
+            HttpHeaders headers = new HttpHeaders();
+            addPaginationLinks(request, headers, page);
+            headers.add("X-Total-Count", String.valueOf(body.getTotalElements()));
+            headers.add("Cache-Control", CACHE_CONTROL_HEADER);
+            headers.add("Last-Modified", httpDate(lastMod));
+            headers.add("X-Distance-Unit", "km");
+
+            Long clientMillis = parseIfModifiedSince(ifModifiedSinceList);
+            if (clientMillis != null && lastMod <= clientMillis) {
+                return ResponseEntity.status(HttpStatus.NOT_MODIFIED).headers(headers).build();
+            }
+
+            return ResponseEntity.ok().headers(headers).body(body);
+        }
+
+        // Default DB-backed paging
+        Page<Game> page = hasAnyFilter(nsport, nloc, fromTime, toTime, normalizedSkill)
+                ? gameRepository.search(nsport, nloc, fromTime, toTime, normalizedSkill, effective)
+                : gameRepository.findAll(effective);
+
+        Page<GameSummaryDTO> body = page.map(mapper::toGameSummaryDTO);
+
+        long lastMod = page.getContent().stream()
+                .mapToLong(GameController::lastModifiedEpochMilli)
+                .max()
+                .orElse(System.currentTimeMillis());
+
+        HttpHeaders headers = new HttpHeaders();
+        addPaginationLinks(request, headers, page);
+        headers.add("X-Total-Count", String.valueOf(body.getTotalElements()));
+        headers.add("Cache-Control", CACHE_CONTROL_HEADER);
+        headers.add("Last-Modified", httpDate(lastMod));
+
+        Long clientMillis = parseIfModifiedSince(ifModifiedSinceList);
+        if (clientMillis != null && lastMod <= clientMillis) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).headers(headers).build();
+        }
+
+        return ResponseEntity.ok().headers(headers).body(body);
     }
 
     /**
@@ -135,11 +252,61 @@ public class GameController {
     @GetMapping("/{id}")
     public ResponseEntity<GameDetailsDTO> getGame(
             @PathVariable Long id,
-            @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch
+            @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
+            @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSince
     ) {
         return gameRepository.findWithParticipantsById(id)
-                .map(game -> buildGameResponse(game, ifNoneMatch))
+                .map(game -> buildGameResponse(game, ifNoneMatch, ifModifiedSince))
                 .orElseGet(this::gameNotFound);
+    }
+
+    /**
+     * Retrieves participants for a game as a compact list.
+     * Adds ETag/Cache-Control/Last-Modified headers derived from the game entity.
+     */
+    @GetMapping("/{id}/participants")
+    public ResponseEntity<List<UserDTO>> getParticipants(@PathVariable Long id) {
+        var opt = gameRepository.findWithParticipantsById(id);
+        if (opt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Game game = opt.get();
+
+        // Map participants to DTOs and sort by username for stable output
+        List<UserDTO> users = game.getParticipants().stream()
+                .sorted(java.util.Comparator.comparing(User::getUsername, java.util.Comparator.nullsLast(String::compareToIgnoreCase)))
+                .map(mapper::toUserDTO)
+                .toList();
+
+        String etag = toEtag(game.getVersion());
+        long lastMod = lastModifiedEpochMilli(game);
+
+        return ResponseEntity.ok()
+                .eTag(etag)
+                .header("Cache-Control", CACHE_CONTROL_HEADER)
+                .header("Last-Modified", httpDate(lastMod))
+                .body(users);
+    }
+
+    /**
+     * HEAD for a specific game: returns ETag and Last-Modified without a body.
+     * Supports 200/304/404 like GET, but with no payload.
+     */
+    @RequestMapping(path = "/{id}", method = RequestMethod.HEAD)
+    public ResponseEntity<Void> headGame(
+            @PathVariable Long id,
+            @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
+            @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSince
+    ) {
+        var opt = gameRepository.findWithParticipantsById(id);
+        if (opt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        var game = opt.get();
+        ResponseEntity<GameDetailsDTO> full = buildGameResponse(game, ifNoneMatch, ifModifiedSince);
+        return ResponseEntity.status(full.getStatusCodeValue())
+                .headers(full.getHeaders())
+                .build();
     }
 
     /**
@@ -150,15 +317,57 @@ public class GameController {
     @Transactional
     public ResponseEntity<GameDetailsDTO> createGame(
             @Valid @RequestBody CreateGameRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @RequestHeader(value = "Prefer", required = false) String prefer,
             Principal principal
     ) {
         User owner = findAuthenticatedUser(principal);
         validateCoordinates(request.latitude(), request.longitude());
+        validateGameTime(request.time());
+
+        // If client provided an idempotency key, return the previous result if exists
+        String idem = (idempotencyKey == null || idempotencyKey.isBlank()) ? null : idempotencyKey.trim();
+        if (idem != null && idem.length() > 128) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Idempotency-Key too long");
+        }
+        if (idem != null) {
+            var existingId = idempotencyService.get(owner.getUsername(), idem);
+            if (existingId.isPresent()) {
+                Long gameId = existingId.get();
+                Game existing = gameRepository.findById(gameId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.GONE, "Resource expired"));
+                GameDetailsDTO dto = mapper.toGameDetailsDTO(existing);
+                // Honor Prefer: return=minimal on replay
+                if (prefer != null && prefer.toLowerCase().contains("return=minimal")) {
+                    return ResponseEntity.ok()
+                            .header("Preference-Applied", "return=minimal")
+                            .build();
+                }
+                // Subsequent replay returns 200 OK with the canonical resource
+                return ResponseEntity.ok(dto);
+            }
+        }
 
         String canonicalSport = sportResolver.resolveOrCreateCanonical(request.sport());
+        String canonicalSkill = canonicalizeSkill(request.skillLevel());
 
-        Game game = buildNewGame(request, owner, canonicalSport);
+        Game game = Game.builder()
+                .sport(canonicalSport)
+                .location(request.location())
+                .time(request.time().toInstant())
+                .skillLevel(canonicalSkill)
+                .latitude(request.latitude())
+                .longitude(request.longitude())
+                .user(owner)
+                .createdAt(OffsetDateTime.now())
+                .updatedAt(OffsetDateTime.now())
+                .build();
         Game saved = gameRepository.save(game);
+
+        // Store idempotency mapping for future replays
+        if (idem != null) {
+            idempotencyService.put(owner.getUsername(), idem, saved.getId());
+        }
 
         notificationService.createGameNotification(
                 owner.getUsername(),
@@ -168,8 +377,18 @@ public class GameController {
                 "created"
         );
 
-        return ResponseEntity.created(URI.create("/games/" + saved.getId()))
-                .body(mapper.toGameDetailsDTO(saved));
+        String etag = toEtag(saved.getVersion());
+        long lastMod = lastModifiedEpochMilli(saved);
+        var builder = ResponseEntity.created(URI.create("/games/" + saved.getId()))
+                .eTag(etag)
+                .header("Cache-Control", CACHE_CONTROL_HEADER)
+                .header("Last-Modified", httpDate(lastMod));
+        if (prefer != null && prefer.toLowerCase().contains("return=minimal")) {
+            return builder
+                    .header("Preference-Applied", "return=minimal")
+                    .body(null);
+        }
+        return builder.body(mapper.toGameDetailsDTO(saved));
     }
 
     /**
@@ -182,14 +401,22 @@ public class GameController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateGameRequest request,
             @RequestHeader(value = "If-Match", required = false) String ifMatch,
+            @RequestHeader(value = "If-Unmodified-Since", required = false) String ifUnmodifiedSince,
             Principal principal
     ) {
         UserGamePair pair = validateUserAndGame(id, principal);
         Game game = pair.game();
         User currentUser = pair.user();
 
+        // Require at least one precondition header unless explicitly allowed
+        enforcePreconditionsPresent(ifMatch, ifUnmodifiedSince);
+
         enforceIfMatch(ifMatch, game.getVersion());
         validateGameOwnership(game, currentUser);
+
+        if (request.time() != null) {
+            validateGameTime(request.time());
+        }
 
         applyUpdates(game, request);
         game.setUpdatedAt(OffsetDateTime.now());
@@ -213,10 +440,11 @@ public class GameController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateGameRequest request,
             @RequestHeader(value = "If-Match", required = false) String ifMatch,
+            @RequestHeader(value = "If-Unmodified-Since", required = false) String ifUnmodifiedSince,
             Principal principal
     ) {
         // PATCH and PUT have identical logic in this implementation
-        return updateGame(id, request, ifMatch, principal);
+        return updateGame(id, request, ifMatch, ifUnmodifiedSince, principal);
     }
 
     /**
@@ -225,10 +453,18 @@ public class GameController {
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public ResponseEntity<Void> deleteGame(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<Void> deleteGame(@PathVariable Long id,
+                                           @RequestHeader(value = "If-Match", required = false) String ifMatch,
+                                           @RequestHeader(value = "If-Unmodified-Since", required = false) String ifUnmodifiedSince,
+                                           Principal principal) {
         UserGamePair pair = validateUserAndGame(id, principal);
         Game game = pair.game();
         User currentUser = pair.user();
+
+        // Prevent deleting a stale version (optimistic concurrency for deletes)
+        enforcePreconditionsPresent(ifMatch, ifUnmodifiedSince);
+        enforceIfMatch(ifMatch, game.getVersion());
+        enforceIfUnmodifiedSince(ifUnmodifiedSince, lastModifiedEpochMilli(game));
 
         validateGameOwnership(game, currentUser);
 
@@ -264,11 +500,16 @@ public class GameController {
             @DecimalMin(value = "-180.0", message = "Longitude must be >= -180")
             @DecimalMax(value = "180.0", message = "Longitude must be <= 180")
             double lon,
-            @RequestParam(defaultValue = "5.0") double radiusKm
+            @RequestParam(defaultValue = "5.0") double radiusKm,
+            @RequestParam(defaultValue = "50") int limit
     ) {
         validateRadius(radiusKm);
+        int effLimit = clamp(limit, 1, MAX_PAGE_SIZE, 50);
         List<Game> games = gameRepository.findByLocationWithinRadius(lat, lon, radiusKm);
-        return games.stream().map(mapper::toGameSummaryDTO).toList();
+        return games.stream()
+                .limit(effLimit)
+                .map(mapper::toGameSummaryDTO)
+                .toList();
     }
 
     /**
@@ -276,18 +517,48 @@ public class GameController {
      */
     @GetMapping("/recommend")
     @PreAuthorize("isAuthenticated()")
-    public Page<GameSummaryDTO> recommendGames(
+    public ResponseEntity<Page<GameSummaryDTO>> recommendGames(
             @RequestParam(required = false) String preferredSport,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String skillLevel,
-            @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "time") Pageable pageable
+            @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "time") Pageable pageable,
+            HttpServletRequest request,
+            @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSinceList
     ) {
         String sport = getValueOrDefault(preferredSport, defaultRecommendationSport);
         String loc = getValueOrDefault(location, defaultRecommendationLocation);
+        String normalizedSkill = canonicalizeSkill(skillLevel);
 
-        return xaiRecommendationService.getRecommendations(sport, loc, skillLevel, pageable)
-                .map(mapper::toGameSummaryDTO);
+        Pageable effective = sanitizePageable(pageable);
+
+        Page<GameSummaryDTO> body = xaiRecommendationService
+                .recommend(sport, loc, normalizedSkill, effective)
+                .join();
+
+        // Compute Last-Modified from DTO times as a proxy (max time)
+        long lastMod = body.getContent().stream()
+                .filter(dto -> dto.time() != null)
+                .mapToLong(dto -> dto.time().toInstant().toEpochMilli())
+                .max()
+                .orElse(System.currentTimeMillis());
+
+        HttpHeaders headers = new HttpHeaders();
+        // Use synthetic page meta based on total elements and pageable for Link headers
+        addPaginationLinks(request, headers, new org.springframework.data.domain.PageImpl<>(
+                java.util.Collections.emptyList(), effective, body.getTotalElements()
+        ));
+        headers.add("X-Total-Count", String.valueOf(body.getTotalElements()));
+        headers.add("Cache-Control", CACHE_CONTROL_HEADER);
+        headers.add("Last-Modified", httpDate(lastMod));
+
+        Long clientMillis = parseIfModifiedSince(ifModifiedSinceList);
+        if (clientMillis != null && lastMod <= clientMillis) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).headers(headers).build();
+        }
+
+        return ResponseEntity.ok().headers(headers).body(body);
     }
+
 
     // ================================================================================
     // User Game Management Endpoints
@@ -320,14 +591,21 @@ public class GameController {
         User user = pair.user();
 
         boolean alreadyParticipating = gameRepository.existsParticipant(game.getId(), user.getId());
+        Game saved = game;
         if (!alreadyParticipating) {
             game.addParticipant(user);
-            gameRepository.save(game);
+            saved = gameRepository.save(game);
 
             notifyGameCreatorOfParticipation(game, user, "joined");
         }
 
-        return ResponseEntity.ok(mapper.toGameDetailsDTO(game));
+        String etag = toEtag(saved.getVersion());
+        long lastMod = lastModifiedEpochMilli(saved);
+        return ResponseEntity.ok()
+                .eTag(etag)
+                .header("Cache-Control", CACHE_CONTROL_HEADER)
+                .header("Last-Modified", httpDate(lastMod))
+                .body(mapper.toGameDetailsDTO(saved));
     }
 
     /**
@@ -348,16 +626,178 @@ public class GameController {
         }
 
         game.removeParticipant(user);
-        gameRepository.save(game);
+        Game saved = gameRepository.save(game);
 
         notifyGameCreatorOfParticipation(game, user, "left");
 
-        return ResponseEntity.ok(mapper.toGameDetailsDTO(game));
+        String etag = toEtag(saved.getVersion());
+        long lastMod = lastModifiedEpochMilli(saved);
+        return ResponseEntity.ok()
+                .eTag(etag)
+                .header("Cache-Control", CACHE_CONTROL_HEADER)
+                .header("Last-Modified", httpDate(lastMod))
+                .body(mapper.toGameDetailsDTO(saved));
     }
 
     // ================================================================================
     // Private Helper Methods
     // ================================================================================
+
+    /**
+     * Clamp page size and whitelist sort properties to prevent heavy or invalid queries.
+     */
+    private Pageable sanitizePageable(Pageable pageable) {
+        if (pageable == null) {
+            return PageRequest.of(0, DEFAULT_PAGE_SIZE, Sort.by("time"));
+        }
+        int size = pageable.getPageSize() <= 0 ? DEFAULT_PAGE_SIZE
+                : Math.min(pageable.getPageSize(), MAX_PAGE_SIZE);
+
+        // Whitelist allowed sort properties; default to 400 if any is invalid
+        Set<String> allowed = Set.of("time", "sport", "location", "createdAt", "updatedAt", "distance");
+        boolean invalidSort = pageable.getSort().stream()
+                .map(Sort.Order::getProperty)
+                .anyMatch(p -> !allowed.contains(p));
+
+        if (invalidSort) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported sort property");
+        }
+
+        Sort sort = pageable.getSort();
+        if (sort.isUnsorted()) {
+            sort = Sort.by("time");
+        }
+
+        return PageRequest.of(Math.max(0, pageable.getPageNumber()), size, sort);
+    }
+
+    /**
+     * Clamp integer values to [min, max], using a default if requested is invalid.
+     */
+    private int clamp(int requested, int min, int max, int dflt) {
+        if (requested <= 0) return dflt;
+        return Math.max(min, Math.min(max, requested));
+    }
+
+    /**
+     * Validate and normalize skill level (case-insensitive) to a canonical display value.
+     * Returns null if input is null/blank. Throws 400 for unsupported values.
+     */
+    private String canonicalizeSkill(String skillLevel) {
+        if (skillLevel == null || skillLevel.isBlank()) {
+            return null;
+        }
+        String trimmed = skillLevel.trim();
+        String lower = trimmed.toLowerCase();
+        String canonical = switch (lower) {
+            case "beginner" -> "Beginner";
+            case "intermediate" -> "Intermediate";
+            case "advanced" -> "Advanced";
+            case "pro", "professional" -> "Pro";
+            default -> null;
+        };
+        if (canonical == null || !ALLOWED_SKILL_LEVELS.contains(canonical)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported skillLevel");
+        }
+        return canonical;
+    }
+
+    /**
+     * Normalize free-text filters (trim and convert blank to null).
+     */
+    private String normalizeFilter(String value) {
+        if (value == null) return null;
+        String t = value.trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    /**
+     * Validate that fromTime is not after toTime when both provided.
+     */
+    private void validateTimeRange(OffsetDateTime fromTime, OffsetDateTime toTime) {
+        if (fromTime != null && toTime != null && fromTime.isAfter(toTime)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "fromTime must be <= toTime");
+        }
+    }
+
+    /**
+     * Validate that a game time is not in the past (5-minute grace for clock skew).
+     */
+    private void validateGameTime(OffsetDateTime time) {
+        if (time == null) return;
+        OffsetDateTime threshold = OffsetDateTime.now().minusMinutes(5);
+        if (time.isBefore(threshold)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "time must be in the future");
+        }
+    }
+
+    /**
+     * Validate geo params: either all of (lat, lon, radiusKm) are provided, or none.
+     */
+    private void validateGeoParams(Double lat, Double lon, Double radiusKm) {
+        int count = (lat != null ? 1 : 0) + (lon != null ? 1 : 0) + (radiusKm != null ? 1 : 0);
+        if (count != 0 && count != 3) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "lat, lon and radiusKm must be provided together");
+        }
+        // Basic range guard if provided
+        if (lat != null && (lat < -90.0 || lat > 90.0)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Latitude must be between -90 and 90");
+        }
+        if (lon != null && (lon < -180.0 || lon > 180.0)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Longitude must be between -180 and 180");
+        }
+    }
+
+    /**
+     * Apply server-side filters to an in-memory list for the geo branch.
+     */
+    private List<Game> filterGames(List<Game> input,
+                                   String nsport,
+                                   String nloc,
+                                   String normalizedSkill,
+                                   OffsetDateTime fromTime,
+                                   OffsetDateTime toTime) {
+        return input.stream()
+                .filter(g -> nsport == null || (g.getSport() != null && g.getSport().equalsIgnoreCase(nsport)))
+                .filter(g -> nloc == null || (g.getLocation() != null && g.getLocation().toLowerCase().contains(nloc.toLowerCase())))
+                .filter(g -> normalizedSkill == null || (g.getSkillLevel() != null && g.getSkillLevel().equalsIgnoreCase(normalizedSkill)))
+                .filter(g -> {
+                    if (fromTime != null) {
+                        var t = g.getTime();
+                        if (t == null || t.isBefore(fromTime.toInstant())) return false;
+                    }
+                    if (toTime != null) {
+                        var t = g.getTime();
+                        if (t == null || t.isAfter(toTime.toInstant())) return false;
+                    }
+                    return true;
+                })
+                .toList();
+    }
+
+    /**
+     * Build a comparator for a whitelisted sort property with id tie-breaker.
+     * Returns null if the sort is unsorted or not whitelisted.
+     */
+    private Comparator<Game> buildGameComparator(Sort sort, java.util.Map<Long, Double> distanceById) {
+        if (sort == null || sort.isUnsorted()) return null;
+        Sort.Order primary = sort.iterator().next();
+        Comparator<Game> cmp = switch (primary.getProperty()) {
+            case "time" -> Comparator.comparing(Game::getTime, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "sport" -> Comparator.comparing(Game::getSport, Comparator.nullsLast(String::compareToIgnoreCase));
+            case "location" -> Comparator.comparing(Game::getLocation, Comparator.nullsLast(String::compareToIgnoreCase));
+            case "createdAt" -> Comparator.comparing(Game::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "updatedAt" -> Comparator.comparing(Game::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "distance" -> Comparator.comparing(g -> distanceById.getOrDefault(g.getId(), Double.POSITIVE_INFINITY));
+            default -> null;
+        };
+        if (cmp == null) return null;
+        // Stable tie-breaker on id
+        cmp = cmp.thenComparing(Game::getId, Comparator.nullsLast(Comparator.naturalOrder()));
+        if (primary.isDescending()) cmp = cmp.reversed();
+        return cmp;
+    }
 
     /**
      * Validates that a user has access to a game's chat.
@@ -434,12 +874,22 @@ public class GameController {
     }
 
     /**
-     * Builds the response for a game request with ETag support.
+     * Builds the response for a game request with ETag support (delegates to the overload with date header).
      */
     private ResponseEntity<GameDetailsDTO> buildGameResponse(Game game, String ifNoneMatch) {
+        return buildGameResponse(game, ifNoneMatch, null);
+    }
+
+    /**
+     * Builds the response for a game request with ETag and If-Modified-Since support.
+     * ETag check takes precedence; if not present or not matched, checks If-Modified-Since.
+     */
+    private ResponseEntity<GameDetailsDTO> buildGameResponse(Game game, String ifNoneMatch, String ifModifiedSince) {
         GameDetailsDTO dto = mapper.toGameDetailsDTO(game);
         String etag = toEtag(game.getVersion());
+        long lastModified = lastModifiedEpochMilli(game);
 
+        // 1) Strong/weak ETag handling
         if (ifNoneMatch != null && !ifNoneMatch.isBlank()) {
             String norm = normalizeIfMatch(ifNoneMatch);
             String current = String.valueOf(game.getVersion() == null ? 0L : game.getVersion());
@@ -447,15 +897,33 @@ public class GameController {
                 return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
                         .eTag(etag)
                         .header("Cache-Control", CACHE_CONTROL_HEADER)
-                        .header("Last-Modified", httpDate(lastModifiedEpochMilli(game)))
+                        .header("Last-Modified", httpDate(lastModified))
                         .build();
+            }
+        }
+
+        // 2) If-Modified-Since (RFC 7232); only if ETag did not short-circuit
+        if (ifModifiedSince != null && !ifModifiedSince.isBlank()) {
+            try {
+                var zdt = java.time.ZonedDateTime.parse(ifModifiedSince.trim(),
+                        java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME);
+                long clientMillis = zdt.toInstant().toEpochMilli();
+                if (lastModified <= clientMillis) {
+                    return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                            .eTag(etag)
+                            .header("Cache-Control", CACHE_CONTROL_HEADER)
+                            .header("Last-Modified", httpDate(lastModified))
+                            .build();
+                }
+            } catch (Exception ignore) {
+                // Invalid date header -> ignore and return the resource normally
             }
         }
 
         return ResponseEntity.ok()
                 .eTag(etag)
                 .header("Cache-Control", CACHE_CONTROL_HEADER)
-                .header("Last-Modified", httpDate(lastModifiedEpochMilli(game)))
+                .header("Last-Modified", httpDate(lastModified))
                 .body(dto);
     }
 
@@ -503,8 +971,7 @@ public class GameController {
         }
 
         if (request.skillLevel() != null) {
-            String s = request.skillLevel().trim();
-            game.setSkillLevel(s.isEmpty() ? null : s);
+            game.setSkillLevel(canonicalizeSkill(request.skillLevel()));
         }
 
         // Handle coordinates
@@ -613,6 +1080,42 @@ public class GameController {
     }
 
     /**
+     * Ensure at least one precondition header is present for unsafe writes.
+     * Returns 428 Precondition Required when both are missing (unless allowUnsafeWrite is true).
+     */
+    private void enforcePreconditionsPresent(String ifMatchHeader, String ifUnmodifiedSinceHeader) {
+        if (allowUnsafeWrite) return;
+        boolean noIfMatch = (ifMatchHeader == null || ifMatchHeader.isBlank());
+        boolean noIus = (ifUnmodifiedSinceHeader == null || ifUnmodifiedSinceHeader.isBlank());
+        if (noIfMatch && noIus) {
+            throw new ResponseStatusException(HttpStatus.PRECONDITION_REQUIRED, "Missing precondition header");
+        }
+    }
+
+    /**
+     * Enforces If-Unmodified-Since precondition (RFC 7232).
+     * Rejects (412) if the resource was modified after the provided date.
+     */
+    private static void enforceIfUnmodifiedSince(String ifUnmodifiedSinceHeader, long currentLastModifiedMillis) {
+        if (ifUnmodifiedSinceHeader == null || ifUnmodifiedSinceHeader.isBlank()) {
+            return;
+        }
+        try {
+            java.time.ZonedDateTime zdt = java.time.ZonedDateTime.parse(
+                    ifUnmodifiedSinceHeader.trim(),
+                    java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
+            );
+            long clientMillis = zdt.toInstant().toEpochMilli();
+            if (currentLastModifiedMillis > clientMillis) {
+                throw new ResponseStatusException(HttpStatus.PRECONDITION_FAILED,
+                        "Resource modified since provided date");
+            }
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid If-Unmodified-Since header");
+        }
+    }
+
+    /**
      * Gets last modified timestamp in epoch milliseconds.
      */
     private static long lastModifiedEpochMilli(Game g) {
@@ -629,6 +1132,91 @@ public class GameController {
                 java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
                         .withZone(java.time.ZoneOffset.UTC);
         return fmt.format(java.time.Instant.ofEpochMilli(epochMillis));
+    }
+
+    /**
+     * Great-circle distance in kilometers using the Haversine formula.
+     */
+    private static double distanceKm(double lat1, double lon1, double lat2, double lon2) {
+        final double R = 6371.0; // km
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    private static double roundDistance(double km) {
+        return Math.round(km * 10.0) / 10.0; // 1 decimal place
+    }
+
+    /**
+     * Parses an RFC 1123 date header, returning epoch millis or null on invalid/missing.
+     */
+    private static Long parseIfModifiedSince(String header) {
+        if (header == null || header.isBlank()) return null;
+        try {
+            var zdt = java.time.ZonedDateTime.parse(header.trim(),
+                    java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME);
+            return zdt.toInstant().toEpochMilli();
+        } catch (Exception ignore) {
+            return null;
+        }
+    }
+
+    /**
+     * Adds RFC 5988 Link headers (first, prev, next, last) based on the current request and Page metadata.
+     */
+    private void addPaginationLinks(HttpServletRequest request, HttpHeaders headers, Page<?> page) {
+        if (page == null) return;
+
+        UriComponentsBuilder base = ServletUriComponentsBuilder.fromRequest(request);
+
+        int number = page.getNumber();
+        int size = page.getSize();
+        long total = page.getTotalElements();
+        int totalPages = page.getTotalPages();
+
+        java.util.List<String> links = new java.util.ArrayList<>();
+
+        // self
+        links.add(buildLink(base, number, size, "self"));
+
+        // first/prev
+        if (number > 0) {
+            links.add(buildLink(base, 0, size, "first"));
+            links.add(buildLink(base, number - 1, size, "prev"));
+        }
+
+        // next/last
+        if (number + 1 < totalPages) {
+            links.add(buildLink(base, number + 1, size, "next"));
+            links.add(buildLink(base, totalPages - 1, size, "last"));
+        }
+
+        if (!links.isEmpty()) {
+            headers.add(HttpHeaders.LINK, String.join(", ", links));
+        }
+    }
+
+    private static String buildLink(UriComponentsBuilder base, int page, int size, String rel) {
+        String url = base.replaceQueryParam("page", page)
+                .replaceQueryParam("size", size)
+                .build(true)
+                .toUriString();
+        return "<" + url + ">; rel=\"" + rel + "\"";
+    }
+
+    /**
+     * Build a Page<T> from a full list and a pageable (in-memory pagination).
+     */
+    private static <T> Page<T> pageSlice(List<T> all, Pageable pageable) {
+        int start = Math.max(0, pageable.getPageNumber()) * pageable.getPageSize();
+        int end = Math.min(start + pageable.getPageSize(), all.size());
+        List<T> slice = (start >= all.size()) ? List.of() : all.subList(start, end);
+        return new org.springframework.data.domain.PageImpl<>(slice, pageable, all.size());
     }
 
     /**

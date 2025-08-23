@@ -26,6 +26,7 @@ public class Sport {
     @Column(name = "display_name", nullable = false)
     private String displayName;
 
+    @Builder.Default
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 

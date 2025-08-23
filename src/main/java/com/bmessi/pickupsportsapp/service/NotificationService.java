@@ -4,8 +4,11 @@ import com.bmessi.pickupsportsapp.entity.Notification;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.NotificationRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,7 +28,9 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
+    @Timed(value = "notifications.create", description = "Time to create a notification")
     @Transactional
+    @CacheEvict(cacheNames = "notifications-first-page", allEntries = true)
     public Notification createNotification(String username, String message) {
         String normalizedMessage = validateAndNormalizeMessage(message);
         User user = requireUserByUsername(username);
@@ -48,19 +53,25 @@ public class NotificationService {
     }
 
     // Legacy API preserved: returns all notifications unpaged
+    @Timed(value = "notifications.list.all", description = "Time to list all notifications (unpaged)")
     @Transactional(readOnly = true)
     public List<Notification> getUserNotifications(String username) {
         return getUserNotifications(username, false, Pageable.unpaged()).getContent();
     }
 
     // New pageable-aware API
+    @Timed(value = "notifications.list.page", description = "Time to list notifications (paged)")
     @Transactional(readOnly = true)
     public Page<Notification> getUserNotifications(String username, Pageable pageable) {
         return getUserNotifications(username, false, pageable);
     }
 
     // New pageable-aware API with unreadOnly flag (DB-side filtering)
+    @Timed(value = "notifications.list.page.flag", description = "Time to list notifications (paged/unreadOnly)")
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "notifications-first-page",
+            key = "T(java.util.Objects).hash(#username) + '|' + #unreadOnly + '|' + #pageable.pageSize + '|' + #pageable.sort.toString()",
+            condition = "#pageable != null && #pageable.pageNumber == 0")
     public Page<Notification> getUserNotifications(String username, boolean unreadOnly, Pageable pageable) {
         User user = requireUserByUsername(username);
         if (unreadOnly) {
@@ -69,7 +80,9 @@ public class NotificationService {
         return notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId(), pageable);
     }
 
+    @Timed(value = "notifications.read", description = "Time to mark one notification read")
     @Transactional
+    @CacheEvict(cacheNames = "notifications-first-page", allEntries = true)
     public Notification markAsReadForUser(Long id, String username) {
         User user = requireUserByUsername(username);
         Notification notification = notificationRepository.findByIdAndUser_Id(id, user.getId())
@@ -78,13 +91,17 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
+    @Timed(value = "notifications.read.all", description = "Time to mark all notifications read")
     @Transactional
+    @CacheEvict(cacheNames = "notifications-first-page", allEntries = true)
     public int markAllAsReadForUser(String username) {
         User user = requireUserByUsername(username);
         return notificationRepository.markAllAsRead(user.getId());
     }
 
+    @Timed(value = "notifications.delete", description = "Time to delete a notification")
     @Transactional
+    @CacheEvict(cacheNames = "notifications-first-page", allEntries = true)
     public void deleteNotificationForUser(Long id, String username) {
         User user = requireUserByUsername(username);
         int deleted = notificationRepository.deleteByIdAndUser_Id(id, user.getId());

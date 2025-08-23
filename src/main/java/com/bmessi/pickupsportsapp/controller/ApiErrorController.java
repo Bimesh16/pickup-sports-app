@@ -35,6 +35,15 @@ public class ApiErrorController implements ErrorController {
         body.put("status", status);
         body.put("timestamp", Instant.now().toEpochMilli());
 
-        return ResponseEntity.status(status).body(body);
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "no-store");
+        headers.add(org.springframework.http.HttpHeaders.PRAGMA, "no-cache");
+        // Propagate correlation id if set by filter
+        String cid = (String) request.getAttribute("X-Correlation-Id");
+        if (cid != null && !cid.isBlank()) {
+            headers.add("X-Correlation-Id", cid);
+        }
+
+        return ResponseEntity.status(status).headers(headers).body(body);
     }
 }

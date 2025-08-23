@@ -13,7 +13,13 @@ public class ReadStatusController {
     private final ReadReceiptService readReceiptService;
 
     @GetMapping("/read-status")
-    public ReadStatusDTO status(@PathVariable Long gameId, @RequestParam Long messageId) {
-        return readReceiptService.status(gameId, messageId);
+    public org.springframework.http.ResponseEntity<ReadStatusDTO> status(@PathVariable Long gameId, @RequestParam Long messageId) {
+        if (messageId == null || messageId <= 0) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "messageId must be positive");
+        }
+        ReadStatusDTO body = readReceiptService.status(gameId, messageId);
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add("Cache-Control", "no-store");
+        return org.springframework.http.ResponseEntity.ok().headers(headers).body(body);
     }
 }

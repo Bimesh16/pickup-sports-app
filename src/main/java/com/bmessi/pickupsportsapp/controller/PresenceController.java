@@ -4,6 +4,8 @@ import com.bmessi.pickupsportsapp.dto.PresenceEvent;
 import com.bmessi.pickupsportsapp.service.presence.PresenceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -48,13 +50,17 @@ public class PresenceController {
 
     /** HTTP snapshot for initial render/reconnect: GET /games/{gameId}/presence */
     @GetMapping(path = "/games/{gameId}/presence", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> snapshot(@PathVariable Long gameId) {
+    public ResponseEntity<Map<String, Object>> snapshot(@PathVariable Long gameId) {
         Set<String> users = presence.online(gameId);
         long count = users.size();
-        return Map.of(
+        Map<String, Object> body = Map.of(
                 "gameId", gameId,
                 "count", count,
                 "users", users
         );
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CACHE_CONTROL, "no-store");
+        headers.add("X-Total-Count", String.valueOf(count));
+        return ResponseEntity.ok().headers(headers).body(body);
     }
 }

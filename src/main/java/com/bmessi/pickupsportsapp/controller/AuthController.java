@@ -3,12 +3,14 @@ package com.bmessi.pickupsportsapp.controller;
 import com.bmessi.pickupsportsapp.dto.auth.RefreshRequest;
 import com.bmessi.pickupsportsapp.dto.auth.TokenPairResponse;
 import com.bmessi.pickupsportsapp.service.AuthService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -30,6 +32,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/login")
+    @RateLimiter(name = "auth")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
             log.debug("Login attempt for user: {}", request.username());
@@ -46,11 +49,14 @@ public class AuthController {
             TokenPairResponse tokens = authService.issueTokensForAuthenticatedUser(username);
 
             log.debug("Login successful");
-            return ResponseEntity.ok(tokens);
+            return ResponseEntity.ok()
+                    .headers(noStoreHeaders())
+                    .body(tokens);
 
         } catch (BadCredentialsException e) {
             log.debug("Login failed: {}", e.getMessage());
             return ResponseEntity.status(401)
+                    .headers(noStoreHeaders())
                     .body(Map.of(
                             "error", "invalid_grant",
                             "message", "Invalid username or password",
@@ -59,6 +65,7 @@ public class AuthController {
         } catch (Exception e) {
             log.error("Login error: {}", e.getMessage());
             return ResponseEntity.status(500)
+                    .headers(noStoreHeaders())
                     .body(Map.of(
                             "error", "internal_server_error",
                             "message", "Authentication failed",
@@ -68,6 +75,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @RateLimiter(name = "auth")
     public ResponseEntity<?> refresh(@Valid @RequestBody RefreshRequest request) {
         try {
             String tokenPreview = request.refreshToken() != null
@@ -77,11 +85,14 @@ public class AuthController {
 
             TokenPairResponse tokens = authService.refresh(request.refreshToken());
             log.debug("Token refresh successful");
-            return ResponseEntity.ok(tokens);
+            return ResponseEntity.ok()
+                    .headers(noStoreHeaders())
+                    .body(tokens);
 
         } catch (BadCredentialsException e) {
             log.debug("Token refresh failed: {}", e.getMessage());
             return ResponseEntity.status(401)
+                    .headers(noStoreHeaders())
                     .body(Map.of(
                             "error", "invalid_token",
                             "message", "Invalid or expired refresh token",
@@ -90,6 +101,7 @@ public class AuthController {
         } catch (Exception e) {
             log.error("Token refresh error: {}", e.getMessage(), e);
             return ResponseEntity.status(500)
+                    .headers(noStoreHeaders())
                     .body(Map.of(
                             "error", "internal_server_error",
                             "message", "Token refresh failed",
@@ -108,10 +120,19 @@ public class AuthController {
             log.error("Logout error: {}", e.getMessage());
             // Intentionally returning 200 for logout regardless
         }
-        return ResponseEntity.ok(Map.of(
-                "message", "Logout completed",
-                "timestamp", System.currentTimeMillis()
-        ));
+        return ResponseEntity.ok()
+                .headers(noStoreHeaders())
+                .body(Map.of(
+                        "message", "Logout completed",
+                        "timestamp", System.currentTimeMillis()
+                ));
+    }
+
+    private static HttpHeaders noStoreHeaders() {
+        HttpHeaders h = new HttpHeaders();
+        h.add(HttpHeaders.CACHE_CONTROL, "no-store");
+        h.add(HttpHeaders.PRAGMA, "no-cache");
+        return h;
     }
 
     // DTOs for the login endpoint

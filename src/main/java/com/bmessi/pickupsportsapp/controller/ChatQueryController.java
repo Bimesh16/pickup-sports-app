@@ -14,16 +14,24 @@ public class ChatQueryController {
     private final com.bmessi.pickupsportsapp.service.chat.ChatService chatService;
 
     @GetMapping("/latest")
-    public List<ChatMessageDTO> latest(
+    public org.springframework.http.ResponseEntity<List<ChatMessageDTO>> latest(
             @PathVariable Long gameId, @RequestParam(defaultValue = "50") int limit) {
-        return chatService.latest(gameId, limit);
+        int eff = Math.max(1, Math.min(limit, 200));
+        List<ChatMessageDTO> body = chatService.latest(gameId, eff);
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add("Cache-Control", "no-store");
+        return org.springframework.http.ResponseEntity.ok().headers(headers).body(body);
     }
 
     @GetMapping("/since")
-    public List<com.bmessi.pickupsportsapp.dto.ChatMessageDTO> since(
+    public org.springframework.http.ResponseEntity<java.util.List<com.bmessi.pickupsportsapp.dto.ChatMessageDTO>> since(
             @PathVariable Long gameId,
             @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.Instant after,
             @RequestParam(defaultValue = "100") int limit) {
-        return chatService.since(gameId, after, limit);
+        int eff = Math.max(1, Math.min(limit, 200));
+        java.util.List<com.bmessi.pickupsportsapp.dto.ChatMessageDTO> body = chatService.since(gameId, after, eff);
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add("Cache-Control", "no-store");
+        return org.springframework.http.ResponseEntity.ok().headers(headers).body(body);
     }
 }

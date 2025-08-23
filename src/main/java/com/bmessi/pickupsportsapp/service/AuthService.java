@@ -6,6 +6,7 @@ import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.RefreshTokenRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.security.JwtTokenService;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
@@ -38,6 +39,7 @@ public class AuthService {
 
     private static final SecureRandom RNG = new SecureRandom();
 
+    @Timed(value = "auth.issueTokens", description = "Time to issue tokens for an authenticated user")
     @Transactional
     public TokenPairResponse issueTokensForAuthenticatedUser(String username) {
         if (username == null || username.isBlank()) {
@@ -58,6 +60,7 @@ public class AuthService {
         return new TokenPairResponse(accessToken, refreshToken, "Bearer", accessTokenMinutes * 60L);
     }
 
+    @Timed(value = "auth.refresh", description = "Time to refresh tokens using refresh token")
     @Transactional
     public TokenPairResponse refresh(String refreshTokenValue) {
         if (refreshTokenValue == null || refreshTokenValue.isBlank()) {
@@ -88,6 +91,7 @@ public class AuthService {
         }
     }
 
+    @Timed(value = "auth.logout", description = "Time to revoke a refresh token on logout")
     @Transactional
     public void logout(String refreshTokenValue) {
         if (refreshTokenValue == null || refreshTokenValue.isBlank()) {
@@ -104,6 +108,7 @@ public class AuthService {
 
     // --- Internal helpers ---
 
+    @Timed(value = "auth.issueNewPair", description = "Time to issue a new access/refresh token pair")
     private TokenPairResponse issueNewPair(RefreshToken current) {
         User user = current.getUser();
 

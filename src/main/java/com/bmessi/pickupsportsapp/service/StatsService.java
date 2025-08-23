@@ -7,6 +7,7 @@ import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.PlayerRatingRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class StatsService {
     private final UserRepository userRepository;
     private final PlayerRatingRepository ratingRepository;
 
+    @Timed(value = "stats.games.overview", description = "Time to compute game overview stats")
     @Transactional(readOnly = true)
     public GameStatsDTO getGameStats(String sport, LocalDate fromDate, LocalDate toDate) {
         // Simplified version - you can enhance these with custom queries later
@@ -48,6 +50,7 @@ public class StatsService {
         );
     }
 
+    @Timed(value = "stats.users.me", description = "Time to compute stats for current user")
     @Transactional(readOnly = true)
     public UserStatsDTO getUserStats(String username) {
         User user = userRepository.findByUsername(username);
@@ -57,6 +60,7 @@ public class StatsService {
         return getUserStats(user.getId());
     }
 
+    @Timed(value = "stats.users.byId", description = "Time to compute stats for a user by id")
     @Transactional(readOnly = true)
     public UserStatsDTO getUserStats(Long userId) {
         User user = userRepository.findById(userId).orElse(null);
@@ -87,6 +91,7 @@ public class StatsService {
         );
     }
 
+    @Timed(value = "stats.dashboard", description = "Time to compute dashboard stats for current user")
     @Transactional(readOnly = true)
     public DashboardStatsDTO getDashboardStats(String username) {
         User user = userRepository.findByUsername(username);

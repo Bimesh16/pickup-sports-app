@@ -1,11 +1,14 @@
 package com.bmessi.pickupsportsapp.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -25,6 +28,29 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/app");
-        registry.enableSimpleBroker("/topic");
+        registry.setUserDestinationPrefix("/user");
+
+        var simpleBroker = registry.enableSimpleBroker("/topic");
+        simpleBroker.setHeartbeatValue(new long[]{10_000, 10_000}); // 10s send/receive
+        simpleBroker.setTaskScheduler(messageBrokerTaskScheduler());
+
+        registry.setPreservePublishOrder(true);
+    }
+
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
+        registration
+                .setMessageSizeLimit(128 * 1024)      // 128 KB
+                .setSendTimeLimit(10_000)             // 10 seconds
+                .setSendBufferSizeLimit(512 * 1024);  // 512 KB
+    }
+
+    @Bean
+    public ThreadPoolTaskScheduler messageBrokerTaskScheduler() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(2);
+        scheduler.setThreadNamePrefix("ws-broker-");
+        scheduler.initialize();
+        return scheduler;
     }
 }

@@ -4,6 +4,8 @@ import com.bmessi.pickupsportsapp.dto.GameStatsDTO;
 import com.bmessi.pickupsportsapp.dto.UserStatsDTO;
 import com.bmessi.pickupsportsapp.service.StatsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,29 +20,43 @@ public class StatsController {
     private final StatsService statsService;
 
     @GetMapping("/games/overview")
-    public GameStatsDTO getGameStats(
+    public ResponseEntity<GameStatsDTO> getGameStats(
             @RequestParam(required = false) String sport,
             @RequestParam(required = false) LocalDate fromDate,
             @RequestParam(required = false) LocalDate toDate
     ) {
-        return statsService.getGameStats(sport, fromDate, toDate);
+        GameStatsDTO body = statsService.getGameStats(sport, fromDate, toDate);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=60");
+        return ResponseEntity.ok().headers(headers).body(body);
     }
 
     @GetMapping("/users/me")
     @PreAuthorize("isAuthenticated()")
-    public UserStatsDTO getMyStats(Principal principal) {
-        return statsService.getUserStats(principal.getName());
+    public ResponseEntity<UserStatsDTO> getMyStats(Principal principal) {
+        UserStatsDTO body = statsService.getUserStats(principal.getName());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CACHE_CONTROL, "no-store");
+        headers.add(HttpHeaders.PRAGMA, "no-cache");
+        return ResponseEntity.ok().headers(headers).body(body);
     }
 
     @GetMapping("/users/{userId}")
-    public UserStatsDTO getUserStats(@PathVariable Long userId) {
-        return statsService.getUserStats(userId);
+    public ResponseEntity<UserStatsDTO> getUserStats(@PathVariable Long userId) {
+        UserStatsDTO body = statsService.getUserStats(userId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=30");
+        return ResponseEntity.ok().headers(headers).body(body);
     }
 
     @GetMapping("/dashboard")
     @PreAuthorize("isAuthenticated()")
-    public DashboardStatsDTO getDashboardStats(Principal principal) {
-        return statsService.getDashboardStats(principal.getName());
+    public ResponseEntity<DashboardStatsDTO> getDashboardStats(Principal principal) {
+        DashboardStatsDTO body = statsService.getDashboardStats(principal.getName());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CACHE_CONTROL, "no-store");
+        headers.add(HttpHeaders.PRAGMA, "no-cache");
+        return ResponseEntity.ok().headers(headers).body(body);
     }
 
     public record DashboardStatsDTO(

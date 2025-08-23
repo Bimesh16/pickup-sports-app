@@ -6,6 +6,8 @@ chat:
   ratelimit:
     enabled: true
     perSecond: 10
+  subscription:
+    max: 50
 
 spring:
   redis:
@@ -15,7 +17,6 @@ spring:
 
 xai:
   enabled: true
-
 security:
   jwt:
     secret: "this-is-my-local-dev-secret-change-me"
@@ -40,5 +41,35 @@ management:
 springdoc:
   swagger-ui.enabled: true
   api-docs.enabled: true
+
+# Existing settings remain above/below as-is
+
+resilience4j:
+  retry:
+    instances:
+      xai:
+        max-attempts: 3
+        wait-duration: 200ms
+      mail:
+        max-attempts: 3
+        wait-duration: 500ms
+  timelimiter:
+    instances:
+      xai:
+        timeout-duration: 2s
+  ratelimiter:
+    instances:
+      xai:
+        limit-for-period: 10
+        limit-refresh-period: 1s
+        timeout-duration: 0
+      auth:
+        limit-for-period: 5
+        limit-refresh-period: 10s
+        timeout-duration: 0
+      chat:
+        limit-for-period: 20
+        limit-refresh-period: 1s
+        timeout-duration: 0
 
 
