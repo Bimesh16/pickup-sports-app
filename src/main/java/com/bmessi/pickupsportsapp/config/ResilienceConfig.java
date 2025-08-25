@@ -38,6 +38,15 @@ public class ResilienceConfig {
                 .build();
     }
 
+    @Bean(name = "games")
+    public RateLimiterConfig gamesRateLimiterConfig() {
+        return RateLimiterConfig.custom()
+                .limitRefreshPeriod(Duration.ofSeconds(60))
+                .limitForPeriod(5)
+                .timeoutDuration(Duration.ofMillis(0))
+                .build();
+    }
+
     /**
      * Dedicated bounded executor for XAI async calls used by TimeLimiter/CircuitBreaker.
      */

@@ -15,6 +15,7 @@ import com.bmessi.pickupsportsapp.service.NotificationService;
 import com.bmessi.pickupsportsapp.service.SportResolverService;
 import com.bmessi.pickupsportsapp.service.AiRecommendationResilientService;
 import com.bmessi.pickupsportsapp.service.chat.ChatService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -75,6 +76,7 @@ public class GameController {
     private final SportResolverService sportResolver;
     private final com.bmessi.pickupsportsapp.service.IdempotencyService idempotencyService;
     private final com.bmessi.pickupsportsapp.service.gameaccess.GameAccessService gameAccessService;
+    private final java.util.Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> redisRateLimiter;
 
     // Configuration properties
     @Value("${app.games.default-recommendation-sport:Soccer}")
@@ -301,6 +303,7 @@ public class GameController {
      */
     @PostMapping
     @PreAuthorize("isAuthenticated()")
+    @RateLimiter(name = "games")
     @Transactional
     @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> createGame(
@@ -310,6 +313,11 @@ public class GameController {
             Principal principal
     ) {
         User owner = findAuthenticatedUser(principal);
+        try {
+            if (redisRateLimiter.isPresent() && !redisRateLimiter.get().allow("games:create:" + owner.getUsername(), 5, 60)) {
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Please try again later");
+            }
+        } catch (Exception ignore) {}
         validateCoordinates(request.latitude(), request.longitude());
         validateGameTime(request.time());
 
@@ -384,6 +392,7 @@ public class GameController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
+    @RateLimiter(name = "games")
     @Transactional
     @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> updateGame(
@@ -396,6 +405,11 @@ public class GameController {
         UserGamePair pair = validateUserAndGame(id, principal);
         Game game = pair.game();
         User currentUser = pair.user();
+        try {
+            if (redisRateLimiter.isPresent() && !redisRateLimiter.get().allow("games:update:" + currentUser.getUsername(), 5, 60)) {
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Please try again later");
+            }
+        } catch (Exception ignore) {}
 
         // Require at least one precondition header unless explicitly allowed
         enforcePreconditionsPresent(ifMatch, ifUnmodifiedSince);
@@ -442,6 +456,7 @@ public class GameController {
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
+    @RateLimiter(name = "games")
     @Transactional
     @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
     public ResponseEntity<Void> deleteGame(@PathVariable Long id,
@@ -451,6 +466,11 @@ public class GameController {
         UserGamePair pair = validateUserAndGame(id, principal);
         Game game = pair.game();
         User currentUser = pair.user();
+        try {
+            if (redisRateLimiter.isPresent() && !redisRateLimiter.get().allow("games:delete:" + currentUser.getUsername(), 5, 60)) {
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Please try again later");
+            }
+        } catch (Exception ignore) {}
 
         // Prevent deleting a stale version (optimistic concurrency for deletes)
         enforcePreconditionsPresent(ifMatch, ifUnmodifiedSince);
