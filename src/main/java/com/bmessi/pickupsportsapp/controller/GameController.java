@@ -302,7 +302,7 @@ public class GameController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> createGame(
             @Valid @RequestBody CreateGameRequest request,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
@@ -385,7 +385,7 @@ public class GameController {
     @PutMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> updateGame(
             @PathVariable Long id,
             @Valid @RequestBody UpdateGameRequest request,
@@ -425,7 +425,7 @@ public class GameController {
     @PatchMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> patchGame(
             @PathVariable Long id,
             @Valid @RequestBody UpdateGameRequest request,
@@ -443,7 +443,7 @@ public class GameController {
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
     public ResponseEntity<Void> deleteGame(@PathVariable Long id,
                                            @RequestHeader(value = "If-Match", required = false) String ifMatch,
                                            @RequestHeader(value = "If-Unmodified-Since", required = false) String ifUnmodifiedSince,
