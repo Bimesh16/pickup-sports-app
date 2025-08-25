@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -135,4 +136,22 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
             @Param("cursorId") Long cursorId,
             @Param("limit") int limit
     );
+
+    /**
+     * Count games scheduled after the provided instant.
+     */
+    @Query(value = "select count(*) from game g where g.time > :now", nativeQuery = true)
+    long countUpcoming(@Param("now") Instant now);
+
+    /**
+     * Count upcoming games created by a specific user.
+     */
+    @Query(value = "select count(*) from game g where g.user_id = :userId and g.time > :now", nativeQuery = true)
+    long countUpcomingByUser(@Param("userId") Long userId, @Param("now") Instant now);
+
+    /**
+     * Calculate the average number of participants per game.
+     */
+    @Query(value = "select coalesce(avg(cnt),0) from (select count(*) as cnt from game_participants group by game_id) gp", nativeQuery = true)
+    Double averageParticipants();
 }
