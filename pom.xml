@@ -280,7 +280,6 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <!-- Explicitly set the main class to avoid ambiguity during repackage -->
                     <mainClass>com.bmessi.pickupsportsapp.PickupSportsAppApplication</mainClass>
                     <excludes>
                         <exclude>
@@ -357,8 +356,6 @@
                 </executions>
             </plugin>
 
-            <!-- removed duplicate maven-failsafe-plugin -->
-
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -380,5 +377,58 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>client-sdk</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.googlecode.maven-download-plugin</groupId>
+                        <artifactId>download-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <executions>
+                            <execution>
+                                <id>fetch-openapi</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>http://localhost:8080/v3/api-docs</url>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <outputFileName>openapi.json</outputFileName>
+                                    <skipCache>true</skipCache>
+                                    <overwrite>true</overwrite>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.openapitools</groupId>
+                        <artifactId>openapi-generator-maven-plugin</artifactId>
+                        <version>7.7.0</version>
+                        <executions>
+                            <execution>
+                                <id>generate-typescript-client</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <inputSpec>${project.build.directory}/openapi.json</inputSpec>
+                                    <generatorName>typescript-axios</generatorName>
+                                    <output>${project.basedir}/web/api</output>
+                                    <additionalProperties>supportsES6=true,npmName=pickup-sports-client,modelPropertyNaming=original</additionalProperties>
+                                    <skipValidateSpec>true</skipValidateSpec>
+                                    <skip>false</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

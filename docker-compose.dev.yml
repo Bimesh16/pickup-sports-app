@@ -97,6 +97,17 @@ services:
     volumes:
       - media_data:/data/media
 
+  web:
+    container_name: ps-web
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      app:
+        condition: service_started
+
 volumes:
   postgres_data:
   media_data:

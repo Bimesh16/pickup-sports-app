@@ -46,7 +46,80 @@ jobs:
 
       - name: Build with Maven
         run: mvn -B -q -DskipTests verify
+name: CI
 
+on:
+  push:
+    branches: [ main, feature/**, bugfix/** ]
+  pull_request:
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit and WebMvc tests
+        run: ./mvnw -q -DskipITs test
+
+  smoke-compose:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build (skip tests; smoke runs against compose)
+        run: ./mvnw -q -DskipTests clean package
+      - name: Start stack (dev compose)
+        run: |
+          docker compose -f docker-compose.dev.yml up -d --build
+          echo "Waiting for app readiness..."
+          for i in {1..60}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health/readiness || true)
+            if [ "$code" = "200" ]; then echo "Backend ready!"; break; fi
+            sleep 2
+          done
+          echo "Checking backend endpoints..."
+          curl -s http://localhost:8080/actuator/health || true
+          curl -s http://localhost:8080/games || true
+          echo "Checking frontend index..."
+          for i in {1..30}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 || true)
+            if [ "$code" = "200" ]; then echo "Frontend ready!"; break; fi
+            sleep 2
+          done
+          curl -s http://localhost:3000 || true
+      - name: Generate OpenAPI JSON and TypeScript client (optional)
+        if: always()
+        run: |
+          ./mvnw -q -Pclient-sdk -DskipTests package || true
+      - name: Upload OpenAPI JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-json
+          path: target/openapi.json
+          if-no-files-found: warn
+      - name: Upload TypeScript client
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-client
+          path: web/api
+          if-no-files-found: warn
+      - name: Teardown
+        if: always()
+        run: docker compose -f docker-compose.dev.yml down -v
       - name: Build Docker image
         run: |
           echo "Building Docker image (no push in this workflow)..."
