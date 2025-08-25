@@ -5,6 +5,7 @@ import com.bmessi.pickupsportsapp.dto.UserProfileDTO;
 import com.bmessi.pickupsportsapp.service.UserProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.bmessi.pickupsportsapp.controller.profile.ProfileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.Base64;
 
 @RestController
 @RequestMapping("/profiles")
@@ -44,13 +42,13 @@ public class UserProfileController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserProfileDTO> getMyProfile(Principal principal) {
         var dto = userProfileService.getProfileByUsername(principal.getName());
-        String etag = computeEtag(dto);
+        String etag = ProfileUtils.computeEtag(dto);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.ETAG, etag);
         headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=30");
         headers.add(HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
         if (includeThumbnailHeader) {
-            String thumb = deriveThumbUrl(dto.avatarUrl());
+            String thumb = ProfileUtils.deriveThumbUrl(dto.avatarUrl());
             if (thumb != null) headers.add("X-Avatar-Thumbnail-Url", thumb);
         }
         return ResponseEntity.ok().headers(headers).body(dto);
@@ -66,11 +64,11 @@ public class UserProfileController {
         // Pre-fetch for ETag evaluation
         var current = userProfileService.getProfileByUsername(principal.getName());
         enforcePreconditionsPresent(ifMatch, ifUnmodifiedSince);
-        enforceIfMatch(ifMatch, computeEtag(current));
+        enforceIfMatch(ifMatch, ProfileUtils.computeEtag(current));
 
         var dto = userProfileService.updateProfile(principal.getName(), request);
 
-        String etag = computeEtag(dto);
+        String etag = ProfileUtils.computeEtag(dto);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.ETAG, etag);
         headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=30");
@@ -82,13 +80,13 @@ public class UserProfileController {
     @GetMapping("/{id}")
     public ResponseEntity<UserProfileDTO> getProfile(@PathVariable Long id) {
         var dto = userProfileService.getProfileById(id);
-        String etag = computeEtag(dto);
+        String etag = ProfileUtils.computeEtag(dto);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.ETAG, etag);
         headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=30");
         headers.add(HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
         if (includeThumbnailHeader) {
-            String thumb = deriveThumbUrl(dto.avatarUrl());
+            String thumb = ProfileUtils.deriveThumbUrl(dto.avatarUrl());
             if (thumb != null) headers.add("X-Avatar-Thumbnail-Url", thumb);
         }
         return ResponseEntity.ok().headers(headers).body(dto);
@@ -110,7 +108,7 @@ public class UserProfileController {
         // Pre-fetch for ETag evaluation
         var current = userProfileService.getProfileByUsername(principal.getName());
         enforcePreconditionsPresent(ifMatch, ifUnmodifiedSince);
-        enforceIfMatch(ifMatch, computeEtag(current));
+        enforceIfMatch(ifMatch, ProfileUtils.computeEtag(current));
 
         // Basic validation
         if (file == null || file.isEmpty()) {
@@ -160,13 +158,13 @@ public class UserProfileController {
 
         var dto = userProfileService.updateAvatar(principal.getName(), file);
 
-        String etag = computeEtag(dto);
+        String etag = ProfileUtils.computeEtag(dto);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.ETAG, etag);
         headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=30");
         headers.add(HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
         if (includeThumbnailHeader) {
-            String thumb = deriveThumbUrl(dto.avatarUrl());
+            String thumb = ProfileUtils.deriveThumbUrl(dto.avatarUrl());
             if (thumb != null) headers.add("X-Avatar-Thumbnail-Url", thumb);
         }
         return ResponseEntity.ok().headers(headers).body(dto);
@@ -181,7 +179,7 @@ public class UserProfileController {
         // Pre-fetch for ETag evaluation
         var current = userProfileService.getProfileByUsername(principal.getName());
         enforcePreconditionsPresent(ifMatch, ifUnmodifiedSince);
-        enforceIfMatch(ifMatch, computeEtag(current));
+        enforceIfMatch(ifMatch, ProfileUtils.computeEtag(current));
 
         userProfileService.deleteAvatar(principal.getName());
         HttpHeaders headers = new HttpHeaders();
@@ -220,19 +218,31 @@ public class UserProfileController {
         return s;
     }
 
-    private static String computeEtag(UserProfileDTO dto) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            String basis = String.valueOf(dto);
-            byte[] digest = md.digest(basis.getBytes(StandardCharsets.UTF_8));
-            String b64 = Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
-            return "W/\"" + b64 + "\"";
-        } catch (Exception e) {
-            // Fallback to simple hash if SHA-256 unavailable
-            return "W/\"" + Integer.toHexString(String.valueOf(dto).hashCode()) + "\"";
+    @GetMapping("/me/avatar/thumbnail")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<java.util.Map<String, Object>> getMyAvatarThumbnail(Principal principal) {
+        var dto = userProfileService.getProfileByUsername(principal.getName());
+        String thumb = ProfileUtils.deriveThumbUrl(dto.avatarUrl());
+        if (thumb == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
+                    .headers(noStoreHeaders())
+                    .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
         }
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "private, max-age=300");
+        headers.add(org.springframework.http.HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
+        return ResponseEntity.ok().headers(headers).body(java.util.Map.of("thumbnailUrl", thumb));
     }
 
+    @GetMapping("/{id}/avatar/thumbnail")
+    public ResponseEntity<java.util.Map<String, Object>> getAvatarThumbnail(@PathVariable Long id) {
+        var dto = userProfileService.getProfileById(id);
+        String thumb = ProfileUtils.deriveThumbUrl(dto.avatarUrl());
+        if (thumb == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
+                    .headers(noStoreHeaders())
+                    .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
+          
         @GetMapping("/me/avatar/thumbnail")
         @PreAuthorize("isAuthenticated()")
         public ResponseEntity<java.util.Map<String, Object>> getMyAvatarThumbnail(Principal principal) {
@@ -276,6 +286,11 @@ public class UserProfileController {
             }
             return base.substring(0, dot) + "_thumb" + base.substring(dot) + query;
         }
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "public, max-age=300");
+        headers.add(org.springframework.http.HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
+        return ResponseEntity.ok().headers(headers).body(java.util.Map.of("thumbnailUrl", thumb));
+    }
 
     private static String httpDate(long epochMillis) {
         return java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
