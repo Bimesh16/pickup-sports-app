@@ -30,15 +30,14 @@ public class StatsService {
     public GameStatsDTO getGameStats(String sport, LocalDate fromDate, LocalDate toDate) {
         // Simplified version - you can enhance these with custom queries later
         long totalGames = gameRepository.count();
-        long upcomingGames = gameRepository.findAll().stream()
-                .filter(g -> g.getTime() != null && g.getTime().isAfter(Instant.now()))
-                .count();
+        long upcomingGames = gameRepository.countUpcoming(Instant.now());
         long completedGames = totalGames - upcomingGames;
 
         // Simplified - return empty maps for now
         Map<String, Long> gamesBySport = Map.of();
         Map<String, Long> gamesBySkillLevel = Map.of();
-        double averageParticipants = 0.0;
+        Double avgParticipants = gameRepository.averageParticipants();
+        double averageParticipants = avgParticipants != null ? avgParticipants : 0.0;
 
         return new GameStatsDTO(
                 totalGames,
@@ -74,8 +73,9 @@ public class StatsService {
                 .getTotalElements();
         int gamesParticipated = 0; // Simplified for now
 
-        Double avgRating = ratingRepository.computeAverageForRated(userId);
-        Integer totalRatings = ratingRepository.computeCountForRated(userId);
+        PlayerRatingRepository.RatingAggregate ratingAgg = ratingRepository.aggregateForRated(userId);
+        Double avgRating = ratingAgg != null ? ratingAgg.getAverage() : null;
+        Integer totalRatings = ratingAgg != null ? ratingAgg.getCount() : null;
 
         // Simplified - return empty map for now
         Map<String, Integer> sportCounts = Map.of();
@@ -104,10 +104,7 @@ public class StatsService {
         UserStatsDTO userStats = getUserStats(user.getId());
 
         // Simplified calculations
-        int upcomingGames = (int) gameRepository.findAll().stream()
-                .filter(g -> g.getUser().getId().equals(user.getId()) &&
-                        g.getTime() != null && g.getTime().isAfter(Instant.now()))
-                .count();
+        int upcomingGames = (int) gameRepository.countUpcomingByUser(user.getId(), Instant.now());
         int gamesThisMonth = 0; // Simplified for now
 
         return new DashboardStatsDTO(
