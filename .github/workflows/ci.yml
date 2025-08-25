@@ -1,52 +1,4 @@
 name: CI
-name: CI
-
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: 'maven'
-
-      - name: Build and test
-        run: mvn -B -ntp -DskipITs=false test
-on:
-  push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-          cache: maven
-
-      - name: Build with Maven
-        run: mvn -B -q -DskipTests verify
-name: CI
 
 on:
   push:
@@ -137,3 +89,4 @@ jobs:
       #     IMAGE=ghcr.io/${{ github.repository_owner }}/pickup-sports-app:${{ github.sha }}
       #     docker tag pickup-sports-app:ci $IMAGE
       #     docker push $IMAGE
+
