@@ -116,7 +116,7 @@ auth:
 
 media:
   avatar:
-    max-bytes: 2097152
+    max-bytes: 2097152 # 2MB limit
     allowed-types: "image/png,image/jpeg,image/webp"
     thumbnail:
       enabled: true

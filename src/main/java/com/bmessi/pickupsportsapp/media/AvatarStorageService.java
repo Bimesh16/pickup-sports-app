@@ -1,8 +1,10 @@
 package com.bmessi.pickupsportsapp.media;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -14,9 +16,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AvatarStorageService {
@@ -47,6 +52,12 @@ public class AvatarStorageService {
     @Value("${media.avatar.strip-metadata:true}")
     private boolean stripMetadata;
 
+    @Value("${media.avatar.max-bytes:2097152}")
+    private long maxBytes;
+
+    @Value("${media.avatar.allowed-types:image/png,image/jpeg,image/webp}")
+    private String allowedTypesCsv;
+
     private final MediaUrlResolver urlResolver;
 
     public AvatarStorageService(StorageProvider storage, MediaUrlResolver urlResolver) {
@@ -60,6 +71,21 @@ public class AvatarStorageService {
      */
     public String store(String username, MultipartFile file) {
         try {
+            String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase(Locale.ROOT);
+            Set<String> allowed = Arrays.stream(allowedTypesCsv.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isBlank())
+                    .map(String::toLowerCase)
+                    .collect(Collectors.toSet());
+            if (!allowed.contains(contentType)) {
+                throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+                        "Allowed avatar types: " + String.join(", ", allowed));
+            }
+            if (file.getSize() > maxBytes) {
+                throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,
+                        "Avatar exceeds " + maxBytes + " bytes limit");
+            }
+
             String ext = extensionFrom(file);
             String safeUser = sanitize(username);
             String id = Instant.now().toEpochMilli() + "-" + UUID.randomUUID().toString().replace("-", "");
