@@ -8,7 +8,8 @@ This guide summarizes key backend features and how to use them from clients and 
   - Returns access/refresh tokens; also issues a refresh cookie (HttpOnly) if enabled.
   - Lockout: Excessive failed attempts cause temporary lockout per user and per IP (configurable).
 - Refresh: POST /auth/refresh
-  - Accepts a refresh token from body or cookie; returns a new pair.
+  - Requires a refresh token (body or cookie) and a matching nonce supplied either in the request body (`nonce`) or header `X-Refresh-Nonce`.
+  - Returns a new access/refresh pair with a new nonce.
 - Logout: POST /auth/logout
   - Revokes refresh token; clears cookie and adds Clear-Site-Data headers.
 

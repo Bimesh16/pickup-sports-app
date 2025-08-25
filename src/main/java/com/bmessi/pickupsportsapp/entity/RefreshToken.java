@@ -24,6 +24,9 @@ public class RefreshToken {
     @Column(nullable = false, unique = true, length = 128)
     private String tokenHash;
 
+    @Column(nullable = false, length = 128)
+    private String nonceHash;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_refresh_token_user"))
