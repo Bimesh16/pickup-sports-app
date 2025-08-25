@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -72,11 +71,6 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
     @EntityGraph(attributePaths = {"participants", "user"})
     @Query("select g from Game g where g.id = :id")
     Optional<Game> findWithParticipantsById(@Param("id") Long id);
-
-    /**
-     * Old method left in place (may be unused now).
-     */
-    Page<Game> findByUser_Id(Long userId, Pageable pageable);
 
     /**
      * New method for "my games": fetches participants eagerly to avoid lazy loading errors.
