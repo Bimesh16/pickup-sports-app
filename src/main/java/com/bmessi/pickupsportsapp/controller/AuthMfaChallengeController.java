@@ -22,7 +22,7 @@ public class AuthMfaChallengeController {
     private final MfaService mfaService;
     private final MfaChallengeService challenges;
     private final AuthService authService;
-    private final com.bmessi.pickupsportsapp.config.properties.RefreshCookieProperties cookieProps;
+    private final com.bmessi.pickupsportsapp.common.config.properties.RefreshCookieProperties cookieProps;
     private final com.bmessi.pickupsportsapp.service.TrustedDeviceService trustedDeviceService;
     private final com.bmessi.pickupsportsapp.service.MfaRecoveryService mfaRecoveryService;
     private final io.micrometer.core.instrument.MeterRegistry meterRegistry;

@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.health;
 
-import com.bmessi.pickupsportsapp.config.properties.VapidProperties;
+import com.bmessi.pickupsportsapp.common.config.properties.VapidProperties;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;

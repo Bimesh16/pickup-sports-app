@@ -50,7 +50,7 @@ public class UserController {
             if (accept != null && !accept.isBlank() && user != null && user.id() != null) {
                 String tag = java.util.Locale.forLanguageTag(accept.split(",")[0]).toLanguageTag();
                 if (tag != null && !tag.isBlank()) {
-                    com.bmessi.pickupsportsapp.util.Jdbc.exec("UPDATE app_user SET locale = ? WHERE id = ?", tag, user.id());
+                    com.bmessi.pickupsportsapp.common.util.Jdbc.exec("UPDATE app_user SET locale = ? WHERE id = ?", tag, user.id());
                 }
             }
         } catch (Exception ignore) {}

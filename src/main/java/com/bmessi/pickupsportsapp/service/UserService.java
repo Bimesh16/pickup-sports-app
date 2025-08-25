@@ -20,7 +20,7 @@ public class UserService {
     private final ApiMapper mapper;
     private final EmailService emailService; // <-- add this
     private final VerificationService verificationService;
-    private final com.bmessi.pickupsportsapp.config.properties.AuthFlowProperties authProps;
+    private final com.bmessi.pickupsportsapp.common.config.properties.AuthFlowProperties authProps;
 
     @Transactional
     public UserDTO register(CreateUserRequest request) {

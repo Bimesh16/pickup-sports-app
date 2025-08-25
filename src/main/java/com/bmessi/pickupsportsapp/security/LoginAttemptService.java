@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.security;
 
-import com.bmessi.pickupsportsapp.config.properties.LoginPolicyProperties;
+import com.bmessi.pickupsportsapp.common.config.properties.LoginPolicyProperties;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Service;
 

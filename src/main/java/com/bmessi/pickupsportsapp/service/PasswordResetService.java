@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.service;
 
-import com.bmessi.pickupsportsapp.config.properties.AuthFlowProperties;
+import com.bmessi.pickupsportsapp.common.config.properties.AuthFlowProperties;
 import com.bmessi.pickupsportsapp.entity.PasswordResetToken;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.PasswordResetTokenRepository;

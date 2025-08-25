@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.health;
 
-import com.bmessi.pickupsportsapp.config.properties.LoginPolicyProperties;
+import com.bmessi.pickupsportsapp.common.config.properties.LoginPolicyProperties;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.jdbc.core.JdbcTemplate;

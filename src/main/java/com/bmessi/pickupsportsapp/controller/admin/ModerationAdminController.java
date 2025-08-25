@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.controller.admin;
 
-import com.bmessi.pickupsportsapp.config.properties.ProfanityFilterProperties;
+import com.bmessi.pickupsportsapp.common.config.properties.ProfanityFilterProperties;
 import com.bmessi.pickupsportsapp.service.chat.ProfanityFilterService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

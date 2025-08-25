@@ -75,7 +75,7 @@ public class AuthFlowController {
             int perMinute = 20;
             try {
                 // if login policy present, cap with its per-ip limit
-                var cls = com.bmessi.pickupsportsapp.config.properties.LoginPolicyProperties.class;
+                var cls = com.bmessi.pickupsportsapp.common.config.properties.LoginPolicyProperties.class;
                 // no direct injection here; using default if not available
             } catch (Exception ignore) {}
             if (redisRateLimiter.isPresent() && !redisRateLimiter.get().allow(key, perMinute, 60)) {

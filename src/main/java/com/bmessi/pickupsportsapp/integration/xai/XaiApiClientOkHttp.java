@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.integration.xai;
 
-import com.bmessi.pickupsportsapp.config.properties.XaiProperties;
+import com.bmessi.pickupsportsapp.common.config.properties.XaiProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;

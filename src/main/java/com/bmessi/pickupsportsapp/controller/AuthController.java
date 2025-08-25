@@ -37,8 +37,8 @@ public class AuthController {
 
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
-    private final com.bmessi.pickupsportsapp.config.properties.RefreshCookieProperties cookieProps;
-    private final com.bmessi.pickupsportsapp.config.properties.AuthFlowProperties authProps;
+    private final com.bmessi.pickupsportsapp.common.config.properties.RefreshCookieProperties cookieProps;
+    private final com.bmessi.pickupsportsapp.common.config.properties.AuthFlowProperties authProps;
     private final com.bmessi.pickupsportsapp.service.VerificationService verificationService;
     private final com.bmessi.pickupsportsapp.service.PasswordResetService passwordResetService;
     private final com.bmessi.pickupsportsapp.service.EmailService emailService;
@@ -50,7 +50,7 @@ public class AuthController {
     private final com.bmessi.pickupsportsapp.service.ChangeEmailService changeEmailService;
     private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
     private final java.util.Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> redisRateLimiter; // optional
-    private final com.bmessi.pickupsportsapp.config.properties.LoginPolicyProperties loginPolicyProperties;
+    private final com.bmessi.pickupsportsapp.common.config.properties.LoginPolicyProperties loginPolicyProperties;
     private final com.bmessi.pickupsportsapp.service.MfaService mfaService;
     private final com.bmessi.pickupsportsapp.service.MfaChallengeService mfaChallengeService;
     private final com.bmessi.pickupsportsapp.service.TrustedDeviceService trustedDeviceService;

@@ -18,7 +18,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
         excludeFilters = {
                 @ComponentScan.Filter(
                         type = FilterType.REGEX,
-                        pattern = "com\\.bmessi\\.pickupsportsapp\\.config\\.SecurityHeadersFilter"
+                        pattern = "com\\.bmessi\\.pickupsportsapp\\.common\\.filter\\.SecurityHeadersFilter"
                 )
         }
 )

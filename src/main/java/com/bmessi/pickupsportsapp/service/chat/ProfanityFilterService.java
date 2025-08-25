@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.service.chat;
 
-import com.bmessi.pickupsportsapp.config.properties.ProfanityFilterProperties;
+import com.bmessi.pickupsportsapp.common.config.properties.ProfanityFilterProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 

@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.service;
 
-import com.bmessi.pickupsportsapp.config.properties.AuthFlowProperties;
+import com.bmessi.pickupsportsapp.common.config.properties.AuthFlowProperties;
 import com.bmessi.pickupsportsapp.entity.VerificationToken;
 import com.bmessi.pickupsportsapp.entity.VerifiedUser;
 import com.bmessi.pickupsportsapp.repository.VerificationTokenRepository;
