@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +43,7 @@ public class PostgisSyncService {
 
     // Optional daily job to catch drifts (lightweight)
     @Scheduled(cron = "${geo.postgis.sync.cron:0 10 4 * * *}")
+    @SchedulerLock(name = "postgisSync")
     public void scheduledBackfill() {
         backfillOnce();
     }
