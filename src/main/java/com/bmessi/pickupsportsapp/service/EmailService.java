@@ -1,6 +1,7 @@
 package com.bmessi.pickupsportsapp.service;
 
 import com.bmessi.pickupsportsapp.entity.User;
+import com.bmessi.pickupsportsapp.dto.EmailJob;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -26,16 +27,28 @@ public class EmailService {
     @Value("${app.mail.from-name:Pickup Sports}")
     private String fromName;
 
+    @org.springframework.beans.factory.annotation.Value("${emails.queue:emails.queue}")
+    private String emailQueue;
+
     /**
-     * Sends a welcome email to the given user.  Runs asynchronously
-     * so it doesn't block the request thread.
+     * Publishes a welcome email job for the given user.
      */
     @Async
     @Retry(name = "mail", fallbackMethod = "fallbackWelcomeEmail")
     public void sendWelcomeEmail(User user) {
+        try {
+            rabbitTemplate.convertAndSend(emailQueue,
+                    new EmailJob("WELCOME", user.getUsername(), null, java.util.Locale.getDefault()));
+        } catch (Exception e) {
+            log.error("Failed to publish email job", e);
+        }
+    }
+
+    @Retry(name = "mail", fallbackMethod = "fallbackWelcomeEmailNow")
+    public void sendWelcomeEmailNow(String to) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(String.format("%s <%s>", fromName, from));
-        message.setTo(user.getUsername()); // assuming username == email
+        message.setTo(to);
         message.setSubject("Welcome to Pickup Sports!");
         message.setText(String.format(
                 "Hi %s,\n\n"
@@ -43,10 +56,10 @@ public class EmailService {
                         + "We’re excited to have you on board.\n\n"
                         + "Happy playing!\n\n"
                         + "The Pickup Sports Team",
-                user.getUsername()
+                to
         ));
         mailSender.send(message);
-        log.info("Sent welcome email to {}", user.getUsername());
+        log.info("Sent welcome email to {}", to);
     }
 
     @org.springframework.beans.factory.annotation.Value("${app.mail.support:}")
@@ -61,6 +74,16 @@ public class EmailService {
     @Async
     @Retry(name = "mail", fallbackMethod = "fallbackVerificationEmail")
     public void sendVerificationEmail(String to, String link, java.util.Locale locale) {
+        try {
+            rabbitTemplate.convertAndSend(emailQueue,
+                    new EmailJob("VERIFY", to, link, locale));
+        } catch (Exception e) {
+            log.error("Failed to publish email job", e);
+        }
+    }
+
+    @Retry(name = "mail", fallbackMethod = "fallbackVerificationEmailNow")
+    public void sendVerificationEmailNow(String to, String link, java.util.Locale locale) {
         try {
             var mime = mailSender.createMimeMessage();
             var helper = new org.springframework.mail.javamail.MimeMessageHelper(mime, "UTF-8");
@@ -96,6 +119,16 @@ public class EmailService {
     @Async
     @Retry(name = "mail", fallbackMethod = "fallbackResetEmail")
     public void sendPasswordResetEmail(String to, String link, java.util.Locale locale) {
+        try {
+            rabbitTemplate.convertAndSend(emailQueue,
+                    new EmailJob("RESET", to, link, locale));
+        } catch (Exception e) {
+            log.error("Failed to publish email job", e);
+        }
+    }
+
+    @Retry(name = "mail", fallbackMethod = "fallbackResetEmailNow")
+    public void sendPasswordResetEmailNow(String to, String link, java.util.Locale locale) {
         try {
             var mime = mailSender.createMimeMessage();
             var helper = new org.springframework.mail.javamail.MimeMessageHelper(mime, "UTF-8");
@@ -190,12 +223,27 @@ public class EmailService {
     }
 
     @SuppressWarnings("unused")
+    private void fallbackWelcomeEmailNow(String to, Throwable ex) {
+        log.error("Failed to send welcome email to {} after retries: {}", to, ex.getMessage(), ex);
+    }
+
+    @SuppressWarnings("unused")
     private void fallbackVerificationEmail(String to, String link, Throwable ex) {
         log.error("Failed to send verification email to {} after retries: {}", to, ex.getMessage(), ex);
     }
 
     @SuppressWarnings("unused")
+    private void fallbackVerificationEmailNow(String to, String link, java.util.Locale locale, Throwable ex) {
+        log.error("Failed to send verification email to {} after retries: {}", to, ex.getMessage(), ex);
+    }
+
+    @SuppressWarnings("unused")
     private void fallbackResetEmail(String to, String link, Throwable ex) {
+        log.error("Failed to send password reset email to {} after retries: {}", to, ex.getMessage(), ex);
+    }
+
+    @SuppressWarnings("unused")
+    private void fallbackResetEmailNow(String to, String link, java.util.Locale locale, Throwable ex) {
         log.error("Failed to send password reset email to {} after retries: {}", to, ex.getMessage(), ex);
     }
 

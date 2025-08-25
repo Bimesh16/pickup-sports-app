@@ -180,4 +180,7 @@ retention:
 notifications:
   queue: notifications.queue
 
+emails:
+  queue: emails.queue
+
 
