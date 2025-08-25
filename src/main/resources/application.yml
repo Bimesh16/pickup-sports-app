@@ -38,7 +38,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info"
+        include: "health,info,metrics"
   endpoint:
     health:
       show-details: "never"   # set 'always' if you want details in dev
@@ -84,6 +84,12 @@ resilience4j:
         limit-for-period: 20
         limit-refresh-period: 1s
         timeout-duration: 0
+  circuitbreaker:
+    instances:
+      xai:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5s
 
 # ------------------------------
 # App configuration (new defaults)

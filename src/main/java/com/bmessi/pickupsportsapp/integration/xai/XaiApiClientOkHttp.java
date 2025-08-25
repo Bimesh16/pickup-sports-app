@@ -3,6 +3,8 @@ package com.bmessi.pickupsportsapp.integration.xai;
 import com.bmessi.pickupsportsapp.config.properties.XaiProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import okhttp3.*;
 import org.slf4j.Logger;
@@ -43,6 +45,8 @@ public class XaiApiClientOkHttp implements XaiApiClient {
     }
 
     @Override
+    @Retry(name = "xai")
+    @CircuitBreaker(name = "xai", fallbackMethod = "fallbackGetRecommendations")
     public Optional<List<RecommendationHint>> getRecommendations(String preferredSport, String location, int page, int size) {
         try {
             JsonNode body = objectMapper.createObjectNode()
@@ -89,6 +93,15 @@ public class XaiApiClientOkHttp implements XaiApiClient {
             log.debug("XAI call error: {}", e.getMessage());
             return Optional.empty();
         }
+    }
+
+    private Optional<List<RecommendationHint>> fallbackGetRecommendations(String preferredSport,
+                                                                         String location,
+                                                                         int page,
+                                                                         int size,
+                                                                         Throwable t) {
+        log.warn("XAI call fallback triggered: {}", t.toString());
+        return Optional.empty();
     }
 
     private static String safeText(JsonNode node, String field) {
