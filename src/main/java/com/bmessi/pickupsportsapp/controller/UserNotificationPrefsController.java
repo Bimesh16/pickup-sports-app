@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
 import java.util.Map;
@@ -52,11 +53,11 @@ public class UserNotificationPrefsController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PrefsResponse> get(Principal principal) {
         if (principal == null || principal.getName() == null || principal.getName().isBlank()) {
-            return ResponseEntity.status(401).headers(noStoreHeaders()).build();
+            return ResponseEntity.status(401).headers(noStore()).build();
         }
         UserNotificationPrefs p = prefs.getOrDefaults(principal.getName());
         return ResponseEntity.ok()
-                .headers(noStoreHeaders())
+                .headers(noStore())
                 .body(toResponse(p));
     }
 
@@ -64,7 +65,7 @@ public class UserNotificationPrefsController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> update(@RequestBody UpdatePrefsRequest body, Principal principal) {
         if (principal == null || principal.getName() == null || principal.getName().isBlank()) {
-            return ResponseEntity.status(401).headers(noStoreHeaders()).body(Map.of(
+            return ResponseEntity.status(401).headers(noStore()).body(Map.of(
                     "error", "unauthorized",
                     "message", "Authentication required",
                     "timestamp", System.currentTimeMillis()
@@ -88,7 +89,7 @@ public class UserNotificationPrefsController {
 
         UserNotificationPrefs saved = prefs.update(principal.getName(), in);
         return ResponseEntity.ok()
-                .headers(noStoreHeaders())
+                .headers(noStore())
                 .body(toResponse(saved));
     }
 
@@ -113,7 +114,5 @@ public class UserNotificationPrefsController {
         return v != null ? v : dflt;
     }
 
-    private static HttpHeaders noStoreHeaders() {
-        return com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
-    }
+    
 }

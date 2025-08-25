@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
 
@@ -241,6 +242,49 @@ public class UserProfileController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
                     .headers(noStoreHeaders())
                     .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
+          
+        @GetMapping("/me/avatar/thumbnail")
+        @PreAuthorize("isAuthenticated()")
+        public ResponseEntity<java.util.Map<String, Object>> getMyAvatarThumbnail(Principal principal) {
+            var dto = userProfileService.getProfileByUsername(principal.getName());
+            String thumb = deriveThumbUrl(dto.avatarUrl());
+            if (thumb == null) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
+                        .headers(noStore())
+                        .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
+            }
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "private, max-age=300");
+            headers.add(org.springframework.http.HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
+            return ResponseEntity.ok().headers(headers).body(java.util.Map.of("thumbnailUrl", thumb));
+        }
+
+        @GetMapping("/{id}/avatar/thumbnail")
+        public ResponseEntity<java.util.Map<String, Object>> getAvatarThumbnail(@PathVariable Long id) {
+            var dto = userProfileService.getProfileById(id);
+            String thumb = deriveThumbUrl(dto.avatarUrl());
+            if (thumb == null) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
+                        .headers(noStore())
+                        .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
+            }
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "public, max-age=300");
+            headers.add(org.springframework.http.HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
+            return ResponseEntity.ok().headers(headers).body(java.util.Map.of("thumbnailUrl", thumb));
+        }
+
+        private static String deriveThumbUrl(String originalUrl) {
+            if (originalUrl == null || originalUrl.isBlank()) return null;
+            int q = originalUrl.indexOf('?'); // preserve query if any
+            String base = (q >= 0) ? originalUrl.substring(0, q) : originalUrl;
+            String query = (q >= 0) ? originalUrl.substring(q) : "";
+            int dot = base.lastIndexOf('.');
+            if (dot <= 0 || dot == base.length() - 1) {
+                // No extension; append _thumb
+                return base + "_thumb" + query;
+            }
+            return base.substring(0, dot) + "_thumb" + base.substring(dot) + query;
         }
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "public, max-age=300");
@@ -253,13 +297,6 @@ public class UserProfileController {
                 .withZone(java.time.ZoneOffset.UTC)
                 .format(java.time.Instant.ofEpochMilli(epochMillis));
     }
-
-        private static org.springframework.http.HttpHeaders noStoreHeaders() {
-            org.springframework.http.HttpHeaders h = new org.springframework.http.HttpHeaders();
-            h.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "no-store");
-            h.add(org.springframework.http.HttpHeaders.PRAGMA, "no-cache");
-            return h;
-        }
 
     private static boolean looksLikePng(byte[] h) {
         return h != null && h.length >= 8 &&
