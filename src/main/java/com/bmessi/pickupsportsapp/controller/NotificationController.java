@@ -8,9 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -89,10 +90,12 @@ public class NotificationController {
     // Quick unread count for badge updates
     @GetMapping("/unread-count")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.CountResponse> getUnreadCount(Principal principal) {
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.CountResponse> unreadCount(Principal principal) {
         String username = principal.getName();
-        long unread = notificationService.unreadCount(username);
-        return ResponseEntity.ok(new com.bmessi.pickupsportsapp.dto.api.CountResponse(unread));
+        long count = notificationService.unreadCount(username);
+        return ResponseEntity.ok()
+                .headers(noStoreHeaders())
+                .body(new com.bmessi.pickupsportsapp.dto.api.CountResponse(count));
     }
 
     // Mark notification as read using the improved service method
@@ -198,6 +201,19 @@ public class NotificationController {
                 "unread", unreadCount,
                 "read", all.size() - unreadCount
         ));
+    }
+
+    // Mark a set of notifications as read
+    @PostMapping("/mark-read")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.UpdatedResponse> markReadBulk(
+            @RequestBody MarkReadRequest request,
+            Principal principal) {
+        String username = principal.getName();
+        int updated = notificationService.markAsReadForUser(request.ids(), username);
+        return ResponseEntity.ok()
+                .headers(noStoreHeaders())
+                .body(new com.bmessi.pickupsportsapp.dto.api.UpdatedResponse(updated));
     }
 
     // Mark all notifications as read
@@ -335,6 +351,12 @@ public class NotificationController {
         return "<" + url + ">; rel=\"" + rel + "\"";
     }
 
-    // Request DTO
+    private static HttpHeaders noStoreHeaders() {
+        return com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
+    }
+
+    // Request DTOs
     public record CreateNotificationRequest(@NotBlank String username, @NotBlank String message) {}
+
+    public record MarkReadRequest(Collection<Long> ids) {}
 }
