@@ -47,6 +47,15 @@ public class ResilienceConfig {
                 .build();
     }
 
+    @Bean(name = "exports")
+    public RateLimiterConfig exportsRateLimiterConfig() {
+        return RateLimiterConfig.custom()
+                .limitRefreshPeriod(Duration.ofMinutes(1))
+                .limitForPeriod(1)
+                .timeoutDuration(Duration.ofMillis(0))
+                .build();
+    }
+
     /**
      * Dedicated bounded executor for XAI async calls used by TimeLimiter/CircuitBreaker.
      */

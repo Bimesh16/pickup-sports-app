@@ -1,6 +1,7 @@
 package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.service.DataExportService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -21,6 +22,7 @@ public class DataPortabilityController {
 
     @GetMapping("/export")
     @PreAuthorize("isAuthenticated()")
+    @RateLimiter(name = "exports")
     public ResponseEntity<Map<String, Object>> export(Principal principal) {
         Map<String, Object> data = exportService.exportFor(principal.getName());
         HttpHeaders h = com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
