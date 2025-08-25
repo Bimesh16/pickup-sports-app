@@ -13,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,7 +41,7 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    // Default chain: protects REST API with JWT, disables anonymous to avoid deferred-context recursion
+    // Default chain: protects REST API with JWT; anonymous requests are disabled to avoid deferred-context recursion
     @Bean
     public SecurityFilterChain apiChain(HttpSecurity http,
                                         UserDetailsService userDetailsService,
@@ -60,7 +61,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .anonymous(Customizer.withDefaults())
+            .anonymous(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
                 // Allow CORS preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
