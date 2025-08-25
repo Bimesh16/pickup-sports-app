@@ -1,17 +1,13 @@
 package com.bmessi.pickupsportsapp.service.search;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 
 @Service
 @lombok.RequiredArgsConstructor
 public class GeospatialSearchService {
-
-    @PersistenceContext
-    private EntityManager em;
 
     private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
@@ -31,6 +27,7 @@ public class GeospatialSearchService {
     @org.springframework.beans.factory.annotation.Value("${geo.postgis.force-fallback:false}")
     private boolean forceFallback;
 
+    @Cacheable(cacheNames = "nearby-games", key = "#lat + ':' + #lon + ':' + #radiusKm + ':' + #limit")
     public List<com.bmessi.pickupsportsapp.dto.GameSummaryDTO> findNearby(double lat, double lon, double radiusKm, int limit) {
         int effLimit = Math.max(1, Math.min(limit, 100));
         double clampedRadius = Math.max(0.1, Math.min(radiusKm, 50.0)); // cap at 50km
