@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
 import java.nio.charset.StandardCharsets;
@@ -239,7 +240,7 @@ public class UserProfileController {
             String thumb = deriveThumbUrl(dto.avatarUrl());
             if (thumb == null) {
                 return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
-                        .headers(noStoreHeaders())
+                        .headers(noStore())
                         .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
             }
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
@@ -254,7 +255,7 @@ public class UserProfileController {
             String thumb = deriveThumbUrl(dto.avatarUrl());
             if (thumb == null) {
                 return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
-                        .headers(noStoreHeaders())
+                        .headers(noStore())
                         .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
             }
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
@@ -281,13 +282,6 @@ public class UserProfileController {
                 .withZone(java.time.ZoneOffset.UTC)
                 .format(java.time.Instant.ofEpochMilli(epochMillis));
     }
-
-        private static org.springframework.http.HttpHeaders noStoreHeaders() {
-            org.springframework.http.HttpHeaders h = new org.springframework.http.HttpHeaders();
-            h.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "no-store");
-            h.add(org.springframework.http.HttpHeaders.PRAGMA, "no-cache");
-            return h;
-        }
 
     private static boolean looksLikePng(byte[] h) {
         return h != null && h.length >= 8 &&

@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
 import java.util.List;
@@ -36,7 +37,5 @@ public class MfaRecoveryController {
         return ResponseEntity.ok().headers(noStore()).body(new com.bmessi.pickupsportsapp.dto.api.CodesResponse(plain, plain.size()));
     }
 
-    private static HttpHeaders noStore() {
-        return com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
-    }
+    
 }

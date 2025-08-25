@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -31,14 +32,14 @@ public class AbuseReportController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> create(@Valid @RequestBody CreateRequest req, Principal principal) {
         if (principal == null || principal.getName() == null || principal.getName().isBlank()) {
-            return ResponseEntity.status(401).headers(noStoreHeaders()).body(Map.of(
+            return ResponseEntity.status(401).headers(noStore()).body(Map.of(
                     "error", "unauthorized",
                     "message", "Authentication required",
                     "timestamp", System.currentTimeMillis()
             ));
         }
         AbuseReport r = service.create(principal.getName(), req.subjectType(), req.subjectId(), req.reason());
-        return ResponseEntity.ok().headers(noStoreHeaders())
+        return ResponseEntity.ok().headers(noStore())
                 .body(new com.bmessi.pickupsportsapp.dto.api.AbuseReportResponse(
                         r.getId(), r.getStatus().name(), r.getCreatedAt(), r.getResolvedAt(), r.getResolver()
                 ));
@@ -48,7 +49,7 @@ public class AbuseReportController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<AbuseReport>> list(@RequestParam(required = false) AbuseReport.Status status, Pageable pageable) {
         Page<AbuseReport> page = service.list(status, pageable);
-        return ResponseEntity.ok().headers(noStoreHeaders()).body(page);
+        return ResponseEntity.ok().headers(noStore()).body(page);
     }
 
     public record UpdateStatusRequest(@NotNull AbuseReport.Status status) {}
@@ -60,13 +61,11 @@ public class AbuseReportController {
                                                                                                 Principal principal) {
         String resolver = principal != null ? principal.getName() : "system";
         AbuseReport r = service.updateStatus(id, req.status(), resolver);
-        return ResponseEntity.ok().headers(noStoreHeaders())
+        return ResponseEntity.ok().headers(noStore())
                 .body(new com.bmessi.pickupsportsapp.dto.api.AbuseReportResponse(
                         r.getId(), r.getStatus().name(), r.getCreatedAt(), r.getResolvedAt(), r.getResolver()
                 ));
     }
 
-    private static HttpHeaders noStoreHeaders() {
-        return com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
-    }
+    
 }

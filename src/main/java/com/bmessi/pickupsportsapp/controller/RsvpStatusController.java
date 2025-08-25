@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
 import java.time.OffsetDateTime;
@@ -80,7 +81,4 @@ public class RsvpStatusController {
 
     private record GameMeta(Integer capacity, OffsetDateTime cutoff) {}
 
-    private static HttpHeaders noStore() {
-        return com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
-    }
 }

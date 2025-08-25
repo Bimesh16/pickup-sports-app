@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class ChatPresenceController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> heartbeat(@PathVariable Long gameId, Principal principal) {
         if (principal == null || principal.getName() == null || principal.getName().isBlank()) {
-            return ResponseEntity.status(401).headers(noStoreHeaders()).body(Map.of(
+            return ResponseEntity.status(401).headers(noStore()).body(Map.of(
                     "error", "unauthorized",
                     "message", "Authentication required",
                     "timestamp", System.currentTimeMillis()
@@ -29,7 +30,7 @@ public class ChatPresenceController {
         }
         var beat = presence.heartbeat(gameId, principal.getName());
         return ResponseEntity.ok()
-                .headers(noStoreHeaders())
+                .headers(noStore())
                 .body(Map.of(
                         "timestamp", beat.timestamp(),
                         "ttlSeconds", beat.ttlSeconds(),
@@ -43,13 +44,11 @@ public class ChatPresenceController {
                                                     @RequestParam(defaultValue = "false") boolean includeUsers) {
         var info = presence.list(gameId, includeUsers);
         return ResponseEntity.ok()
-                .headers(noStoreHeaders())
+                .headers(noStore())
                 .body(includeUsers
                         ? Map.of("count", info.count(), "users", info.users())
                         : Map.of("count", info.count()));
     }
 
-    private static HttpHeaders noStoreHeaders() {
-        return com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
-    }
+    
 }

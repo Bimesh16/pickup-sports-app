@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
 import java.time.Instant;
@@ -30,7 +31,7 @@ public class ProfileAvatarController {
         UserProfileDTO dto = userProfileService.getProfileById(id);
         String url = dto.avatarUrl();
         if (url == null || url.isBlank()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).headers(noStoreHeaders()).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).headers(noStore()).build();
         }
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.LOCATION, url);
@@ -72,10 +73,5 @@ public class ProfileAvatarController {
         return h;
     }
 
-    private static HttpHeaders noStoreHeaders() {
-        HttpHeaders h = new HttpHeaders();
-        h.add(HttpHeaders.CACHE_CONTROL, "no-store");
-        h.add(HttpHeaders.PRAGMA, "no-cache");
-        return h;
-    }
+    
 }
