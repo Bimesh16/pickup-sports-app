@@ -45,6 +45,13 @@ This guide summarizes key backend features and how to use them from clients and 
   - Per-user burst limiter (sliding window).
   - Server rejects on violation and emits a structured error to /user/queue/errors.
 
+## Notifications
+
+- Get notifications: `GET /notifications`
+- Mark multiple as read: `POST /notifications/mark-read` with `{ "ids": [1,2,3] }`
+- Mark all as read: `PUT /notifications/mark-all-read`
+- Quick unread count: `GET /notifications/unread-count`
+
 ## Moderation
 
 - Profanity filter can sanitize or reject messages (configurable).
