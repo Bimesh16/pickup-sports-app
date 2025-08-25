@@ -8,6 +8,7 @@ import com.bmessi.pickupsportsapp.mapper.ApiMapper;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -95,6 +96,7 @@ public class SearchController {
     }
 
     @GetMapping("/filters")
+    @Cacheable("search-filters")
     public SearchFiltersResponse getFilters() {
         Set<String> sports = gameRepository.findDistinctSports();
         Set<String> locations = userRepository.findDistinctLocations();

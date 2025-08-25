@@ -7,6 +7,7 @@ import com.bmessi.pickupsportsapp.exception.UsernameTakenException;
 import com.bmessi.pickupsportsapp.mapper.ApiMapper;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class UserService {
     private final com.bmessi.pickupsportsapp.config.properties.AuthFlowProperties authProps;
 
     @Transactional
+    @CacheEvict(cacheNames = "search-filters", allEntries = true)
     public UserDTO register(CreateUserRequest request) {
         if (userRepository.findByUsername(request.username()) != null) {
             throw new UsernameTakenException("Username '" + request.username() + "' is already taken");
