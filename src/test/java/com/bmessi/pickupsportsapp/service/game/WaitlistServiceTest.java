@@ -6,9 +6,10 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.dao.DataAccessResourceFailureException;
+import com.bmessi.pickupsportsapp.service.push.PushSenderService;
 
-import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -17,6 +18,7 @@ import static org.mockito.Mockito.*;
 class WaitlistServiceTest {
 
     @Mock JdbcTemplate jdbc;
+    @Mock PushSenderService push;
     @InjectMocks WaitlistService svc;
 
     @Test
@@ -55,11 +57,15 @@ class WaitlistServiceTest {
     }
 
     @Test
-    void promoteUpTo_returnsIdsAndDeletes() {
-        when(jdbc.queryForList(anyString(), eq(Long.class), any(), any()))
-                .thenReturn(List.of(10L, 11L));
-        when(jdbc.update(anyString(), any(), any())).thenReturn(2);
+    void promoteUpTo_returnsIdsAndEnqueuesPush() {
+        when(jdbc.queryForList(startsWith("WITH selected"), any(), any()))
+                .thenReturn(List.of(
+                        Map.of("user_id", 10L, "username", "u1"),
+                        Map.of("user_id", 11L, "username", "u2")
+                ));
         List<Long> ids = svc.promoteUpTo(5L, 2);
         assertEquals(2, ids.size());
+        verify(push).enqueue(eq("u1"), any(), any(), any());
+        verify(push).enqueue(eq("u2"), any(), any(), any());
     }
 }
