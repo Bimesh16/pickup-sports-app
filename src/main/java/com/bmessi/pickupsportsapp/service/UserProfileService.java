@@ -6,6 +6,8 @@ import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.media.AvatarStorageService;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +19,7 @@ public class UserProfileService {
     private final UserRepository userRepository;
     private final AvatarStorageService avatarStorageService;
 
+    @Cacheable("user-profiles")
     @Transactional(readOnly = true)
     public UserProfileDTO getProfileByUsername(String username) {
         User user = userRepository.findOptionalByUsername(username)
@@ -24,6 +27,7 @@ public class UserProfileService {
         return toDto(user);
     }
 
+    @Cacheable("user-profiles")
     @Transactional(readOnly = true)
     public UserProfileDTO getProfileById(Long id) {
         User user = userRepository.findById(id)
@@ -31,6 +35,7 @@ public class UserProfileService {
         return toDto(user);
     }
 
+    @CacheEvict(cacheNames = "user-profiles", key = "#username")
     @Transactional
     public UserProfileDTO updateProfile(String username, UpdateUserProfileRequest request) {
         User user = userRepository.findOptionalByUsername(username)
@@ -47,6 +52,7 @@ public class UserProfileService {
         return toDto(saved);
     }
 
+    @CacheEvict(cacheNames = "user-profiles", key = "#username")
     @Transactional
     public UserProfileDTO updateAvatar(String username, MultipartFile file) {
         User user = userRepository.findOptionalByUsername(username)
@@ -65,6 +71,7 @@ public class UserProfileService {
         return toDto(saved);
     }
 
+    @CacheEvict(cacheNames = "user-profiles", key = "#username")
     @Transactional
     public void deleteAvatar(String username) {
         User user = userRepository.findOptionalByUsername(username)
