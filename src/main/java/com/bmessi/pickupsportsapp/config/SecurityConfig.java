@@ -3,6 +3,7 @@ package com.bmessi.pickupsportsapp.config;
 import com.bmessi.pickupsportsapp.security.JwtAuthenticationFilter;
 import com.bmessi.pickupsportsapp.security.JwtAuthorizationFilter;
 import com.bmessi.pickupsportsapp.security.JwtTokenService;
+import com.bmessi.pickupsportsapp.repository.RevokedTokenRepository;
 import com.bmessi.pickupsportsapp.service.AuthService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -46,11 +47,12 @@ public class SecurityConfig {
     public SecurityFilterChain apiChain(HttpSecurity http,
                                         UserDetailsService userDetailsService,
                                         JwtTokenService jwtTokenService,
+                                        RevokedTokenRepository revokedTokenRepository,
                                         AuthenticationManager authenticationManager,
                                         AuthService authService,
                                         @Value("${security.login.rate-limit:20}") int loginRateLimitPerMinute) throws Exception {
 
-        var jwtAuthz = new JwtAuthorizationFilter(userDetailsService, jwtTokenService, AUTH_HEADER_NAME, AUTH_HEADER_PREFIX);
+        var jwtAuthz = new JwtAuthorizationFilter(userDetailsService, jwtTokenService, revokedTokenRepository, AUTH_HEADER_NAME, AUTH_HEADER_PREFIX);
         var jwtAuthn = new JwtAuthenticationFilter(authenticationManager, authService,
                 "/auth/login", AUTH_HEADER_NAME, AUTH_HEADER_PREFIX);
 

@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
 
 public class JwtTokenService {
 
@@ -51,7 +52,8 @@ public class JwtTokenService {
                 .issuer(issuer)
                 .audience().add(audience).and()
                 .issuedAt(issuedAt)
-                .expiration(expiresAt);
+                .expiration(expiresAt)
+                .id(UUID.randomUUID().toString());
 
         if (extraClaims != null) {
             extraClaims.forEach(builder::claim);
@@ -83,6 +85,7 @@ public class JwtTokenService {
                 .audience().add(audience).and()
                 .issuedAt(issuedAt)
                 .expiration(expiresAt)
+                .id(UUID.randomUUID().toString())
                 .signWith(signingKey)
                 .compact();
     }

@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.bmessi.pickupsportsapp.repository.RevokedTokenRepository;
+
 import java.io.IOException;
 
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
@@ -23,15 +25,18 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
     private final JwtTokenService tokenService;
+    private final RevokedTokenRepository revokedTokenRepository;
     private final String authHeaderName;
     private final String authHeaderPrefix;
 
     public JwtAuthorizationFilter(UserDetailsService userDetailsService,
                                   JwtTokenService tokenService,
+                                  RevokedTokenRepository revokedTokenRepository,
                                   String authHeaderName,
                                   String authHeaderPrefix) {
         this.userDetailsService = userDetailsService;
         this.tokenService = tokenService;
+        this.revokedTokenRepository = revokedTokenRepository;
         this.authHeaderName = (authHeaderName == null || authHeaderName.isBlank()) ? "Authorization" : authHeaderName;
         this.authHeaderPrefix = (authHeaderPrefix == null || authHeaderPrefix.isBlank()) ? "Bearer " : authHeaderPrefix;
     }
@@ -88,16 +93,21 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         try {
             var claims = tokenService.parse(token).getPayload();
-            String username = claims.getSubject();
-            if (username != null && !username.isBlank()) {
-                var userDetails = userDetailsService.loadUserByUsername(username);
-                var auth = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            String jti = claims.getId();
+            if (jti != null && revokedTokenRepository.existsById(jti)) {
+                SecurityContextHolder.clearContext();
+            } else {
+                String username = claims.getSubject();
+                if (username != null && !username.isBlank()) {
+                    var userDetails = userDetailsService.loadUserByUsername(username);
+                    var auth = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContext context = SecurityContextHolder.createEmptyContext();
-                context.setAuthentication(auth);
-                SecurityContextHolder.setContext(context);
+                    SecurityContext context = SecurityContextHolder.createEmptyContext();
+                    context.setAuthentication(auth);
+                    SecurityContextHolder.setContext(context);
+                }
             }
         } catch (ExpiredJwtException eje) {
             SecurityContextHolder.clearContext();
