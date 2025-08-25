@@ -10,7 +10,6 @@ import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
 import java.util.Collection;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/notifications")
@@ -19,7 +18,6 @@ public class NotificationsBulkController {
 
     private final NotificationService notificationService;
 
-    // POST /notifications/mark-read  { "ids": [1,2,3] }
     @PostMapping("/mark-read")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.UpdatedResponse> markReadBulk(@RequestBody MarkReadRequest request, Principal principal) {
@@ -31,8 +29,7 @@ public class NotificationsBulkController {
                 .headers(noStore())
                 .body(new com.bmessi.pickupsportsapp.dto.api.UpdatedResponse(updated));
     }
-
-    // Additional variant: GET /notifications/me/unread-count (non-conflicting with existing endpoints)
+  
     @GetMapping("/me/unread-count")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.CountResponse> unreadCount(Principal principal) {

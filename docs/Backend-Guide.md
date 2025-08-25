@@ -43,7 +43,11 @@ This guide summarizes key backend features and how to use them from clients and 
 - Rate limiting:
   - Per-channel rate limiter.
   - Per-user burst limiter (sliding window).
-  - Server rejects on violation and emits a structured error to /user/queue/errors.
+    - Server rejects on violation and emits a structured error to /user/queue/errors.
+
+## Notifications
+
+- Unread badge count: GET /notifications/unread-count -> { "count" }
 
 ## Moderation
 
