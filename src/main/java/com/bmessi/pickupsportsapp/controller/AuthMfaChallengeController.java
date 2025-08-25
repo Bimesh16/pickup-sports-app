@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public class AuthMfaChallengeController {
             String ip = httpRequest.getRemoteAddr();
             String key = "mfa:verify:" + (request.challenge() == null ? "" : request.challenge()) + ":" + ip;
             if (redisRateLimiter.isPresent() && !redisRateLimiter.get().allow(key, 10, 60)) {
-                return ResponseEntity.status(429).headers(noStoreHeaders()).body(Map.of(
+                return ResponseEntity.status(429).headers(noStore()).body(Map.of(
                         "error", "too_many_requests",
                         "message", "Please try again later",
                         "timestamp", System.currentTimeMillis()
@@ -46,7 +47,7 @@ public class AuthMfaChallengeController {
 
         String username = challenges.consumeIfValid(request.challenge());
         if (username == null) {
-            return ResponseEntity.status(401).headers(noStoreHeaders()).body(Map.of(
+            return ResponseEntity.status(401).headers(noStore()).body(Map.of(
                     "error", "invalid_challenge",
                     "message", "Challenge invalid or expired",
                     "timestamp", System.currentTimeMillis()
@@ -61,7 +62,7 @@ public class AuthMfaChallengeController {
             try { recoveryOk = mfaRecoveryService.consume(request.code()); } catch (Exception ignore) {}
             if (!recoveryOk) {
                 try { meterRegistry.counter("mfa.verify", "result", "failure").increment(); } catch (Exception ignore) {}
-                return ResponseEntity.status(401).headers(noStoreHeaders()).body(Map.of(
+                return ResponseEntity.status(401).headers(noStore()).body(Map.of(
                         "error", "invalid_code",
                         "message", "MFA code invalid",
                         "timestamp", System.currentTimeMillis()
@@ -77,7 +78,7 @@ public class AuthMfaChallengeController {
         } catch (Exception ignore) {}
 
         TokenPairResponse tokens = authService.issueTokensForAuthenticatedUser(username);
-        HttpHeaders headers = noStoreHeaders();
+        HttpHeaders headers = noStore();
         if (cookieProps.isEnabled()) {
             boolean secure = httpRequest.isSecure() || "https".equalsIgnoreCase(httpRequest.getHeader("X-Forwarded-Proto"));
             String cookie = cookieProps.getName() + "=" + tokens.refreshToken() + "; Path=" + cookieProps.getPath()
@@ -88,7 +89,5 @@ public class AuthMfaChallengeController {
         return ResponseEntity.ok().headers(headers).body(tokens);
     }
 
-    private static HttpHeaders noStoreHeaders() {
-        return com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
-    }
+    
 }

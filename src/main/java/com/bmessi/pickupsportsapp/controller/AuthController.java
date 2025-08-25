@@ -18,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.util.Map;
 
@@ -64,7 +65,7 @@ public class AuthController {
                 int limit = (loginPolicyProperties != null) ? loginPolicyProperties.getRequestsPerIpPerMinute() : 60;
                 if (redisRateLimiter.isPresent() && !redisRateLimiter.get().allow(key, Math.max(1, limit), 60)) {
                     return ResponseEntity.status(429)
-                            .headers(noStoreHeaders())
+                            .headers(noStore())
                             .body(Map.of(
                                     "error", "too_many_requests",
                                     "message", "Please try again later",
@@ -85,7 +86,7 @@ public class AuthController {
             // Enforce verification if required
             if (authProps.isVerificationRequired() && !verificationService.isVerified(username)) {
                 return ResponseEntity.status(403)
-                        .headers(noStoreHeaders())
+                        .headers(noStore())
                         .body(Map.of(
                                 "error", "email_unverified",
                                 "message", "Please verify your email before logging in",
@@ -111,7 +112,7 @@ public class AuthController {
                         (mfaEnabled && !deviceTrusted)) {
                     String challenge = mfaChallengeService.create(username);
                     return ResponseEntity.ok()
-                            .headers(noStoreHeaders())
+                            .headers(noStore())
                             .body(Map.of(
                                     "mfaRequired", true,
                                     "methods", java.util.List.of("TOTP"),
@@ -133,7 +134,7 @@ public class AuthController {
             // Persist refresh metadata if cookie-less (request body) is used on refresh; for login, metadata is saved in storeRefresh invoked inside service
 
             log.debug("Login successful");
-            HttpHeaders headers = noStoreHeaders();
+            HttpHeaders headers = noStore();
             // Issue refresh cookie if enabled
             if (cookieProps.isEnabled()) {
                 headers.add(HttpHeaders.SET_COOKIE, buildRefreshCookie(tokens.refreshToken(), false, httpRequest));
@@ -145,7 +146,7 @@ public class AuthController {
         } catch (BadCredentialsException e) {
             log.debug("Login failed: {}", e.getMessage());
             return ResponseEntity.status(401)
-                    .headers(noStoreHeaders())
+                    .headers(noStore())
                     .body(Map.of(
                             "error", "invalid_grant",
                             "message", "Invalid username or password",
@@ -154,7 +155,7 @@ public class AuthController {
         } catch (Exception e) {
             log.error("Login error: {}", e.getMessage());
             return ResponseEntity.status(500)
-                    .headers(noStoreHeaders())
+                    .headers(noStore())
                     .body(Map.of(
                             "error", "internal_server_error",
                             "message", "Authentication failed",
@@ -175,7 +176,7 @@ public class AuthController {
 
             if (provided == null || provided.isBlank()) {
                 return ResponseEntity.status(400)
-                        .headers(noStoreHeaders())
+                        .headers(noStore())
                         .body(Map.of(
                                 "error", "invalid_request",
                                 "message", "Missing refresh token (body or cookie 'refreshToken')",
@@ -189,7 +190,7 @@ public class AuthController {
             TokenPairResponse tokens = authService.refresh(provided);
             // Note: refresh rotation stores new refresh; metadata capture can be added in service when needed
             log.debug("Token refresh successful");
-            HttpHeaders headers = noStoreHeaders();
+            HttpHeaders headers = noStore();
             if (cookieProps.isEnabled()) {
                 headers.add(HttpHeaders.SET_COOKIE, buildRefreshCookie(tokens.refreshToken(), false, httpRequest));
             }
@@ -200,7 +201,7 @@ public class AuthController {
         } catch (BadCredentialsException e) {
             log.debug("Token refresh failed: {}", e.getMessage());
             return ResponseEntity.status(401)
-                    .headers(noStoreHeaders())
+                    .headers(noStore())
                     .body(Map.of(
                             "error", "invalid_token",
                             "message", "Invalid or expired refresh token",
@@ -209,7 +210,7 @@ public class AuthController {
         } catch (Exception e) {
             log.error("Token refresh error: {}", e.getMessage(), e);
             return ResponseEntity.status(500)
-                    .headers(noStoreHeaders())
+                    .headers(noStore())
                     .body(Map.of(
                             "error", "internal_server_error",
                             "message", "Token refresh failed",
@@ -228,7 +229,7 @@ public class AuthController {
             log.error("Logout error: {}", e.getMessage());
             // Intentionally returning 200 for logout regardless
         }
-        HttpHeaders headers = noStoreHeaders();
+        HttpHeaders headers = noStore();
         // Help clients clear local caches/storage if they opt-in to using cookies/local storage
         headers.add("Clear-Site-Data", "\"cache\", \"storage\"");
         return ResponseEntity.ok()
@@ -239,12 +240,7 @@ public class AuthController {
                 ));
     }
 
-    private static HttpHeaders noStoreHeaders() {
-        HttpHeaders h = new HttpHeaders();
-        h.add(HttpHeaders.CACHE_CONTROL, "no-store");
-        h.add(HttpHeaders.PRAGMA, "no-cache");
-        return h;
-    }
+    
 
     private String buildRefreshCookie(String value, boolean delete, jakarta.servlet.http.HttpServletRequest req) {
         String name = cookieProps.getName();
@@ -276,7 +272,7 @@ public class AuthController {
                                                   org.springframework.security.core.Authentication auth) {
         if (principal == null || principal.getName() == null || principal.getName().isBlank() || auth == null) {
             return ResponseEntity.status(401)
-                    .headers(noStoreHeaders())
+                    .headers(noStore())
                     .body(Map.of(
                             "error", "unauthorized",
                             "message", "Authentication required",
@@ -291,7 +287,7 @@ public class AuthController {
                     .toList();
 
         return ResponseEntity.ok()
-                .headers(noStoreHeaders())
+                .headers(noStore())
                 .body(Map.of(
                         "username", principal.getName(),
                         "roles", roles,

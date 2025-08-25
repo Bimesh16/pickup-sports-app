@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.net.URI;
 
@@ -32,7 +33,7 @@ public class UserController {
         if (idem != null) {
             var existing = idempotencyService.get(request.username(), idem);
             if (existing.isPresent()) {
-                HttpHeaders headers = noStoreHeaders();
+                HttpHeaders headers = noStore();
                 headers.add("Preference-Applied", "return=minimal");
                 return ResponseEntity.ok().headers(headers).build();
             }
@@ -59,7 +60,7 @@ public class UserController {
             idempotencyService.put(request.username(), idem, user.id());
         }
 
-        HttpHeaders headers = noStoreHeaders();
+        HttpHeaders headers = noStore();
         URI location = URI.create("/users/" + (user != null && user.id() != null ? user.id() : ""));
         if (preferMinimal) {
             headers.add("Preference-Applied", "return=minimal");
@@ -68,10 +69,5 @@ public class UserController {
         return ResponseEntity.created(location).headers(headers).body(user);
     }
 
-    private static HttpHeaders noStoreHeaders() {
-        HttpHeaders h = new HttpHeaders();
-        h.add(HttpHeaders.CACHE_CONTROL, "no-store");
-        h.add(HttpHeaders.PRAGMA, "no-cache");
-        return h;
-    }
+    
 }

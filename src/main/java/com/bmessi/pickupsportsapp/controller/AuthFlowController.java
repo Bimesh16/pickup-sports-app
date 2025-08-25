@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class AuthFlowController {
         try {
             String key = "auth:verify:" + request.token();
             if (redisRateLimiter.isPresent() && !redisRateLimiter.get().allow(key, 10, 60)) {
-                return ResponseEntity.status(429).headers(noStoreHeaders()).body(Map.of(
+                return ResponseEntity.status(429).headers(noStore()).body(Map.of(
                         "error", "too_many_requests",
                         "message", "Please try again later",
                         "timestamp", System.currentTimeMillis()
@@ -47,7 +48,7 @@ public class AuthFlowController {
         boolean ok = verificationService.consume(request.token());
         if (!ok) {
             return ResponseEntity.status(400)
-                    .headers(noStoreHeaders())
+                    .headers(noStore())
                     .body(Map.of(
                             "error", "invalid_token",
                             "message", "Verification token is invalid or expired",
@@ -55,7 +56,7 @@ public class AuthFlowController {
                     ));
         }
         return ResponseEntity.ok()
-                .headers(noStoreHeaders())
+                .headers(noStore())
                 .body(Map.of(
                         "message", "Email verified",
                         "timestamp", System.currentTimeMillis()
@@ -78,7 +79,7 @@ public class AuthFlowController {
                 // no direct injection here; using default if not available
             } catch (Exception ignore) {}
             if (redisRateLimiter.isPresent() && !redisRateLimiter.get().allow(key, perMinute, 60)) {
-                return ResponseEntity.status(429).headers(noStoreHeaders()).body(Map.of(
+                return ResponseEntity.status(429).headers(noStore()).body(Map.of(
                         "error", "too_many_requests",
                         "message", "Please try again later",
                         "timestamp", System.currentTimeMillis()
@@ -88,7 +89,7 @@ public class AuthFlowController {
         String ip = extractClientIp(httpRequest);
         passwordResetService.requestReset(request.username(), ip);
         return ResponseEntity.ok()
-                .headers(noStoreHeaders())
+                .headers(noStore())
                 .body(Map.of(
                         "message", "If the account exists, a password reset email will be sent",
                         "timestamp", System.currentTimeMillis()
@@ -101,7 +102,7 @@ public class AuthFlowController {
     public ResponseEntity<Map<String, Object>> completeReset(@Valid @RequestBody ResetCompleteRequest request) {
         if (request.newPassword().length() < 8 || request.newPassword().length() > 255) {
             return ResponseEntity.status(400)
-                    .headers(noStoreHeaders())
+                    .headers(noStore())
                     .body(Map.of(
                             "error", "invalid_request",
                             "message", "Password must be between 8 and 255 characters",
@@ -112,7 +113,7 @@ public class AuthFlowController {
         boolean ok = passwordResetService.resetPassword(request.token(), request.newPassword());
         if (!ok) {
             return ResponseEntity.status(400)
-                    .headers(noStoreHeaders())
+                    .headers(noStore())
                     .body(Map.of(
                             "error", "invalid_token",
                             "message", "Reset token is invalid or expired",
@@ -121,18 +122,11 @@ public class AuthFlowController {
         }
 
         return ResponseEntity.ok()
-                .headers(noStoreHeaders())
+                .headers(noStore())
                 .body(Map.of(
                         "message", "Password updated",
                         "timestamp", System.currentTimeMillis()
                 ));
-    }
-
-    private static HttpHeaders noStoreHeaders() {
-        HttpHeaders h = new HttpHeaders();
-        h.add(HttpHeaders.CACHE_CONTROL, "no-store");
-        h.add(HttpHeaders.PRAGMA, "no-cache");
-        return h;
     }
 
     private static String extractClientIp(HttpServletRequest request) {

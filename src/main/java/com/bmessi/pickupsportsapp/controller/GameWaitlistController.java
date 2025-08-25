@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.util.List;
 
@@ -52,7 +53,5 @@ public class GameWaitlistController {
         );
     }
 
-    private static HttpHeaders noStore() {
-        return com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
-    }
+    
 }

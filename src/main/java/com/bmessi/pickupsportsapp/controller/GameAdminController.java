@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class GameAdminController {
         // Notify participants and creator, best-effort
         notifyParticipants(g, status);
 
-        return ResponseEntity.ok().headers(noStoreHeaders())
+        return ResponseEntity.ok().headers(noStore())
                 .body(new com.bmessi.pickupsportsapp.dto.api.StatusResponse(status));
         }
 
@@ -132,7 +133,5 @@ public class GameAdminController {
         }
     }
 
-    private static HttpHeaders noStoreHeaders() {
-        return com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
-    }
+    
 }
