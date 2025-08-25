@@ -1,8 +1,8 @@
 package com.bmessi.pickupsportsapp.controller;
 
-import com.bmessi.pickupsportsapp.dto.GameSummaryDTO;
+import com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO;
 import com.bmessi.pickupsportsapp.dto.UserDTO;
-import com.bmessi.pickupsportsapp.entity.Game;
+import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.mapper.ApiMapper;
 import com.bmessi.pickupsportsapp.repository.GameRepository;

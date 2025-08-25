@@ -1,7 +1,7 @@
 package com.bmessi.pickupsportsapp.service;
 
 import com.bmessi.pickupsportsapp.dto.ReadStatusDTO;
-import com.bmessi.pickupsportsapp.entity.ChatMessage;
+import com.bmessi.pickupsportsapp.entity.chat.ChatMessage;
 import com.bmessi.pickupsportsapp.entity.ChatReadReceipt;
 import com.bmessi.pickupsportsapp.repository.ChatMessageRepository;
 import com.bmessi.pickupsportsapp.repository.ChatReadReceiptRepository;

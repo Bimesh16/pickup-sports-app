@@ -4,7 +4,7 @@ import com.bmessi.pickupsportsapp.security.JwtAuthenticationFilter;
 import com.bmessi.pickupsportsapp.security.JwtAuthorizationFilter;
 import com.bmessi.pickupsportsapp.security.JwtTokenService;
 import com.bmessi.pickupsportsapp.repository.RevokedTokenRepository;
-import com.bmessi.pickupsportsapp.service.AuthService;
+import com.bmessi.pickupsportsapp.service.auth.AuthService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

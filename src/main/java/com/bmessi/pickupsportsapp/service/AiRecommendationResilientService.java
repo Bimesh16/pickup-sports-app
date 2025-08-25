@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.service;
 
-import com.bmessi.pickupsportsapp.dto.GameSummaryDTO;
+import com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO;
 import com.bmessi.pickupsportsapp.mapper.ApiMapper;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;

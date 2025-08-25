@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.service.chat;
 
-import com.bmessi.pickupsportsapp.dto.ChatMessageDTO;
+import com.bmessi.pickupsportsapp.dto.chat.ChatMessageDTO;
 
 import java.time.Instant;
 import java.util.List;

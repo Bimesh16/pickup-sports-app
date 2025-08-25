@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.service;
+package com.bmessi.pickupsportsapp.service.notification;
 
 import com.bmessi.pickupsportsapp.dto.NotificationJob;
 import lombok.RequiredArgsConstructor;

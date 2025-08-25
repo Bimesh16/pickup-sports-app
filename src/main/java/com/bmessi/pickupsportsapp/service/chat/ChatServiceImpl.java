@@ -1,8 +1,8 @@
 package com.bmessi.pickupsportsapp.service.chat;
 
-import com.bmessi.pickupsportsapp.dto.ChatMessageDTO;
-import com.bmessi.pickupsportsapp.entity.ChatMessage;
-import com.bmessi.pickupsportsapp.entity.Game;
+import com.bmessi.pickupsportsapp.dto.chat.ChatMessageDTO;
+import com.bmessi.pickupsportsapp.entity.chat.ChatMessage;
+import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.repository.ChatMessageRepository;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.security.RedisRateLimiterService;

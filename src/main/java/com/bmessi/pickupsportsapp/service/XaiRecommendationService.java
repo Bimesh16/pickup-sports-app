@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.service;
 
-import com.bmessi.pickupsportsapp.entity.Game;
+import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.integration.xai.XaiApiClient;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import lombok.RequiredArgsConstructor;

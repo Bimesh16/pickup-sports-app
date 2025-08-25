@@ -1,6 +1,6 @@
-package com.bmessi.pickupsportsapp.controller;
+package com.bmessi.pickupsportsapp.controller.chat;
 
-import com.bmessi.pickupsportsapp.dto.ChatMessageDTO;
+import com.bmessi.pickupsportsapp.dto.chat.ChatMessageDTO;
 import com.bmessi.pickupsportsapp.service.chat.ChatMessagePublisher;
 import com.bmessi.pickupsportsapp.service.chat.ChatService;
 import com.bmessi.pickupsportsapp.service.gameaccess.GameAccessService;

@@ -1,7 +1,7 @@
-package com.bmessi.pickupsportsapp.service;
+package com.bmessi.pickupsportsapp.service.auth;
 
 import com.bmessi.pickupsportsapp.dto.auth.TokenPairResponse;
-import com.bmessi.pickupsportsapp.entity.RefreshToken;
+import com.bmessi.pickupsportsapp.entity.auth.RefreshToken;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.security.JwtTokenService;

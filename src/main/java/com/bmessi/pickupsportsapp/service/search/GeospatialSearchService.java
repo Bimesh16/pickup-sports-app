@@ -28,7 +28,7 @@ public class GeospatialSearchService {
     private boolean forceFallback;
 
     @Cacheable(cacheNames = "nearby-games", key = "#lat + ':' + #lon + ':' + #radiusKm + ':' + #limit")
-    public List<com.bmessi.pickupsportsapp.dto.GameSummaryDTO> findNearby(double lat, double lon, double radiusKm, int limit) {
+    public List<com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO> findNearby(double lat, double lon, double radiusKm, int limit) {
         int effLimit = Math.max(1, Math.min(limit, 100));
         double clampedRadius = Math.max(0.1, Math.min(radiusKm, 50.0)); // cap at 50km
 
@@ -49,8 +49,8 @@ public class GeospatialSearchService {
                      LIMIT ?
                     """;
             long t0 = System.nanoTime();
-            List<com.bmessi.pickupsportsapp.dto.GameSummaryDTO> out = jdbcTemplate.query(sql, (rs, rowNum) ->
-                    new com.bmessi.pickupsportsapp.dto.GameSummaryDTO(
+            List<com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO> out = jdbcTemplate.query(sql, (rs, rowNum) ->
+                    new com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO(
                             rs.getLong("id"),
                             rs.getString("sport"),
                             rs.getString("location"),
@@ -98,8 +98,8 @@ public class GeospatialSearchService {
             """;
 
         long t0 = System.nanoTime();
-        List<com.bmessi.pickupsportsapp.dto.GameSummaryDTO> out = jdbcTemplate.query(sql, (rs, rowNum) ->
-                new com.bmessi.pickupsportsapp.dto.GameSummaryDTO(
+        List<com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO> out = jdbcTemplate.query(sql, (rs, rowNum) ->
+                new com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO(
                         rs.getLong("id"),
                         rs.getString("sport"),
                         rs.getString("location"),

@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.service.game;
 
-import com.bmessi.pickupsportsapp.entity.Game;
+import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;

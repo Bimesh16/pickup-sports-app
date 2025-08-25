@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.dto;
+package com.bmessi.pickupsportsapp.dto.chat;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;

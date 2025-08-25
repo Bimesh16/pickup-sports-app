@@ -1,7 +1,7 @@
 
 package com.bmessi.pickupsportsapp.repository;
 
-import com.bmessi.pickupsportsapp.entity.Game;
+import com.bmessi.pickupsportsapp.entity.game.Game;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;

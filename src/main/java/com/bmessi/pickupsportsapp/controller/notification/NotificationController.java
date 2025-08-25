@@ -1,8 +1,8 @@
-package com.bmessi.pickupsportsapp.controller;
+package com.bmessi.pickupsportsapp.controller.notification;
 
-import com.bmessi.pickupsportsapp.dto.NotificationDTO;
+import com.bmessi.pickupsportsapp.dto.notification.NotificationDTO;
 import com.bmessi.pickupsportsapp.mapper.ApiMapper;
-import com.bmessi.pickupsportsapp.service.NotificationService;
+import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -62,7 +62,7 @@ public class NotificationController {
         String username = principal.getName();
         log.debug("Getting notifications for user: {}, unreadOnly: {}", username, unreadOnly);
 
-        Page<com.bmessi.pickupsportsapp.entity.Notification> pageEntities =
+        Page<com.bmessi.pickupsportsapp.entity.notification.Notification> pageEntities =
                 notificationService.getUserNotifications(username, unreadOnly, pageable);
 
         Page<NotificationDTO> page = pageEntities.map(mapper::toNotificationDTO);
@@ -193,7 +193,7 @@ public class NotificationController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> getNotificationCount(Principal principal) {
         String username = principal.getName();
-        List<com.bmessi.pickupsportsapp.entity.Notification> all = notificationService.getUserNotifications(username);
+        List<com.bmessi.pickupsportsapp.entity.notification.Notification> all = notificationService.getUserNotifications(username);
         long unreadCount = all.stream().filter(n -> !n.isRead()).count();
 
         return ResponseEntity.ok(Map.of(
@@ -296,7 +296,7 @@ public class NotificationController {
         }
     }
 
-    private static long lastModifiedEpochMilli(com.bmessi.pickupsportsapp.entity.Notification n) {
+    private static long lastModifiedEpochMilli(com.bmessi.pickupsportsapp.entity.notification.Notification n) {
         if (n.getUpdatedAt() != null) return n.getUpdatedAt().toEpochMilli();
         if (n.getCreatedAt() != null) return n.getCreatedAt().toEpochMilli();
         return System.currentTimeMillis();

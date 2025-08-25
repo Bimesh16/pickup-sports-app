@@ -1,7 +1,7 @@
 package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.dto.auth.TokenPairResponse;
-import com.bmessi.pickupsportsapp.service.AuthService;
+import com.bmessi.pickupsportsapp.service.auth.AuthService;
 import com.bmessi.pickupsportsapp.service.MfaChallengeService;
 import com.bmessi.pickupsportsapp.service.MfaService;
 import jakarta.validation.Valid;

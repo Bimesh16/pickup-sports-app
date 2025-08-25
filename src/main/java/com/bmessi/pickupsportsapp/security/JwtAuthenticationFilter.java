@@ -1,7 +1,7 @@
 package com.bmessi.pickupsportsapp.security;
 
 import com.bmessi.pickupsportsapp.dto.auth.TokenPairResponse;
-import com.bmessi.pickupsportsapp.service.AuthService;
+import com.bmessi.pickupsportsapp.service.auth.AuthService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;

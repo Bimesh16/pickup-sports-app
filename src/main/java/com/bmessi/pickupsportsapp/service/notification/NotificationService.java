@@ -1,6 +1,6 @@
-package com.bmessi.pickupsportsapp.service;
+package com.bmessi.pickupsportsapp.service.notification;
 
-import com.bmessi.pickupsportsapp.entity.Notification;
+import com.bmessi.pickupsportsapp.entity.notification.Notification;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.NotificationRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;

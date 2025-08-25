@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.repository;
 
-import com.bmessi.pickupsportsapp.entity.RefreshToken;
+import com.bmessi.pickupsportsapp.entity.auth.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

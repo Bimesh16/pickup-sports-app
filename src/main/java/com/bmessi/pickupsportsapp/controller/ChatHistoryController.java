@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.controller;
 
-import com.bmessi.pickupsportsapp.dto.ChatMessageDTO;
+import com.bmessi.pickupsportsapp.dto.chat.ChatMessageDTO;
 import com.bmessi.pickupsportsapp.service.chat.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

@@ -2,11 +2,11 @@ package com.bmessi.pickupsportsapp.mapper;
 
 import com.bmessi.pickupsportsapp.dto.CreateGameRequest;
 import com.bmessi.pickupsportsapp.dto.GameDetailsDTO;
-import com.bmessi.pickupsportsapp.dto.GameSummaryDTO;
-import com.bmessi.pickupsportsapp.dto.NotificationDTO;
+import com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO;
+import com.bmessi.pickupsportsapp.dto.notification.NotificationDTO;
 import com.bmessi.pickupsportsapp.dto.UserDTO;
-import com.bmessi.pickupsportsapp.entity.Game;
-import com.bmessi.pickupsportsapp.entity.Notification;
+import com.bmessi.pickupsportsapp.entity.game.Game;
+import com.bmessi.pickupsportsapp.entity.notification.Notification;
 import com.bmessi.pickupsportsapp.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

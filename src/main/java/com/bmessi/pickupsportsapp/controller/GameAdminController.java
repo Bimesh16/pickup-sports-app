@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.controller;
 
-import com.bmessi.pickupsportsapp.entity.Game;
+import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +18,7 @@ import java.util.Map;
 public class GameAdminController {
 
     private final GameRepository games;
-    private final com.bmessi.pickupsportsapp.service.NotificationService notificationService;
+    private final com.bmessi.pickupsportsapp.service.notification.NotificationService notificationService;
     private final com.bmessi.pickupsportsapp.service.AdminAuditService adminAuditService;
     private final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GameAdminController.class);
 

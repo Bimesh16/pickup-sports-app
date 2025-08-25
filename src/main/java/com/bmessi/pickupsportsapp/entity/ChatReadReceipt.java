@@ -3,6 +3,7 @@ package com.bmessi.pickupsportsapp.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import com.bmessi.pickupsportsapp.entity.chat.ChatMessage;
 
 import java.time.Instant;
 

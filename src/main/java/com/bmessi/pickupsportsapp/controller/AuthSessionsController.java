@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.controller;
 
-import com.bmessi.pickupsportsapp.entity.RefreshToken;
+import com.bmessi.pickupsportsapp.entity.auth.RefreshToken;
 import com.bmessi.pickupsportsapp.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;

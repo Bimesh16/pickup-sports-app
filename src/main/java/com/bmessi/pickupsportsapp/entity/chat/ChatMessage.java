@@ -1,8 +1,9 @@
-package com.bmessi.pickupsportsapp.entity;
+package com.bmessi.pickupsportsapp.entity.chat;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import com.bmessi.pickupsportsapp.entity.game.Game;
 
 import java.time.Instant;
 

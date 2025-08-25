@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.dto;
+package com.bmessi.pickupsportsapp.dto.notification;
 
 import java.time.Instant;
 

@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.config;
 
-import com.bmessi.pickupsportsapp.service.NotificationService;
+import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

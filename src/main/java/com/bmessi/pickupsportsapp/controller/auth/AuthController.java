@@ -1,8 +1,8 @@
-package com.bmessi.pickupsportsapp.controller;
+package com.bmessi.pickupsportsapp.controller.auth;
 
 import com.bmessi.pickupsportsapp.dto.auth.RefreshRequest;
 import com.bmessi.pickupsportsapp.dto.auth.TokenPairResponse;
-import com.bmessi.pickupsportsapp.service.AuthService;
+import com.bmessi.pickupsportsapp.service.auth.AuthService;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

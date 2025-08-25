@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.repository;
 
-import com.bmessi.pickupsportsapp.entity.Notification;
+import com.bmessi.pickupsportsapp.entity.notification.Notification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;

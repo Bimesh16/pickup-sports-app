@@ -22,7 +22,7 @@ class GeospatialSearchServiceFallbackTest {
 
     @Test
     void findNearby_worksWithFallback() {
-        List<com.bmessi.pickupsportsapp.dto.GameSummaryDTO> res =
+        List<com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO> res =
                 service.findNearby(37.7749, -122.4194, 2.0, 10);
         assertNotNull(res);
     }

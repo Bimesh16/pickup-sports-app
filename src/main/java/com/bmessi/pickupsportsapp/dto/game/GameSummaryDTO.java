@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.dto;
+package com.bmessi.pickupsportsapp.dto.game;
 
 import java.time.OffsetDateTime;
 

@@ -29,9 +29,9 @@ public class NearbyExploreController {
         int l = clamp(limit, 1, 100, 50);
 
         try { meterRegistry.counter("games.nearby.requests").increment(); } catch (Exception ignore) {}
-        List<com.bmessi.pickupsportsapp.dto.GameSummaryDTO> list = service.findNearby(lat, lon, r, l);
+        List<com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO> list = service.findNearby(lat, lon, r, l);
         List<Map<String, Object>> items = new ArrayList<>(list.size());
-        for (com.bmessi.pickupsportsapp.dto.GameSummaryDTO g : list) {
+        for (com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO g : list) {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("id", g.id());
             m.put("sport", g.sport());

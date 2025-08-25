@@ -3,7 +3,7 @@ package com.bmessi.pickupsportsapp.service;
 import com.bmessi.pickupsportsapp.dto.RateUserRequest;
 import com.bmessi.pickupsportsapp.dto.RatingDTO;
 import com.bmessi.pickupsportsapp.dto.UserRatingSummaryDTO;
-import com.bmessi.pickupsportsapp.entity.Game;
+import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.PlayerRating;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.GameRepository;

@@ -7,12 +7,12 @@ public record NotificationEvent(
         boolean read,
         long createdAt
 ) {
-    public static NotificationEvent created(com.bmessi.pickupsportsapp.entity.Notification n) {
+    public static NotificationEvent created(com.bmessi.pickupsportsapp.entity.notification.Notification n) {
         return new NotificationEvent("created", n.getId(), n.getMessage(), n.isRead(),
                 n.getCreatedAt() != null ? n.getCreatedAt().toEpochMilli() : System.currentTimeMillis());
     }
 
-    public static NotificationEvent read(com.bmessi.pickupsportsapp.entity.Notification n) {
+    public static NotificationEvent read(com.bmessi.pickupsportsapp.entity.notification.Notification n) {
         return new NotificationEvent("read", n.getId(), n.getMessage(), true,
                 n.getCreatedAt() != null ? n.getCreatedAt().toEpochMilli() : System.currentTimeMillis());
     }

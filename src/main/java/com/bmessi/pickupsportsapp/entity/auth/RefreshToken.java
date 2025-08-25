@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.entity;
+package com.bmessi.pickupsportsapp.entity.auth;
 
 import jakarta.persistence.*;
 import lombok.*;

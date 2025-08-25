@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.entity;
+package com.bmessi.pickupsportsapp.entity.notification;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
