@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.controller;
 
-import com.bmessi.pickupsportsapp.service.NotificationDispatcher;
+import com.bmessi.pickupsportsapp.service.NotificationService;
 import com.bmessi.pickupsportsapp.service.game.CapacityManager;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class RsvpController {
     private final JdbcTemplate jdbc;
     private final CapacityManager capacityManager;
     private final WaitlistService waitlistService;
-    private final NotificationDispatcher dispatcher;
+    private final NotificationService notificationService;
 
     @PostMapping("/{id}/rsvp2")
     @PreAuthorize("isAuthenticated()")
@@ -57,7 +57,7 @@ public class RsvpController {
 
             var meta = gameMeta(id);
             if (meta != null) {
-                dispatcher.dispatchGameEvent(meta.owner(), username, meta.sport(), meta.location(), "joined");
+                notificationService.createGameNotification(meta.owner(), username, meta.sport(), meta.location(), "joined");
             }
 
             return ResponseEntity.ok().headers(noStore())
@@ -67,7 +67,7 @@ public class RsvpController {
         if (d.waitlisted()) {
             var meta = gameMeta(id);
             if (meta != null) {
-                dispatcher.dispatchGameEvent(username, "system", meta.sport(), meta.location(), "waitlisted");
+                notificationService.createGameNotification(username, "system", meta.sport(), meta.location(), "waitlisted");
             }
             return ResponseEntity.status(202).headers(noStore())
                     .body(new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted"));
@@ -102,10 +102,10 @@ public class RsvpController {
                             ON CONFLICT DO NOTHING
                             """, id, uid);
                     String promotedUsername = jdbc.queryForObject("SELECT username FROM app_user WHERE id = ?", String.class, uid);
-                    dispatcher.dispatchGameEvent(promotedUsername, "system", meta.sport(), meta.location(), "promoted");
+                    notificationService.createGameNotification(promotedUsername, "system", meta.sport(), meta.location(), "promoted");
                 }
                 if (!promoted.isEmpty()) {
-                    dispatcher.dispatchGameEvent(meta.owner(), "system", meta.sport(), meta.location(), "promotions");
+                    notificationService.createGameNotification(meta.owner(), "system", meta.sport(), meta.location(), "promotions");
                 }
             }
         }

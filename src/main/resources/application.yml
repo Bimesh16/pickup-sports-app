@@ -21,6 +21,20 @@ spring:
     host: localhost
     port: 6379
     # password: yourpass # if you set one
+    codex/introduce-queue-and-notificationdispatcher
+  rabbitmq:
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1s
+        default-requeue-rejected: false
+    template:
+      retry:
+        enabled: true
+        max-attempts: 3
+        initial-interval: 1s
   cache:
     cache-names:
       - user-profiles
@@ -162,5 +176,8 @@ retention:
       days: 60
     read-receipts:
       days: 60
+
+notifications:
+  queue: notifications.queue
 
 

@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.config;
 
-import com.bmessi.pickupsportsapp.service.NotificationDispatcher;
+import com.bmessi.pickupsportsapp.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ public class GameRemindersScheduler {
     private static final Logger log = LoggerFactory.getLogger(GameRemindersScheduler.class);
 
     private final JdbcTemplate jdbc;
-    private final NotificationDispatcher dispatcher;
+    private final NotificationService notificationService;
 
     // Remind 24 hours before
     @Scheduled(cron = "${reminders.games.24h.cron:0 0 8 * * *}")
@@ -69,6 +69,6 @@ public class GameRemindersScheduler {
     }
 
     private void safeDispatch(String recipient, String actor, String sport, String location, String action) {
-        try { dispatcher.dispatchGameEvent(recipient, actor, sport, location, action); } catch (Exception ignore) {}
+        try { notificationService.createGameNotification(recipient, actor, sport, location, action); } catch (Exception ignore) {}
     }
 }

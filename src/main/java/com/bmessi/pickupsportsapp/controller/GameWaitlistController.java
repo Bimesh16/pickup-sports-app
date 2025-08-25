@@ -1,7 +1,7 @@
 package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.dto.PromotionResultResponse;
-import com.bmessi.pickupsportsapp.service.NotificationDispatcher;
+import com.bmessi.pickupsportsapp.service.NotificationService;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +20,7 @@ public class GameWaitlistController {
 
     private final WaitlistService waitlistService;
     private final JdbcTemplate jdbc;
-    private final NotificationDispatcher dispatcher;
+    private final NotificationService notificationService;
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -45,7 +45,7 @@ public class GameWaitlistController {
                 // Notify user about promotion (best-effort)
                 String username = jdbc.queryForObject("SELECT username FROM app_user WHERE id = ?", String.class, uid);
                 var game = jdbc.queryForMap("SELECT COALESCE(CAST(location AS TEXT), '') AS location, COALESCE(sport, '') AS sport FROM game WHERE id = ?", gameId);
-                dispatcher.dispatchGameEvent(username, "system", String.valueOf(game.get("sport")), String.valueOf(game.get("location")), "promoted");
+                notificationService.createGameNotification(username, "system", String.valueOf(game.get("sport")), String.valueOf(game.get("location")), "promoted");
             } catch (Exception ignore) {}
         }
         return ResponseEntity.ok().headers(noStore()).body(

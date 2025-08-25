@@ -29,8 +29,10 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
     private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
-    private final com.bmessi.pickupsportsapp.service.UserNotificationPrefsService prefsService;
-    private final com.bmessi.pickupsportsapp.service.EmailService emailService;
+    private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+
+    @org.springframework.beans.factory.annotation.Value("${notifications.queue:notifications.queue}")
+    private String notificationQueue;
 
     @Timed(value = "notifications.create", description = "Time to create a notification")
     @Transactional
@@ -61,37 +63,18 @@ public class NotificationService {
 
     // Helper used by game flows to compose a message
     @Transactional
-    public Notification createGameNotification(String recipientUsername, String actorUsername, String sport, String location, String action) {
-        String msg = formatGameNotificationMessage(actorUsername, action, sport, location);
-        // preferences
-        var prefs = prefsService.getOrDefaults(recipientUsername);
-        boolean inApp = switch ((action == null ? "" : action.toLowerCase())) {
-            case "joined", "rsvp" -> prefs.isInAppOnRsvp();
-            case "created", "create" -> prefs.isInAppOnCreate();
-            case "cancelled", "canceled", "cancel" -> prefs.isInAppOnCancel();
-            default -> true;
-        };
-        boolean email = switch ((action == null ? "" : action.toLowerCase())) {
-            case "joined", "rsvp" -> prefs.isEmailOnRsvp();
-            case "created", "create" -> prefs.isEmailOnCreate();
-            case "cancelled", "canceled", "cancel" -> prefs.isEmailOnCancel();
-            default -> false;
-        };
-        Notification result = null;
-        if (inApp) {
-            result = createNotification(recipientUsername, msg);
+    public void createGameNotification(String recipientUsername, String actorUsername, String sport, String location, String action) {
+        try {
+            java.util.Map<String, String> model = java.util.Map.of(
+                    "actor", actorUsername == null ? "" : actorUsername,
+                    "sport", sport == null ? "" : sport,
+                    "location", location == null ? "" : location
+            );
+            rabbitTemplate.convertAndSend(notificationQueue,
+                    new com.bmessi.pickupsportsapp.dto.NotificationJob(recipientUsername, actorUsername, sport, location, action, model, java.util.Locale.getDefault()));
+        } catch (Exception e) {
+            log.error("Failed to publish notification job", e);
         }
-        if (email) {
-            try {
-                java.util.Map<String, String> model = java.util.Map.of(
-                        "actor", actorUsername == null ? "" : actorUsername,
-                        "sport", sport == null ? "" : sport,
-                        "location", location == null ? "" : location
-                );
-                emailService.sendGameEventEmail(recipientUsername, action, model);
-            } catch (Exception ignore) {}
-        }
-        return result;
     }
 
     // Legacy API preserved: returns all notifications unpaged

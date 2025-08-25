@@ -18,6 +18,7 @@ public class EmailService {
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
     private final JavaMailSender mailSender;
+    private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
 
     @Value("${app.mail.from:noreply@localhost}")
     private String from;
@@ -198,6 +199,9 @@ public class EmailService {
         log.error("Failed to send password reset email to {} after retries: {}", to, ex.getMessage(), ex);
     }
 
+    @org.springframework.beans.factory.annotation.Value("${notifications.queue:notifications.queue}")
+    private String notificationQueue;
+
     @Async
     @Retry(name = "mail", fallbackMethod = "fallbackGameEventEmail")
     public void sendGameEventEmail(String to, String eventType, java.util.Map<String, String> model) {
@@ -207,6 +211,15 @@ public class EmailService {
     @Async
     @Retry(name = "mail", fallbackMethod = "fallbackGameEventEmailWithLocale")
     public void sendGameEventEmail(String to, String eventType, java.util.Map<String, String> model, java.util.Locale locale) {
+        try {
+            rabbitTemplate.convertAndSend(notificationQueue,
+                    new com.bmessi.pickupsportsapp.dto.NotificationJob(to, model.get("actor"), model.get("sport"), model.get("location"), eventType, model, locale));
+        } catch (Exception e) {
+            log.error("Failed to publish email job", e);
+        }
+    }
+
+    public void sendGameEventEmailNow(String to, String eventType, java.util.Map<String, String> model, java.util.Locale locale) {
         try {
             var mime = mailSender.createMimeMessage();
             var helper = new org.springframework.mail.javamail.MimeMessageHelper(mime, "UTF-8");
