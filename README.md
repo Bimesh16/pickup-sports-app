@@ -35,6 +35,26 @@ Import the provided JSON (or the one generated from Swagger) and set:
 - username/password
 - gameId, userId as created.
 
+## Testing
+
+Unit tests live under `src/test/java/unit` and run with:
+
+```bash
+./mvnw test
+```
+
+Integration tests live under `src/test/java/integration` and run during the verify phase:
+
+```bash
+./mvnw verify
+```
+
+The `verify` goal executes both unit and integration tests. To execute only integration tests, skip the unit phase:
+
+```bash
+./mvnw -DskipTests failsafe:integration-test failsafe:verify
+```
+
 ## Git workflow (push to GitHub)
 
 1. Initialize and commit:
