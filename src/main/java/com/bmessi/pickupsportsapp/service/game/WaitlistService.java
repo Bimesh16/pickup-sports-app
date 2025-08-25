@@ -1,9 +1,13 @@
 package com.bmessi.pickupsportsapp.service.game;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.bmessi.pickupsportsapp.exception.WaitlistServiceException;
 
 import java.time.Instant;
 import java.util.List;
@@ -11,6 +15,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class WaitlistService {
+
+    private static final Logger log = LoggerFactory.getLogger(WaitlistService.class);
 
     private final JdbcTemplate jdbc;
 
@@ -32,8 +38,9 @@ public class WaitlistService {
             int n = jdbc.update("INSERT INTO game_waitlist (game_id, user_id, created_at) VALUES (?,?,?)",
                     gameId, userId, java.sql.Timestamp.from(Instant.now()));
             return n > 0;
-        } catch (Exception e) {
-            return false;
+        } catch (DataAccessException e) {
+            log.error("Failed to add user {} to waitlist for game {}", userId, gameId, e);
+            throw new WaitlistServiceException("Unable to add to waitlist", e);
         }
     }
 
