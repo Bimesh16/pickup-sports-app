@@ -29,6 +29,9 @@ spring:
           max-attempts: 3
           initial-interval: 1s
         default-requeue-rejected: false
+        auto-startup: false
+      direct:
+        auto-startup: false
     template:
       retry:
         enabled: true
@@ -87,6 +90,12 @@ springdoc:
   swagger-ui.enabled: true
   api-docs.enabled: true
   use-kotlin: false
+
+# Frontend boot flags
+features:
+  recommend: false
+  chat:
+    enabled: true
 
 resilience4j:
   retry:
@@ -173,6 +182,9 @@ app:
       presign:
         enabled: false
         ttlSeconds: 900
+  env: dev
+  cors:
+    allowed-origins: "http://localhost:3000"
 
 retention:
   chat:

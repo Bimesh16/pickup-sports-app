@@ -101,7 +101,31 @@ public class GameController {
     /**
      * Retrieves chat message history for a specific game.
      */
-    @Operation(summary = "Retrieve chat message history for a specific game")
+    @Operation(
+            summary = "Retrieve chat message history for a specific game",
+            description = "Returns messages older than or equal to the provided 'before' timestamp, in ascending order."
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Chat messages",
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            array = @io.swagger.v3.oas.annotations.media.ArraySchema(
+                                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ChatMessageDTO.class)
+                            ),
+                            examples = {
+                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                                            name = "SampleHistory",
+                                            summary = "Example chat history",
+                                            value = "[{\"messageId\":101,\"clientId\":\"c1\",\"sender\":\"alice\",\"content\":\"Hi!\",\"sentAt\":\"2025-08-25T10:00:00Z\"}," +
+                                                    "{\"messageId\":102,\"clientId\":\"c2\",\"sender\":\"bob\",\"content\":\"Welcome\",\"sentAt\":\"2025-08-25T10:01:00Z\"}]"
+                                    )
+                            }
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @GetMapping("/{gameId}/chat/history")
     @PreAuthorize("isAuthenticated()")
     public List<ChatMessageDTO> getChatHistory(
@@ -124,7 +148,16 @@ public class GameController {
     /**
      * Retrieves a paginated list of games with optional filtering.
      */
-    @Operation(summary = "Retrieve games with optional filters")
+    @Operation(summary = "Retrieve games with optional filters", description = "Filters by sport, location, time range, and skill level. Returns a paged list.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Paged game summaries",
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            mediaType = "application/json"
+                    )
+            )
+    })
     @GetMapping
     public ResponseEntity<Page<GameSummaryDTO>> getGames(
             @Parameter(description = "Filter by sport")
@@ -224,6 +257,17 @@ public class GameController {
      * Retrieves a specific game with ETag and conditional GET support.
      */
     @Operation(summary = "Retrieve detailed information for a game")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Game details",
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            mediaType = "application/json",
+                            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = GameDetailsDTO.class)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Not Found")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<GameDetailsDTO> getGame(
             @Parameter(description = "Game identifier") @PathVariable Long id,
@@ -242,6 +286,16 @@ public class GameController {
      * Adds ETag/Cache-Control/Last-Modified headers derived from the game entity.
      */
     @Operation(summary = "Retrieve participants for a game")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Participants",
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            mediaType = "application/json"
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Not Found")
+    })
     @GetMapping("/{id}/participants")
     public ResponseEntity<List<UserDTO>> getParticipants(@Parameter(description = "Game identifier") @PathVariable Long id) {
         var opt = gameRepository.findWithParticipantsById(id);
@@ -504,9 +558,66 @@ public class GameController {
     // ================================================================================
 
     /**
+     * Lists all available sports present in the system (distinct values), sorted A→Z.
+     */
+    @Operation(summary = "List available sports", description = "Returns distinct sport names found in games, sorted A→Z.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "List of sports",
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            mediaType = "application/json"
+                    )
+            )
+    })
+    @org.springframework.cache.annotation.Cacheable(cacheNames = "sports-list")
+    @GetMapping("/sports")
+    public ResponseEntity<List<String>> listSports() {
+        var sports = gameRepository.findDistinctSports();
+        List<String> sorted = sports.stream()
+                .filter(s -> s != null && !s.isBlank())
+                .sorted(String::compareToIgnoreCase)
+                .toList();
+        return ResponseEntity.ok(sorted);
+    }
+
+    /**
+     * Lists allowed skill levels, sorted by typical progression.
+     */
+    @Operation(summary = "List allowed skill levels", description = "Returns canonical skill levels accepted by the API.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "List of canonical skill levels",
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            mediaType = "application/json"
+                    )
+            )
+    })
+    @GetMapping("/skills")
+    public ResponseEntity<List<String>> listSkills() {
+        // Preserve a friendly order
+        List<String> ordered = List.of("Beginner", "Intermediate", "Advanced", "Pro")
+                .stream()
+                .filter(ALLOWED_SKILL_LEVELS::contains)
+                .toList();
+        return ResponseEntity.ok(ordered);
+    }
+
+    /**
      * Finds games near a specific location within a radius.
      */
-    @Operation(summary = "Find games near a location")
+    @Operation(summary = "Find games near a location", description = "Geo-filtered query returning games within a given radius of the provided coordinates.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Nearby games",
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            mediaType = "application/json"
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation error")
+    })
     @GetMapping("/near")
     public List<GameSummaryDTO> findNearbyGames(
             @Parameter(description = "Latitude of the search location")
@@ -548,7 +659,17 @@ public class GameController {
     /**
      * Gets AI-powered game recommendations.
      */
-    @Operation(summary = "Get AI-powered game recommendations")
+    @Operation(summary = "Get AI-powered game recommendations", description = "Returns AI-powered recommendations based on preferences and location.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Paged recommendations",
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            mediaType = "application/json"
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @GetMapping("/recommend")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<GameSummaryDTO>> recommendGames(
@@ -610,7 +731,17 @@ public class GameController {
     /**
      * Retrieves games created by the authenticated user.
      */
-    @Operation(summary = "Retrieve games created by the authenticated user")
+    @Operation(summary = "Retrieve games created by the authenticated user", description = "Returns a paged list of games owned by the caller.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Paged game details",
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            mediaType = "application/json"
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
@@ -628,6 +759,12 @@ public class GameController {
      * RSVP to a game.
      */
     @Operation(summary = "RSVP to a game")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "RSVP successful"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad Request"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Not Found")
+    })
     @PostMapping("/{id}/rsvp")
     @PreAuthorize("isAuthenticated()")
     @Transactional
@@ -662,6 +799,12 @@ public class GameController {
      * Cancel RSVP to a game.
      */
     @Operation(summary = "Cancel RSVP to a game")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Un-RSVP successful"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad Request"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Not Found")
+    })
     @DeleteMapping("/{id}/unrsvp")
     @PreAuthorize("isAuthenticated()")
     @Transactional
