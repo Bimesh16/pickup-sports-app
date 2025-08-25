@@ -8,9 +8,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.bmessi.pickupsportsapp.exception.WaitlistServiceException;
+import com.bmessi.pickupsportsapp.service.push.PushSenderService;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,7 @@ public class WaitlistService {
     private static final Logger log = LoggerFactory.getLogger(WaitlistService.class);
 
     private final JdbcTemplate jdbc;
+    private final PushSenderService push;
 
     @Transactional(readOnly = true)
     public int participantCount(Long gameId) {
@@ -52,17 +56,32 @@ public class WaitlistService {
 
     @Transactional
     public List<Long> promoteUpTo(Long gameId, int slots) {
-        // Select earliest on waitlist up to N
-        List<Long> userIds = jdbc.queryForList("""
-                SELECT user_id FROM game_waitlist
-                 WHERE game_id = ?
-                 ORDER BY created_at ASC
-                 LIMIT ?
-                """, Long.class, gameId, Math.max(0, slots));
-        // Remove them from waitlist now; caller should add as participants
-        if (!userIds.isEmpty()) {
-            jdbc.update("DELETE FROM game_waitlist WHERE game_id = ? AND user_id = ANY(?)",
-                    gameId, userIds.toArray(new Long[0]));
+        List<Map<String, Object>> rows = jdbc.queryForList("""
+                WITH selected AS (
+                    SELECT gw.game_id, gw.user_id, u.username
+                    FROM game_waitlist gw
+                    JOIN app_user u ON gw.user_id = u.id
+                    WHERE gw.game_id = ?
+                    ORDER BY gw.created_at ASC
+                    FOR UPDATE SKIP LOCKED
+                    LIMIT ?
+                )
+                DELETE FROM game_waitlist gw
+                USING selected s
+                WHERE gw.game_id = s.game_id AND gw.user_id = s.user_id
+                RETURNING s.user_id, s.username
+                """, gameId, Math.max(0, slots));
+
+        List<Long> userIds = new ArrayList<>(rows.size());
+        for (Map<String, Object> row : rows) {
+            Long uid = ((Number) row.get("user_id")).longValue();
+            userIds.add(uid);
+            String username = (String) row.get("username");
+            try {
+                push.enqueue(username, "You've been promoted from the waitlist", "", null);
+            } catch (Exception e) {
+                log.warn("Failed to enqueue push for user {}", username, e);
+            }
         }
         return userIds;
     }
