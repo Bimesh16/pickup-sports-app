@@ -38,6 +38,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 
 import java.net.URI;
 import java.security.Principal;
@@ -54,6 +59,7 @@ import java.util.Set;
 @RequestMapping("/games")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Games")
 public class GameController {
 
     // Constants
@@ -96,14 +102,17 @@ public class GameController {
     /**
      * Retrieves chat message history for a specific game.
      */
+    @Operation(summary = "Retrieve chat message history for a specific game")
     @GetMapping("/{gameId}/chat/history")
     @PreAuthorize("isAuthenticated()")
     public List<ChatMessageDTO> getChatHistory(
-            @PathVariable Long gameId,
+            @Parameter(description = "ID of the game") @PathVariable Long gameId,
+            @Parameter(description = "Return messages before this timestamp")
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant before,
+            @Parameter(description = "Maximum number of messages to return")
             @RequestParam(defaultValue = "50") int limit,
-            Principal principal
+            @Parameter(hidden = true) Principal principal
     ) {
         validateGameAccess(gameId, principal.getName());
         return chatService.history(gameId, before, limit);
@@ -116,20 +125,31 @@ public class GameController {
     /**
      * Retrieves a paginated list of games with optional filtering.
      */
+    @Operation(summary = "Retrieve games with optional filters")
     @GetMapping
     public ResponseEntity<Page<GameSummaryDTO>> getGames(
+            @Parameter(description = "Filter by sport")
             @RequestParam(required = false) String sport,
+            @Parameter(description = "Filter by location")
             @RequestParam(required = false) String location,
+            @Parameter(description = "Start of time range")
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fromTime,
+            @Parameter(description = "End of time range")
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toTime,
+            @Parameter(description = "Filter by skill level")
             @RequestParam(required = false) String skillLevel,
+            @Parameter(description = "Latitude for geo search")
             @RequestParam(required = false) Double lat,
+            @Parameter(description = "Longitude for geo search")
             @RequestParam(required = false) Double lon,
+            @Parameter(description = "Radius in kilometers for geo search")
             @RequestParam(required = false) Double radiusKm,
-            @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "time") Pageable pageable,
-            HttpServletRequest request,
+            @Parameter(description = "Pagination information")
+            @ParameterObject @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "time") Pageable pageable,
+            @Parameter(hidden = true) HttpServletRequest request,
+            @Parameter(hidden = true)
             @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSinceList
     ) {
         Pageable effective = sanitizePageable(pageable);
@@ -204,10 +224,13 @@ public class GameController {
     /**
      * Retrieves a specific game with ETag and conditional GET support.
      */
+    @Operation(summary = "Retrieve detailed information for a game")
     @GetMapping("/{id}")
     public ResponseEntity<GameDetailsDTO> getGame(
-            @PathVariable Long id,
+            @Parameter(description = "Game identifier") @PathVariable Long id,
+            @Parameter(description = "ETag for conditional requests")
             @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
+            @Parameter(description = "Last known modification time")
             @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSince
     ) {
         return gameRepository.findWithParticipantsById(id)
@@ -219,8 +242,9 @@ public class GameController {
      * Retrieves participants for a game as a compact list.
      * Adds ETag/Cache-Control/Last-Modified headers derived from the game entity.
      */
+    @Operation(summary = "Retrieve participants for a game")
     @GetMapping("/{id}/participants")
-    public ResponseEntity<List<UserDTO>> getParticipants(@PathVariable Long id) {
+    public ResponseEntity<List<UserDTO>> getParticipants(@Parameter(description = "Game identifier") @PathVariable Long id) {
         var opt = gameRepository.findWithParticipantsById(id);
         if (opt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -267,16 +291,20 @@ public class GameController {
     /**
      * Creates a new game.
      */
+    @Operation(summary = "Create a new game")
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     @RateLimiter(name = "games")
     @Transactional
     @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> createGame(
-            @Valid @RequestBody CreateGameRequest request,
+            @Valid @RequestBody
+            @RequestBody(description = "Details for the game to create") CreateGameRequest request,
+            @Parameter(description = "Idempotency key to prevent duplicate submissions")
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @Parameter(description = "Header specifying response preference")
             @RequestHeader(value = "Prefer", required = false) String prefer,
-            Principal principal
+            @Parameter(hidden = true) Principal principal
     ) {
         User owner = findAuthenticatedUser(principal);
         try {
@@ -356,17 +384,21 @@ public class GameController {
     /**
      * Updates an existing game (PUT - full update).
      */
+    @Operation(summary = "Update an existing game")
     @PutMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @RateLimiter(name = "games")
     @Transactional
     @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> updateGame(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateGameRequest request,
+            @Parameter(description = "Game identifier") @PathVariable Long id,
+            @Valid @RequestBody
+            @RequestBody(description = "Updated game information") UpdateGameRequest request,
+            @Parameter(description = "ETag for concurrency control")
             @RequestHeader(value = "If-Match", required = false) String ifMatch,
+            @Parameter(description = "Last known update time")
             @RequestHeader(value = "If-Unmodified-Since", required = false) String ifUnmodifiedSince,
-            Principal principal
+            @Parameter(hidden = true) Principal principal
     ) {
         UserGamePair pair = validateUserAndGame(id, principal);
         Game game = pair.game();
@@ -420,15 +452,19 @@ public class GameController {
     /**
      * Deletes a game.
      */
+    @Operation(summary = "Delete a game")
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @RateLimiter(name = "games")
     @Transactional
     @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
-    public ResponseEntity<Void> deleteGame(@PathVariable Long id,
-                                           @RequestHeader(value = "If-Match", required = false) String ifMatch,
-                                           @RequestHeader(value = "If-Unmodified-Since", required = false) String ifUnmodifiedSince,
-                                           Principal principal) {
+    public ResponseEntity<Void> deleteGame(
+            @Parameter(description = "Game identifier") @PathVariable Long id,
+            @Parameter(description = "ETag for concurrency control")
+            @RequestHeader(value = "If-Match", required = false) String ifMatch,
+            @Parameter(description = "Last known update time")
+            @RequestHeader(value = "If-Unmodified-Since", required = false) String ifUnmodifiedSince,
+            @Parameter(hidden = true) Principal principal) {
         UserGamePair pair = validateUserAndGame(id, principal);
         Game game = pair.game();
         User currentUser = pair.user();
@@ -469,17 +505,22 @@ public class GameController {
     /**
      * Finds games near a specific location within a radius.
      */
+    @Operation(summary = "Find games near a location")
     @GetMapping("/near")
     public List<GameSummaryDTO> findNearbyGames(
+            @Parameter(description = "Latitude of the search location")
             @RequestParam
             @DecimalMin(value = "-90.0", message = "Latitude must be >= -90")
             @DecimalMax(value = "90.0", message = "Latitude must be <= 90")
             double lat,
+            @Parameter(description = "Longitude of the search location")
             @RequestParam
             @DecimalMin(value = "-180.0", message = "Longitude must be >= -180")
             @DecimalMax(value = "180.0", message = "Longitude must be <= 180")
             double lon,
+            @Parameter(description = "Search radius in kilometers")
             @RequestParam(defaultValue = "5.0") double radiusKm,
+            @Parameter(description = "Maximum number of results to return")
             @RequestParam(defaultValue = "50") int limit
     ) {
         validateRadius(radiusKm);
@@ -494,14 +535,20 @@ public class GameController {
     /**
      * Gets AI-powered game recommendations.
      */
+    @Operation(summary = "Get AI-powered game recommendations")
     @GetMapping("/recommend")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<GameSummaryDTO>> recommendGames(
+            @Parameter(description = "Preferred sport for recommendations")
             @RequestParam(required = false) String preferredSport,
+            @Parameter(description = "Location to base recommendations on")
             @RequestParam(required = false) String location,
+            @Parameter(description = "Desired skill level")
             @RequestParam(required = false) String skillLevel,
-            @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "time") Pageable pageable,
-            HttpServletRequest request,
+            @Parameter(description = "Pagination information")
+            @ParameterObject @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "time") Pageable pageable,
+            @Parameter(hidden = true) HttpServletRequest request,
+            @Parameter(hidden = true)
             @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSinceList
     ) {
         String sport = getValueOrDefault(preferredSport, defaultRecommendationSport);
@@ -550,12 +597,14 @@ public class GameController {
     /**
      * Retrieves games created by the authenticated user.
      */
+    @Operation(summary = "Retrieve games created by the authenticated user")
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public Page<GameDetailsDTO> getMyGames(
-            @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "time") Pageable pageable,
-            Principal principal
+            @Parameter(description = "Pagination information")
+            @ParameterObject @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "time") Pageable pageable,
+            @Parameter(hidden = true) Principal principal
     ) {
         User user = findAuthenticatedUser(principal);
         return gameRepository.findByUserIdWithParticipants(user.getId(), pageable)
@@ -565,10 +614,13 @@ public class GameController {
     /**
      * RSVP to a game.
      */
+    @Operation(summary = "RSVP to a game")
     @PostMapping("/{id}/rsvp")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public ResponseEntity<GameDetailsDTO> rsvpToGame(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<GameDetailsDTO> rsvpToGame(
+            @Parameter(description = "Game identifier") @PathVariable Long id,
+            @Parameter(hidden = true) Principal principal) {
         UserGamePair pair = validateUserAndGame(id, principal);
         Game game = pair.game();
         User user = pair.user();
@@ -596,10 +648,13 @@ public class GameController {
     /**
      * Cancel RSVP to a game.
      */
+    @Operation(summary = "Cancel RSVP to a game")
     @DeleteMapping("/{id}/unrsvp")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public ResponseEntity<GameDetailsDTO> unrsvpFromGame(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<GameDetailsDTO> unrsvpFromGame(
+            @Parameter(description = "Game identifier") @PathVariable Long id,
+            @Parameter(hidden = true) Principal principal) {
         UserGamePair pair = validateUserAndGame(id, principal);
         Game game = pair.game();
         User user = pair.user();

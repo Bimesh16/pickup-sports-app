@@ -22,9 +22,15 @@ import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication")
 public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
@@ -49,10 +55,13 @@ public class AuthController {
     private final com.bmessi.pickupsportsapp.service.MfaChallengeService mfaChallengeService;
     private final com.bmessi.pickupsportsapp.service.TrustedDeviceService trustedDeviceService;
 
+    @Operation(summary = "Authenticate a user and issue tokens")
     @PostMapping("/login")
     @RateLimiter(name = "auth")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request,
-                                   jakarta.servlet.http.HttpServletRequest httpRequest) {
+    public ResponseEntity<?> login(
+            @Valid @RequestBody
+            @RequestBody(description = "Login credentials") LoginRequest request,
+            @Parameter(hidden = true) jakarta.servlet.http.HttpServletRequest httpRequest) {
         try {
             log.debug("Login attempt for user: {}", request.username());
 
@@ -164,11 +173,15 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "Refresh access and refresh tokens")
     @PostMapping("/refresh")
     @RateLimiter(name = "auth")
-    public ResponseEntity<?> refresh(@Valid @RequestBody RefreshRequest request,
-                                     @CookieValue(name = "refreshToken", required = false) String refreshCookie,
-                                     jakarta.servlet.http.HttpServletRequest httpRequest) {
+    public ResponseEntity<?> refresh(
+            @Valid @RequestBody
+            @RequestBody(description = "Refresh token and optional nonce") RefreshRequest request,
+            @Parameter(description = "Refresh token from cookie")
+            @CookieValue(name = "refreshToken", required = false) String refreshCookie,
+            @Parameter(hidden = true) jakarta.servlet.http.HttpServletRequest httpRequest) {
         try {
             String provided = (request != null && request.refreshToken() != null && !request.refreshToken().isBlank())
                     ? request.refreshToken()
@@ -233,8 +246,11 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "Invalidate refresh token and logout")
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, Object>> logout(@Valid @RequestBody RefreshRequest request) {
+    public ResponseEntity<Map<String, Object>> logout(
+            @Valid @RequestBody
+            @RequestBody(description = "Refresh token to revoke") RefreshRequest request) {
         try {
             log.debug("Logout attempt");
             authService.logout(request.refreshToken());
@@ -281,9 +297,11 @@ public class AuthController {
         return sb.toString().trim();
     }
 
+    @Operation(summary = "Return information about the current authenticated user")
     @GetMapping("/me")
-    public ResponseEntity<Map<String, Object>> me(java.security.Principal principal,
-                                                  org.springframework.security.core.Authentication auth) {
+    public ResponseEntity<Map<String, Object>> me(
+            @Parameter(hidden = true) java.security.Principal principal,
+            @Parameter(hidden = true) org.springframework.security.core.Authentication auth) {
         if (principal == null || principal.getName() == null || principal.getName().isBlank() || auth == null) {
             return ResponseEntity.status(401)
                     .headers(noStore())

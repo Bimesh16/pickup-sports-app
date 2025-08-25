@@ -50,7 +50,8 @@ public class SecurityConfig {
                                         RevokedTokenRepository revokedTokenRepository,
                                         AuthenticationManager authenticationManager,
                                         AuthService authService,
-                                        @Value("${security.login.rate-limit:20}") int loginRateLimitPerMinute) throws Exception {
+                                        @Value("${security.login.rate-limit:20}") int loginRateLimitPerMinute,
+                                        @Value("${springdoc.api-docs.enabled:false}") boolean apiDocsEnabled) throws Exception {
 
         var jwtAuthz = new JwtAuthorizationFilter(userDetailsService, jwtTokenService, revokedTokenRepository, AUTH_HEADER_NAME, AUTH_HEADER_PREFIX);
         var jwtAuthn = new JwtAuthenticationFilter(authenticationManager, authService,
@@ -64,22 +65,25 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .anonymous(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> {
                 // Allow CORS preflight
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                 // static and SPA entry
-                .requestMatchers("/", "/index.html", "/chat-test.html").permitAll()
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                // API docs and actuator
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/actuator/**").permitAll()
+                auth.requestMatchers("/", "/index.html", "/chat-test.html").permitAll();
+                auth.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll();
+                // API docs and Swagger UI only when enabled
+                if (apiDocsEnabled) {
+                    auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+                }
+                // Actuator endpoints
+                auth.requestMatchers("/actuator/**").permitAll();
                 // error endpoint (allow internal forwards without authentication)
-                .requestMatchers("/error").permitAll()
+                auth.requestMatchers("/error").permitAll();
                 // public REST
-                .requestMatchers("/auth/**", "/users/register", "/sports", "/games", "/games/**").permitAll()
+                auth.requestMatchers("/auth/**", "/users/register", "/sports", "/games", "/games/**").permitAll();
                 // everything else
-                .anyRequest().authenticated()
-            )
+                auth.anyRequest().authenticated();
+            })
             // throttle login attempts before auth processing
             .addFilterBefore(loginRateLimiter, UsernamePasswordAuthenticationFilter.class)
                 // place login filter at the UsernamePasswordAuthenticationFilter slot
