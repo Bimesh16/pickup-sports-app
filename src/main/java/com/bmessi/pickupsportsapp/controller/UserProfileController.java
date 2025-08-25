@@ -38,6 +38,12 @@ public class UserProfileController {
     @Value("${media.avatar.allowed-types:image/png,image/jpeg,image/webp}")
     private String avatarAllowedTypesCsv;
 
+    @Value("${media.avatar.absolute-max-width:8000}")
+    private int avatarAbsoluteMaxWidth;
+
+    @Value("${media.avatar.absolute-max-height:8000}")
+    private int avatarAbsoluteMaxHeight;
+
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserProfileDTO> getMyProfile(Principal principal) {
@@ -91,12 +97,6 @@ public class UserProfileController {
         }
         return ResponseEntity.ok().headers(headers).body(dto);
     }
-
-    @Value("${media.avatar.absolute-max-width:8000}")
-    private int avatarAbsoluteMaxWidth;
-
-    @Value("${media.avatar.absolute-max-height:8000}")
-    private int avatarAbsoluteMaxHeight;
 
     @org.springframework.cache.annotation.CacheEvict(cacheNames = "profile", key = "#principal.name")
     @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -188,6 +188,37 @@ public class UserProfileController {
         return ResponseEntity.noContent().headers(headers).build();
     }
 
+    @GetMapping("/me/avatar/thumbnail")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<java.util.Map<String, Object>> getMyAvatarThumbnail(Principal principal) {
+        var dto = userProfileService.getProfileByUsername(principal.getName());
+        String thumb = ProfileUtils.deriveThumbUrl(dto.avatarUrl());
+        if (thumb == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .headers(noStore())
+                    .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=300");
+        headers.add(HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
+        return ResponseEntity.ok().headers(headers).body(java.util.Map.of("thumbnailUrl", thumb));
+    }
+
+    @GetMapping("/{id}/avatar/thumbnail")
+    public ResponseEntity<java.util.Map<String, Object>> getAvatarThumbnail(@PathVariable Long id) {
+        var dto = userProfileService.getProfileById(id);
+        String thumb = ProfileUtils.deriveThumbUrl(dto.avatarUrl());
+        if (thumb == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .headers(noStore())
+                    .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CACHE_CONTROL, "public, max-age=300");
+        headers.add(HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
+        return ResponseEntity.ok().headers(headers).body(java.util.Map.of("thumbnailUrl", thumb));
+    }
+
     // ===========================
     // Private helpers
     // ===========================
@@ -216,80 +247,6 @@ public class UserProfileController {
             s = s.substring(1, s.length() - 1);
         }
         return s;
-    }
-
-    @GetMapping("/me/avatar/thumbnail")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<java.util.Map<String, Object>> getMyAvatarThumbnail(Principal principal) {
-        var dto = userProfileService.getProfileByUsername(principal.getName());
-        String thumb = ProfileUtils.deriveThumbUrl(dto.avatarUrl());
-        if (thumb == null) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
-                    .headers(noStoreHeaders())
-                    .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
-        }
-        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-        headers.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "private, max-age=300");
-        headers.add(org.springframework.http.HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
-        return ResponseEntity.ok().headers(headers).body(java.util.Map.of("thumbnailUrl", thumb));
-    }
-
-    @GetMapping("/{id}/avatar/thumbnail")
-    public ResponseEntity<java.util.Map<String, Object>> getAvatarThumbnail(@PathVariable Long id) {
-        var dto = userProfileService.getProfileById(id);
-        String thumb = ProfileUtils.deriveThumbUrl(dto.avatarUrl());
-        if (thumb == null) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
-                    .headers(noStoreHeaders())
-                    .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
-          
-        @GetMapping("/me/avatar/thumbnail")
-        @PreAuthorize("isAuthenticated()")
-        public ResponseEntity<java.util.Map<String, Object>> getMyAvatarThumbnail(Principal principal) {
-            var dto = userProfileService.getProfileByUsername(principal.getName());
-            String thumb = deriveThumbUrl(dto.avatarUrl());
-            if (thumb == null) {
-                return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
-                        .headers(noStore())
-                        .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
-            }
-            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-            headers.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "private, max-age=300");
-            headers.add(org.springframework.http.HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
-            return ResponseEntity.ok().headers(headers).body(java.util.Map.of("thumbnailUrl", thumb));
-        }
-
-        @GetMapping("/{id}/avatar/thumbnail")
-        public ResponseEntity<java.util.Map<String, Object>> getAvatarThumbnail(@PathVariable Long id) {
-            var dto = userProfileService.getProfileById(id);
-            String thumb = deriveThumbUrl(dto.avatarUrl());
-            if (thumb == null) {
-                return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
-                        .headers(noStore())
-                        .body(java.util.Map.of("error", "not_found", "message", "No avatar set"));
-            }
-            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-            headers.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "public, max-age=300");
-            headers.add(org.springframework.http.HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
-            return ResponseEntity.ok().headers(headers).body(java.util.Map.of("thumbnailUrl", thumb));
-        }
-
-        private static String deriveThumbUrl(String originalUrl) {
-            if (originalUrl == null || originalUrl.isBlank()) return null;
-            int q = originalUrl.indexOf('?'); // preserve query if any
-            String base = (q >= 0) ? originalUrl.substring(0, q) : originalUrl;
-            String query = (q >= 0) ? originalUrl.substring(q) : "";
-            int dot = base.lastIndexOf('.');
-            if (dot <= 0 || dot == base.length() - 1) {
-                // No extension; append _thumb
-                return base + "_thumb" + query;
-            }
-            return base.substring(0, dot) + "_thumb" + base.substring(dot) + query;
-        }
-        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-        headers.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "public, max-age=300");
-        headers.add(org.springframework.http.HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
-        return ResponseEntity.ok().headers(headers).body(java.util.Map.of("thumbnailUrl", thumb));
     }
 
     private static String httpDate(long epochMillis) {
