@@ -10,10 +10,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -86,9 +88,10 @@ public class PasswordResetService {
         tokenRepo.deleteByUsername(user.getUsername());
 
         String token = randomToken();
+        String tokenHash = hashToken(token);
         PasswordResetToken prt = PasswordResetToken.builder()
                 .username(user.getUsername())
-                .token(token)
+                .tokenHash(tokenHash)
                 .expiresAt(Instant.now().plus(props.getResetTtlHours(), ChronoUnit.HOURS))
                 .requestedIp(requesterIp)
                 .build();
@@ -108,7 +111,7 @@ public class PasswordResetService {
 
     @Transactional(readOnly = true)
     public boolean isValid(String token) {
-        var prt = tokenRepo.findByToken(token).orElse(null);
+        var prt = tokenRepo.findByTokenHash(hashToken(token)).orElse(null);
         if (prt == null) return false;
         if (prt.getConsumedAt() != null) return false;
         return !prt.getExpiresAt().isBefore(Instant.now());
@@ -116,7 +119,7 @@ public class PasswordResetService {
 
     @Transactional
     public boolean resetPassword(String token, String newPassword) {
-        var prt = tokenRepo.findByToken(token).orElse(null);
+        var prt = tokenRepo.findByTokenHash(hashToken(token)).orElse(null);
         if (prt == null) return false;
         if (prt.getConsumedAt() != null) return false;
         if (prt.getExpiresAt().isBefore(Instant.now())) return false;
@@ -139,5 +142,15 @@ public class PasswordResetService {
         byte[] bytes = new byte[48];
         RNG.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private static String hashToken(String token) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(token.getBytes(StandardCharsets.UTF_8));
+            return java.util.HexFormat.of().formatHex(digest);
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
     }
 }
