@@ -105,9 +105,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             response.addHeader(authHeaderName, authHeaderPrefix + tokens.accessToken());
 
             String jsonResponse = String.format(
-                    "{\"accessToken\":\"%s\",\"refreshToken\":\"%s\",\"tokenType\":\"%s\",\"expiresInSeconds\":%d}",
+                    "{\"accessToken\":\"%s\",\"refreshToken\":\"%s\",\"refreshNonce\":\"%s\",\"tokenType\":\"%s\",\"expiresInSeconds\":%d}",
                     tokens.accessToken(),
                     tokens.refreshToken(),
+                    tokens.refreshNonce(),
                     tokens.tokenType(),
                     tokens.expiresInSeconds()
             );

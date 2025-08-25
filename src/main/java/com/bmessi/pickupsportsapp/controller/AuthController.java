@@ -184,10 +184,24 @@ public class AuthController {
                         ));
             }
 
+            String nonce = (request != null && request.nonce() != null && !request.nonce().isBlank())
+                    ? request.nonce()
+                    : httpRequest.getHeader("X-Refresh-Nonce");
+
+            if (nonce == null || nonce.isBlank()) {
+                return ResponseEntity.status(400)
+                        .headers(noStore())
+                        .body(Map.of(
+                                "error", "invalid_request",
+                                "message", "Missing refresh nonce (header 'X-Refresh-Nonce' or body field 'nonce')",
+                                "timestamp", System.currentTimeMillis()
+                        ));
+            }
+
             String tokenPreview = provided.substring(0, Math.min(10, provided.length())) + "...";
             log.debug("Token refresh attempt with refresh token: {}", tokenPreview);
 
-            TokenPairResponse tokens = authService.refresh(provided);
+            TokenPairResponse tokens = authService.refresh(provided, nonce);
             // Note: refresh rotation stores new refresh; metadata capture can be added in service when needed
             log.debug("Token refresh successful");
             HttpHeaders headers = noStore();

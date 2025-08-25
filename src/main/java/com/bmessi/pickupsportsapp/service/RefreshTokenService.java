@@ -12,7 +12,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -24,22 +23,25 @@ public class RefreshTokenService {
     @Value("${security.jwt.refresh-token-expiration:604800}") // default 7 days
     private long refreshTokenDuration;
 
-    public String createToken(User user) {
+    public TokenWithNonce createToken(User user) {
         String rawToken = UUID.randomUUID().toString() + "-" + UUID.randomUUID();
-        String hash = hash(rawToken);
+        String rawNonce = UUID.randomUUID().toString();
+        String tokenHash = hash(rawToken);
+        String nonceHash = hash(rawNonce);
 
         RefreshToken token = RefreshToken.builder()
                 .user(user)
-                .tokenHash(hash)
+                .tokenHash(tokenHash)
+                .nonceHash(nonceHash)
                 .expiresAt(Instant.now().plusSeconds(refreshTokenDuration))
                 .build();
 
         refreshTokenRepository.save(token);
 
-        return rawToken;
+        return new TokenWithNonce(rawToken, rawNonce);
     }
 
-    public RefreshToken validate(String rawToken) {
+    public RefreshToken validate(String rawToken, String rawNonce) {
         String hash = hash(rawToken);
 
         RefreshToken token = refreshTokenRepository.findByTokenHash(hash)
@@ -49,12 +51,44 @@ public class RefreshTokenService {
             throw new BadCredentialsException("Refresh token expired or revoked");
         }
 
+        String nonceHash = hash(rawNonce);
+        if (!nonceHash.equals(token.getNonceHash())) {
+            throw new BadCredentialsException("Invalid refresh token nonce");
+        }
+
         return token;
     }
 
-    public void revoke(RefreshToken token, String reason) {
-        token.setRevokedAt(Instant.now());
-        refreshTokenRepository.save(token);
+    public TokenWithNonce rotate(RefreshToken current) {
+        String rawToken = UUID.randomUUID().toString() + "-" + UUID.randomUUID();
+        String rawNonce = UUID.randomUUID().toString();
+        String newTokenHash = hash(rawToken);
+        String newNonceHash = hash(rawNonce);
+
+        RefreshToken next = RefreshToken.builder()
+                .user(current.getUser())
+                .tokenHash(newTokenHash)
+                .nonceHash(newNonceHash)
+                .expiresAt(Instant.now().plusSeconds(refreshTokenDuration))
+                .build();
+        refreshTokenRepository.save(next);
+
+        current.setRevokedAt(Instant.now());
+        current.setReplacedByTokenHash(newTokenHash);
+        current.setLastUsedAt(Instant.now());
+        refreshTokenRepository.save(current);
+
+        return new TokenWithNonce(rawToken, rawNonce);
+    }
+
+    public void revokeByTokenValue(String rawToken) {
+        String hash = hash(rawToken);
+        refreshTokenRepository.findByTokenHash(hash).ifPresent(token -> {
+            if (token.getRevokedAt() == null) {
+                token.setRevokedAt(Instant.now());
+                refreshTokenRepository.save(token);
+            }
+        });
     }
 
     private String hash(String token) {
@@ -66,4 +100,6 @@ public class RefreshTokenService {
             throw new IllegalStateException("SHA-256 not available", e);
         }
     }
+
+    public record TokenWithNonce(String token, String nonce) {}
 }

@@ -47,6 +47,7 @@ class AuthServiceIntegrationTest {
         TokenPairResponse pair = authService.issueTokensForAuthenticatedUser(user.getUsername());
         assertNotNull(pair.accessToken());
         assertNotNull(pair.refreshToken());
+        assertNotNull(pair.refreshNonce());
         assertFalse(refreshTokenRepository.findByUser_UsernameAndRevokedAtIsNull(user.getUsername()).isEmpty());
     }
 
@@ -59,7 +60,7 @@ class AuthServiceIntegrationTest {
     void refresh_replacesOldToken() {
         User user = userRepository.save(User.builder().username("bob@example.com").password("pw").build());
         TokenPairResponse original = authService.issueTokensForAuthenticatedUser(user.getUsername());
-        TokenPairResponse refreshed = authService.refresh(original.refreshToken());
+        TokenPairResponse refreshed = authService.refresh(original.refreshToken(), original.refreshNonce());
         assertNotEquals(original.accessToken(), refreshed.accessToken());
         RefreshToken oldToken = refreshTokenRepository.findByTokenHash(hash(original.refreshToken())).orElseThrow();
         assertNotNull(oldToken.getRevokedAt());
