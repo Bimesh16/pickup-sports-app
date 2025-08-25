@@ -16,9 +16,11 @@ import com.bmessi.pickupsportsapp.service.chat.ChatService;
 import com.bmessi.pickupsportsapp.service.gameaccess.GameAccessService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +30,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import java.security.Principal;
 import java.time.OffsetDateTime;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -36,12 +39,14 @@ import static org.mockito.ArgumentMatchers.*;
         GameController.class,
         RsvpCacheEvictTest.TestCacheConfig.class
 })
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 class RsvpCacheEvictTest {
 
     @TestConfiguration
+    @EnableCaching
     static class TestCacheConfig {
         @Bean CacheManager cacheManager() {
-            return new ConcurrentMapCacheManager("explore-first", "sports-list");
+            return new ConcurrentMapCacheManager("explore-first", "sports-list", "search-filters", "nearby-games");
         }
         @Bean ApiMapper mapper() { return Mockito.mock(ApiMapper.class); }
         @Bean NotificationService notificationService() { return Mockito.mock(NotificationService.class); }
@@ -51,6 +56,7 @@ class RsvpCacheEvictTest {
         @Bean GameAccessService gameAccessService() { return Mockito.mock(GameAccessService.class); }
         @Bean GameRepository gameRepository() { return Mockito.mock(GameRepository.class); }
         @Bean UserRepository userRepository() { return Mockito.mock(UserRepository.class); }
+        @Bean com.bmessi.pickupsportsapp.service.AiRecommendationResilientService xaiRecommendationService() { return Mockito.mock(com.bmessi.pickupsportsapp.service.AiRecommendationResilientService.class); }
     }
 
     @jakarta.annotation.Resource GameRepository gameRepository;
@@ -100,3 +106,4 @@ class RsvpCacheEvictTest {
         assertNull(cacheSports.get("k2"));
     }
 }
+

@@ -1,15 +1,16 @@
-package com.bmessi.pickupsportsapp.service.game;
+package integration.com.bmessi.pickupsportsapp.service.game;
 
 import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
+import com.bmessi.pickupsportsapp.service.game.WaitlistService;
 import com.bmessi.pickupsportsapp.service.push.PushSenderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class WaitlistServiceConcurrencyTest {
+class WaitlistServiceConcurrencyIT {
 
     @Autowired
     private WaitlistService waitlistService;
@@ -38,7 +39,7 @@ class WaitlistServiceConcurrencyTest {
     @Autowired
     private GameRepository gameRepository;
 
-    @MockBean
+    @MockitoBean
     private PushSenderService push;
 
     @BeforeEach
@@ -67,7 +68,7 @@ class WaitlistServiceConcurrencyTest {
         Callable<List<Long>> task = () -> {
             latch.await();
             return waitlistService.promoteUpTo(game.getId(), 1);
-            };
+        };
 
         Future<List<Long>> f1 = exec.submit(task);
         Future<List<Long>> f2 = exec.submit(task);
@@ -89,4 +90,3 @@ class WaitlistServiceConcurrencyTest {
         verify(push).enqueue(eq(u2.getUsername()), any(), any(), any());
     }
 }
-
