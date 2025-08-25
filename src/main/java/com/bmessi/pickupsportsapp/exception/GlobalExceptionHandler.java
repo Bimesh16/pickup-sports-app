@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.server.ResponseStatusException;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -137,8 +138,8 @@ public class GlobalExceptionHandler {
     }
 
     // 429: Rate limit exceeded (Resilience4j)
-    @ExceptionHandler(io.github.resilience4j.ratelimiter.RequestNotPermitted.class)
-    public ResponseEntity<Map<String, Object>> handleRateLimit(io.github.resilience4j.ratelimiter.RequestNotPermitted ex,
+    @ExceptionHandler(RequestNotPermitted.class)
+    public ResponseEntity<Map<String, Object>> handleRateLimit(RequestNotPermitted ex,
                                                                HttpServletRequest req) {
         HttpHeaders h = noStoreHeaders();
         h.add("Retry-After", "60");
