@@ -3,6 +3,7 @@ package com.bmessi.pickupsportsapp.service;
 import com.bmessi.pickupsportsapp.entity.Sport;
 import com.bmessi.pickupsportsapp.repository.SportRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ public class SportResolverService {
      * If the input is null/blank, returns "Unknown" and ensures the "unknown" sport exists.
      */
     @Transactional
+    @CacheEvict(cacheNames = "search-filters", allEntries = true)
     public String resolveOrCreateCanonical(String incoming) {
         String normalizedKey = normalizeKey(incoming);
         String display = toDisplayName(normalizedKey);

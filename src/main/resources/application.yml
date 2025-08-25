@@ -38,8 +38,9 @@ spring:
   cache:
     cache-names:
       - user-profiles
+      - search-filters # caches search filters response (TTL 5m, key=SimpleKey.EMPTY)
     caffeine:
-      spec: maximumSize=10000,expireAfterWrite=5m
+      spec: maximumSize=10000,expireAfterWrite=5m # TTL for caches
 
 xai:
   enabled: true
