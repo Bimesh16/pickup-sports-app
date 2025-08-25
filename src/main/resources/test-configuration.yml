@@ -28,5 +28,7 @@ app:
     default-recommendation-location: "Test Location"
 
 logging:
+  pattern:
+    level: "%5p [%X{requestId}]"
   level:
     root: WARN
