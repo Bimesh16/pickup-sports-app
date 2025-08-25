@@ -65,6 +65,8 @@ app:
     allow-credentials: false
 
 logging:
+  pattern:
+    level: "%5p [%X{requestId}]"
   level:
     root: INFO
     org.springframework.web: INFO
@@ -72,3 +74,4 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
     com.bmessi.pickupsportsapp: DEBUG
+

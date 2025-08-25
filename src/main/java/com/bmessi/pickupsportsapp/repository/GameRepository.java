@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -86,19 +87,57 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
     boolean existsParticipant(@Param("gameId") Long gameId, @Param("userId") Long userId);
 
     /**
-     * Find games within a radius (simplified without PostGIS for now)
+     * Find games within a radius using PostGIS, ordered by distance.
      */
-    @Query("""
-        SELECT g FROM Game g 
-        WHERE g.latitude IS NOT NULL AND g.longitude IS NOT NULL
-        AND (6371 * acos(cos(radians(:lat)) * cos(radians(g.latitude)) * 
-        cos(radians(g.longitude) - radians(:lng)) + sin(radians(:lat)) * 
-        sin(radians(g.latitude)))) <= :radiusKm
-        ORDER BY (6371 * acos(cos(radians(:lat)) * cos(radians(g.latitude)) * 
-        cos(radians(g.longitude) - radians(:lng)) + sin(radians(:lat)) * 
-        sin(radians(g.latitude))))
-        """)
-    List<Game> findByLocationWithinRadius(@Param("lat") double lat, @Param("lng") double lng, @Param("radiusKm") double radiusKm);
+    @Query(
+            value = """
+            select g.*
+            from game g
+            join app_user u on u.id = g.user_id
+            where (nullif(btrim(cast(:sport as text)), '') is null or g.sport ILIKE nullif(btrim(cast(:sport as text)), ''))
+              and (nullif(btrim(cast(:location as text)), '') is null
+                   or cast(g.location as text) ILIKE concat('%%', nullif(btrim(cast(:location as text)), ''), '%%'))
+              and (cast(:fromTime as timestamptz) is null or g.time >= cast(:fromTime as timestamptz))
+              and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
+              and (nullif(btrim(cast(:skillLevel as text)), '') is null or g.skill_level ILIKE nullif(btrim(cast(:skillLevel as text)), ''))
+              and g.geom is not null
+              and ST_DWithin(
+                    g.geom,
+                    ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+                    :radiusKm * 1000
+                )
+            order by ST_Distance(g.geom, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography)
+            """,
+            countQuery = """
+            select count(*)
+            from game g
+            join app_user u on u.id = g.user_id
+            where (nullif(btrim(cast(:sport as text)), '') is null or g.sport ILIKE nullif(btrim(cast(:sport as text)), ''))
+              and (nullif(btrim(cast(:location as text)), '') is null
+                   or cast(g.location as text) ILIKE concat('%%', nullif(btrim(cast(:location as text)), ''), '%%'))
+              and (cast(:fromTime as timestamptz) is null or g.time >= cast(:fromTime as timestamptz))
+              and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
+              and (nullif(btrim(cast(:skillLevel as text)), '') is null or g.skill_level ILIKE nullif(btrim(cast(:skillLevel as text)), ''))
+              and g.geom is not null
+              and ST_DWithin(
+                    g.geom,
+                    ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+                    :radiusKm * 1000
+                )
+            """,
+            nativeQuery = true
+    )
+    Page<Game> findByLocationWithinRadius(
+            @Param("sport") String sport,
+            @Param("location") String location,
+            @Param("fromTime") OffsetDateTime fromTime,
+            @Param("toTime") OffsetDateTime toTime,
+            @Param("skillLevel") String skillLevel,
+            @Param("lat") double lat,
+            @Param("lng") double lng,
+            @Param("radiusKm") double radiusKm,
+            Pageable pageable
+    );
 
     /**
      * Cursor-based explore listing with stable ordering by (time, id).
@@ -135,4 +174,22 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
             @Param("cursorId") Long cursorId,
             @Param("limit") int limit
     );
+
+    /**
+     * Count games scheduled after the provided instant.
+     */
+    @Query(value = "select count(*) from game g where g.time > :now", nativeQuery = true)
+    long countUpcoming(@Param("now") Instant now);
+
+    /**
+     * Count upcoming games created by a specific user.
+     */
+    @Query(value = "select count(*) from game g where g.user_id = :userId and g.time > :now", nativeQuery = true)
+    long countUpcomingByUser(@Param("userId") Long userId, @Param("now") Instant now);
+
+    /**
+     * Calculate the average number of participants per game.
+     */
+    @Query(value = "select coalesce(avg(cnt),0) from (select count(*) as cnt from game_participants group by game_id) gp", nativeQuery = true)
+    Double averageParticipants();
 }
