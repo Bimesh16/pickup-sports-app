@@ -43,7 +43,6 @@ import java.net.URI;
 import java.security.Principal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -140,55 +139,23 @@ public class GameController {
         validateTimeRange(fromTime, toTime);
         validateGeoParams(lat, lon, radiusKm);
 
-        // Branch: geo-filtered list (in-memory pagination)
+        // Branch: geo-filtered list using PostGIS
         if (lat != null && lon != null && radiusKm != null) {
             validateRadius(radiusKm);
-            List<Game> all = gameRepository.findByLocationWithinRadius(lat, lon, radiusKm);
+            Page<Game> page = gameRepository.findByLocationWithinRadius(
+                    nsport,
+                    nloc,
+                    fromTime,
+                    toTime,
+                    normalizedSkill,
+                    lat,
+                    lon,
+                    radiusKm,
+                    effective
+            );
 
-            // Apply filters
-            all = filterGames(all, nsport, nloc, normalizedSkill, fromTime, toTime);
+            Page<GameSummaryDTO> body = page.map(mapper::toGameSummaryDTO);
 
-            // Precompute distances (km) for sort and DTO enrichment
-            java.util.Map<Long, Double> distanceById = new java.util.HashMap<>(all.size());
-            for (Game g : all) {
-                Double d = (g.getLatitude() != null && g.getLongitude() != null)
-                        ? distanceKm(lat, lon, g.getLatitude(), g.getLongitude())
-                        : Double.POSITIVE_INFINITY;
-                distanceById.put(g.getId(), d);
-            }
-
-            // Sort: use whitelisted comparator or default to nearest-first
-            Sort sort = effective.getSort();
-            Comparator<Game> cmp = buildGameComparator(sort, distanceById);
-            if (cmp != null) {
-                all = all.stream().sorted(cmp).toList();
-            } else {
-                // Default to nearest-first when geo filter used and no explicit sort
-                all = all.stream()
-                        .sorted(Comparator.comparing(g -> distanceById.getOrDefault(g.getId(), Double.POSITIVE_INFINITY)))
-                        .toList();
-            }
-
-            Page<Game> page = pageSlice(all, effective);
-
-            // Build DTOs with distanceKm
-            java.util.List<GameSummaryDTO> dtos = page.getContent().stream()
-                    .map(g -> new GameSummaryDTO(
-                            g.getId(),
-                            g.getSport(),
-                            g.getLocation(),
-                            g.getTime() != null ? g.getTime().atOffset(java.time.ZoneOffset.UTC) : null,
-                            g.getSkillLevel(),
-                            g.getLatitude(),
-                            g.getLongitude(),
-                            distanceById.getOrDefault(g.getId(), Double.POSITIVE_INFINITY).isInfinite() ? null
-                                    : roundDistance(distanceById.get(g.getId()))
-                    ))
-                    .toList();
-
-            Page<GameSummaryDTO> body = new org.springframework.data.domain.PageImpl<>(dtos, effective, all.size());
-
-            // Compute Last-Modified from page (max of updatedAt/createdAt/time)
             long lastMod = page.getContent().stream()
                     .mapToLong(GameController::lastModifiedEpochMilli)
                     .max()
@@ -199,7 +166,6 @@ public class GameController {
             headers.add("X-Total-Count", String.valueOf(body.getTotalElements()));
             headers.add("Cache-Control", CACHE_CONTROL_HEADER);
             headers.add("Last-Modified", httpDate(lastMod));
-            headers.add("X-Distance-Unit", "km");
 
             Long clientMillis = parseIfModifiedSince(ifModifiedSinceList);
             if (clientMillis != null && lastMod <= clientMillis) {
@@ -774,56 +740,6 @@ public class GameController {
     }
 
     /**
-     * Apply server-side filters to an in-memory list for the geo branch.
-     */
-    private List<Game> filterGames(List<Game> input,
-                                   String nsport,
-                                   String nloc,
-                                   String normalizedSkill,
-                                   OffsetDateTime fromTime,
-                                   OffsetDateTime toTime) {
-        return input.stream()
-                .filter(g -> nsport == null || (g.getSport() != null && g.getSport().equalsIgnoreCase(nsport)))
-                .filter(g -> nloc == null || (g.getLocation() != null && g.getLocation().toLowerCase().contains(nloc.toLowerCase())))
-                .filter(g -> normalizedSkill == null || (g.getSkillLevel() != null && g.getSkillLevel().equalsIgnoreCase(normalizedSkill)))
-                .filter(g -> {
-                    if (fromTime != null) {
-                        var t = g.getTime();
-                        if (t == null || t.isBefore(fromTime.toInstant())) return false;
-                    }
-                    if (toTime != null) {
-                        var t = g.getTime();
-                        if (t == null || t.isAfter(toTime.toInstant())) return false;
-                    }
-                    return true;
-                })
-                .toList();
-    }
-
-    /**
-     * Build a comparator for a whitelisted sort property with id tie-breaker.
-     * Returns null if the sort is unsorted or not whitelisted.
-     */
-    private Comparator<Game> buildGameComparator(Sort sort, java.util.Map<Long, Double> distanceById) {
-        if (sort == null || sort.isUnsorted()) return null;
-        Sort.Order primary = sort.iterator().next();
-        Comparator<Game> cmp = switch (primary.getProperty()) {
-            case "time" -> Comparator.comparing(Game::getTime, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "sport" -> Comparator.comparing(Game::getSport, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "location" -> Comparator.comparing(Game::getLocation, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "createdAt" -> Comparator.comparing(Game::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "updatedAt" -> Comparator.comparing(Game::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "distance" -> Comparator.comparing(g -> distanceById.getOrDefault(g.getId(), Double.POSITIVE_INFINITY));
-            default -> null;
-        };
-        if (cmp == null) return null;
-        // Stable tie-breaker on id
-        cmp = cmp.thenComparing(Game::getId, Comparator.nullsLast(Comparator.naturalOrder()));
-        if (primary.isDescending()) cmp = cmp.reversed();
-        return cmp;
-    }
-
-    /**
      * Validates that a user has access to a game's chat.
      */
     private void validateGameAccess(Long gameId, String username) {
@@ -1156,24 +1072,6 @@ public class GameController {
     }
 
     /**
-     * Great-circle distance in kilometers using the Haversine formula.
-     */
-    private static double distanceKm(double lat1, double lon1, double lat2, double lon2) {
-        final double R = 6371.0; // km
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
-
-    private static double roundDistance(double km) {
-        return Math.round(km * 10.0) / 10.0; // 1 decimal place
-    }
-
-    /**
      * Parses an RFC 1123 date header, returning epoch millis or null on invalid/missing.
      */
     private static Long parseIfModifiedSince(String header) {
@@ -1200,16 +1098,6 @@ public class GameController {
                 .build(true)
                 .toUriString();
         return "<" + url + ">; rel=\"" + rel + "\"";
-    }
-
-    /**
-     * Build a Page<T> from a full list and a pageable (in-memory pagination).
-     */
-    private static <T> Page<T> pageSlice(List<T> all, Pageable pageable) {
-        int start = Math.max(0, pageable.getPageNumber()) * pageable.getPageSize();
-        int end = Math.min(start + pageable.getPageSize(), all.size());
-        List<T> slice = (start >= all.size()) ? List.of() : all.subList(start, end);
-        return new org.springframework.data.domain.PageImpl<>(slice, pageable, all.size());
     }
 
     /**
