@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.DataAccessResourceFailureException;
 
 import java.time.Instant;
 import java.util.List;
@@ -43,6 +44,14 @@ class WaitlistServiceTest {
         assertTrue(svc.addToWaitlist(4L, 7L));
         when(jdbc.update(startsWith("DELETE FROM game_waitlist"), any(), any())).thenReturn(1);
         assertTrue(svc.removeFromWaitlist(4L, 7L));
+    }
+
+    @Test
+    void addToWaitlist_throwsCustomExceptionOnDataAccessError() {
+        when(jdbc.update(startsWith("INSERT INTO game_waitlist"), any(), any(), any()))
+                .thenThrow(new DataAccessResourceFailureException("db down"));
+        assertThrows(com.bmessi.pickupsportsapp.exception.WaitlistServiceException.class,
+                () -> svc.addToWaitlist(1L, 2L));
     }
 
     @Test
