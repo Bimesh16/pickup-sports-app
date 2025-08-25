@@ -9,6 +9,7 @@ import com.bmessi.pickupsportsapp.repository.PlayerRatingRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,15 +29,18 @@ public class StatsService {
 
     @Timed(value = "stats.games.overview", description = "Time to compute game overview stats")
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "stats", key = "'game:' + #sport + ':' + #fromDate + ':' + #toDate")
     public GameStatsDTO getGameStats(String sport, LocalDate fromDate, LocalDate toDate) {
-        // Simplified version - you can enhance these with custom queries later
         long totalGames = gameRepository.count();
         long upcomingGames = gameRepository.countUpcoming(Instant.now());
         long completedGames = totalGames - upcomingGames;
 
-        // Simplified - return empty maps for now
-        Map<String, Long> gamesBySport = Map.of();
-        Map<String, Long> gamesBySkillLevel = Map.of();
+        Map<String, Long> gamesBySport = gameRepository.countBySport().stream()
+                .collect(Collectors.toMap(GameRepository.SportCount::getSport, GameRepository.SportCount::getCount));
+
+        Map<String, Long> gamesBySkillLevel = gameRepository.countBySkillLevel().stream()
+                .collect(Collectors.toMap(GameRepository.SkillLevelCount::getSkillLevel, GameRepository.SkillLevelCount::getCount));
+
         Double avgParticipants = gameRepository.averageParticipants();
         double averageParticipants = avgParticipants != null ? avgParticipants : 0.0;
 
@@ -51,6 +56,7 @@ public class StatsService {
 
     @Timed(value = "stats.users.me", description = "Time to compute stats for current user")
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "stats", key = "'user:' + #username")
     public UserStatsDTO getUserStats(String username) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
@@ -61,33 +67,36 @@ public class StatsService {
 
     @Timed(value = "stats.users.byId", description = "Time to compute stats for a user by id")
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "stats", key = "'userId:' + #userId")
     public UserStatsDTO getUserStats(Long userId) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return new UserStatsDTO(userId, "", 0, 0, 0.0, 0, Map.of(), "");
         }
 
-        // Use existing methods only
-        int gamesCreated = (int) gameRepository
-                .findByUserIdWithParticipants(userId, org.springframework.data.domain.Pageable.unpaged())
-                .getTotalElements();
-        int gamesParticipated = 0; // Simplified for now
+        Instant now = Instant.now();
+        int gamesCreated = (int) gameRepository.countByUserId(userId);
+        int gamesParticipated = (int) gameRepository.countParticipatedByUser(userId, now);
 
         PlayerRatingRepository.RatingAggregate ratingAgg = ratingRepository.aggregateForRated(userId);
-        Double avgRating = ratingAgg != null ? ratingAgg.getAverage() : null;
-        Integer totalRatings = ratingAgg != null ? ratingAgg.getCount() : null;
+        double avgRating = ratingAgg != null && ratingAgg.getAverage() != null ? ratingAgg.getAverage() : 0.0;
+        int totalRatings = ratingAgg != null && ratingAgg.getCount() != null ? ratingAgg.getCount() : 0;
 
-        // Simplified - return empty map for now
-        Map<String, Integer> sportCounts = Map.of();
-        String mostPlayedSport = "";
+        Map<String, Integer> sportCounts = gameRepository.countParticipatedByUserBySport(userId, now).stream()
+                .collect(Collectors.toMap(GameRepository.SportCount::getSport, sc -> sc.getCount().intValue()));
+
+        String mostPlayedSport = sportCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("");
 
         return new UserStatsDTO(
                 userId,
                 user.getUsername(),
                 gamesCreated,
                 gamesParticipated,
-                avgRating != null ? avgRating : 0.0,
-                totalRatings != null ? totalRatings : 0,
+                avgRating,
+                totalRatings,
                 sportCounts,
                 mostPlayedSport
         );
@@ -95,6 +104,7 @@ public class StatsService {
 
     @Timed(value = "stats.dashboard", description = "Time to compute dashboard stats for current user")
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "stats", key = "'dashboard:' + #username")
     public DashboardStatsDTO getDashboardStats(String username) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
@@ -103,9 +113,13 @@ public class StatsService {
 
         UserStatsDTO userStats = getUserStats(user.getId());
 
-        // Simplified calculations
-        int upcomingGames = (int) gameRepository.countUpcomingByUser(user.getId(), Instant.now());
-        int gamesThisMonth = 0; // Simplified for now
+        Instant now = Instant.now();
+        int upcomingGames = (int) gameRepository.countUpcomingByUser(user.getId(), now);
+
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        Instant monthStart = today.withDayOfMonth(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+        Instant nextMonthStart = today.plusMonths(1).withDayOfMonth(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+        int gamesThisMonth = (int) gameRepository.countParticipatedByUserBetween(user.getId(), monthStart, nextMonthStart);
 
         return new DashboardStatsDTO(
                 userStats.gamesParticipated(),
