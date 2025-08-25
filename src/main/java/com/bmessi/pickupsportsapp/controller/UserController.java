@@ -41,6 +41,19 @@ public class UserController {
         // First-time registration
         UserDTO user = userService.register(request);
 
+        // Default locale from Accept-Language, best-effort (ignore failures)
+        try {
+            String accept = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes() instanceof org.springframework.web.context.request.ServletRequestAttributes sra
+                    ? sra.getRequest().getHeader("Accept-Language")
+                    : null;
+            if (accept != null && !accept.isBlank() && user != null && user.id() != null) {
+                String tag = java.util.Locale.forLanguageTag(accept.split(",")[0]).toLanguageTag();
+                if (tag != null && !tag.isBlank()) {
+                    com.bmessi.pickupsportsapp.util.Jdbc.exec("UPDATE app_user SET locale = ? WHERE id = ?", tag, user.id());
+                }
+            }
+        } catch (Exception ignore) {}
+
         // Record idempotency mapping for future replays
         if (idem != null && user != null && user.id() != null) {
             idempotencyService.put(request.username(), idem, user.id());

@@ -26,8 +26,7 @@ public class StatsController {
             @RequestParam(required = false) LocalDate toDate
     ) {
         GameStatsDTO body = statsService.getGameStats(sport, fromDate, toDate);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=60");
+        HttpHeaders headers = com.bmessi.pickupsportsapp.web.ApiResponseUtils.cachePrivate(60);
         return ResponseEntity.ok().headers(headers).body(body);
     }
 
@@ -35,17 +34,14 @@ public class StatsController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserStatsDTO> getMyStats(Principal principal) {
         UserStatsDTO body = statsService.getUserStats(principal.getName());
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CACHE_CONTROL, "no-store");
-        headers.add(HttpHeaders.PRAGMA, "no-cache");
+        HttpHeaders headers = com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
         return ResponseEntity.ok().headers(headers).body(body);
     }
 
     @GetMapping("/users/{userId}")
     public ResponseEntity<UserStatsDTO> getUserStats(@PathVariable Long userId) {
         UserStatsDTO body = statsService.getUserStats(userId);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=30");
+        HttpHeaders headers = com.bmessi.pickupsportsapp.web.ApiResponseUtils.cachePrivate(30);
         return ResponseEntity.ok().headers(headers).body(body);
     }
 

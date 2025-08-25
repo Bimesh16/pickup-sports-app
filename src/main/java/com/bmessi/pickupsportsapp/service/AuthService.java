@@ -84,8 +84,10 @@ public class AuthService {
         }
 
         try {
+            stored.setLastUsedAt(Instant.now());
             var pair = issueNewPair(stored);
             try { audit.refreshIssued(stored.getUser().getUsername()); } catch (Exception ignore) {}
+            try { io.micrometer.core.instrument.Metrics.counter("auth.refresh.success").increment(); } catch (Exception ignore) {}
             return pair;
         } catch (OptimisticLockingFailureException e) {
             throw new BadCredentialsException("Invalid refresh token");
@@ -118,7 +120,7 @@ public class AuthService {
         String newAccessToken = tokenService.generate(user.getUsername());
         String newRefreshTokenValue = generateOpaqueToken();
 
-        String newRefreshHash = storeRefresh(user, newRefreshTokenValue);
+        String newRefreshHash = storeRefresh(user, newRefreshTokenValue, null, null, null);
 
         current.setRevokedAt(Instant.now());
         current.setReplacedByTokenHash(newRefreshHash);
@@ -140,10 +142,17 @@ public class AuthService {
     }
 
     private String storeRefresh(User user, String refreshValue) {
+        return storeRefresh(user, refreshValue, null, null, null);
+    }
+
+    private String storeRefresh(User user, String refreshValue, String deviceId, String userAgent, String ip) {
         RefreshToken rt = RefreshToken.builder()
                 .user(user)
                 .tokenHash(sha256(refreshValue))
                 .expiresAt(Instant.now().plus(Duration.ofDays(refreshDays)))
+                .deviceId(deviceId)
+                .userAgent(userAgent)
+                .issuedIp(ip)
                 .build();
         refreshTokenRepository.save(rt);
         return rt.getTokenHash();

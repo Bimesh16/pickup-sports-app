@@ -55,6 +55,7 @@ public class UserProfileController {
         return ResponseEntity.ok().headers(headers).body(dto);
     }
 
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = "profile", key = "#principal.name")
     @PutMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserProfileDTO> updateMyProfile(@Valid @RequestBody UpdateUserProfileRequest request,
@@ -76,6 +77,7 @@ public class UserProfileController {
         return ResponseEntity.ok().headers(headers).body(dto);
     }
 
+    @org.springframework.cache.annotation.Cacheable(cacheNames = "profile", key = "#id")
     @GetMapping("/{id}")
     public ResponseEntity<UserProfileDTO> getProfile(@PathVariable Long id) {
         var dto = userProfileService.getProfileById(id);
@@ -97,6 +99,7 @@ public class UserProfileController {
     @Value("${media.avatar.absolute-max-height:8000}")
     private int avatarAbsoluteMaxHeight;
 
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = "profile", key = "#principal.name")
     @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserProfileDTO> uploadMyAvatar(@RequestPart("file") MultipartFile file,
@@ -168,6 +171,7 @@ public class UserProfileController {
         return ResponseEntity.ok().headers(headers).body(dto);
     }
 
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = "profile", key = "#principal.name")
     @DeleteMapping("/me/avatar")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteMyAvatar(@RequestHeader(value = "If-Match", required = false) String ifMatch,

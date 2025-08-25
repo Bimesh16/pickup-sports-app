@@ -29,6 +29,8 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
     private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
+    private final com.bmessi.pickupsportsapp.service.UserNotificationPrefsService prefsService;
+    private final com.bmessi.pickupsportsapp.service.EmailService emailService;
 
     @Timed(value = "notifications.create", description = "Time to create a notification")
     @Transactional
@@ -61,7 +63,35 @@ public class NotificationService {
     @Transactional
     public Notification createGameNotification(String recipientUsername, String actorUsername, String sport, String location, String action) {
         String msg = formatGameNotificationMessage(actorUsername, action, sport, location);
-        return createNotification(recipientUsername, msg);
+        // preferences
+        var prefs = prefsService.getOrDefaults(recipientUsername);
+        boolean inApp = switch ((action == null ? "" : action.toLowerCase())) {
+            case "joined", "rsvp" -> prefs.isInAppOnRsvp();
+            case "created", "create" -> prefs.isInAppOnCreate();
+            case "cancelled", "canceled", "cancel" -> prefs.isInAppOnCancel();
+            default -> true;
+        };
+        boolean email = switch ((action == null ? "" : action.toLowerCase())) {
+            case "joined", "rsvp" -> prefs.isEmailOnRsvp();
+            case "created", "create" -> prefs.isEmailOnCreate();
+            case "cancelled", "canceled", "cancel" -> prefs.isEmailOnCancel();
+            default -> false;
+        };
+        Notification result = null;
+        if (inApp) {
+            result = createNotification(recipientUsername, msg);
+        }
+        if (email) {
+            try {
+                java.util.Map<String, String> model = java.util.Map.of(
+                        "actor", actorUsername == null ? "" : actorUsername,
+                        "sport", sport == null ? "" : sport,
+                        "location", location == null ? "" : location
+                );
+                emailService.sendGameEventEmail(recipientUsername, action, model);
+            } catch (Exception ignore) {}
+        }
+        return result;
     }
 
     // Legacy API preserved: returns all notifications unpaged
@@ -118,6 +148,22 @@ public class NotificationService {
     public int markAllAsReadForUser(String username) {
         User user = requireUserByUsername(username);
         return notificationRepository.markAllAsRead(user.getId());
+    }
+
+    @Timed(value = "notifications.read.bulk", description = "Time to mark a set of notifications read")
+    @Transactional
+    @CacheEvict(cacheNames = "notifications-first-page", allEntries = true)
+    public int markAsReadForUser(java.util.Collection<Long> ids, String username) {
+        if (ids == null || ids.isEmpty()) return 0;
+        User user = requireUserByUsername(username);
+        return notificationRepository.markAsRead(user.getId(), ids);
+    }
+
+    @Timed(value = "notifications.unread.count", description = "Time to count unread notifications")
+    @Transactional(readOnly = true)
+    public long unreadCount(String username) {
+        User user = requireUserByUsername(username);
+        return notificationRepository.countByUser_IdAndReadFalse(user.getId());
     }
 
     @Timed(value = "notifications.delete", description = "Time to delete a notification")

@@ -26,6 +26,9 @@ public class ChatServiceImpl implements ChatService {
 
     private final ChatMessageRepository chatRepo;
     private final GameRepository gameRepo;
+    private final ChatModerationService moderationService;
+    private final ProfanityFilterService profanityFilter;
+    private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
 
     @Override
     @Transactional
@@ -38,6 +41,33 @@ public class ChatServiceImpl implements ChatService {
             var existing = chatRepo.findByGame_IdAndClientId(gameId, dto.getClientId());
             if (existing.isPresent()) {
                 return toDto(existing.get());
+            }
+        }
+
+        // Validate sender and enforce moderation
+        String username = dto.getSender();
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("sender required");
+        }
+        if (moderationService.isKicked(gameId, username)) {
+            try { meterRegistry.counter("chat.moderation.block", "reason", "kicked").increment(); } catch (Exception ignore) {}
+            throw new org.springframework.security.access.AccessDeniedException("kicked");
+        }
+        if (moderationService.isMuted(gameId, username)) {
+            try { meterRegistry.counter("chat.moderation.block", "reason", "muted").increment(); } catch (Exception ignore) {}
+            throw new org.springframework.security.access.AccessDeniedException("muted");
+        }
+
+        // Profanity handling
+        if (profanityFilter.isEnabled() && dto.getContent() != null) {
+            if (profanityFilter.containsProfanity(dto.getContent())) {
+                if (profanityFilter.shouldReject()) {
+                    try { meterRegistry.counter("chat.profanity", "action", "rejected").increment(); } catch (Exception ignore) {}
+                    throw new IllegalArgumentException("message contains profanity");
+                } else {
+                    dto.setContent(profanityFilter.sanitize(dto.getContent()));
+                    try { meterRegistry.counter("chat.profanity", "action", "sanitized").increment(); } catch (Exception ignore) {}
+                }
             }
         }
 
@@ -59,10 +89,13 @@ public class ChatServiceImpl implements ChatService {
             if (entity.getClientId() != null) {
                 var winner = chatRepo.findByGame_IdAndClientId(gameId, entity.getClientId())
                         .orElseThrow(() -> e);
+                try { meterRegistry.counter("chat.publish", "result", "duplicate").increment(); } catch (Exception ignore) {}
                 return toDto(winner);
             }
             throw e;
         }
+
+        try { meterRegistry.counter("chat.publish", "result", "accepted").increment(); } catch (Exception ignore) {}
 
         log.debug("Saved chat message id={} game={} from {} at {}",
                 entity.getId(), gameId, dto.getSender(), dto.getSentAt());

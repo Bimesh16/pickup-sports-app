@@ -1,0 +1,2 @@
+ALTER TABLE refresh_token
+    ADD COLUMN IF NOT EXISTS last_used_at TIMESTAMPTZ;

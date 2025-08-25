@@ -197,4 +197,108 @@ public class EmailService {
     private void fallbackResetEmail(String to, String link, Throwable ex) {
         log.error("Failed to send password reset email to {} after retries: {}", to, ex.getMessage(), ex);
     }
+
+    @Async
+    @Retry(name = "mail", fallbackMethod = "fallbackGameEventEmail")
+    public void sendGameEventEmail(String to, String eventType, java.util.Map<String, String> model) {
+        sendGameEventEmail(to, eventType, model, java.util.Locale.getDefault());
+    }
+
+    @Async
+    @Retry(name = "mail", fallbackMethod = "fallbackGameEventEmailWithLocale")
+    public void sendGameEventEmail(String to, String eventType, java.util.Map<String, String> model, java.util.Locale locale) {
+        try {
+            var mime = mailSender.createMimeMessage();
+            var helper = new org.springframework.mail.javamail.MimeMessageHelper(mime, "UTF-8");
+            helper.setFrom(String.format("%s <%s>", fromName, from));
+            helper.setTo(to);
+            String subject = com.bmessi.pickupsportsapp.i18n.EventI18n.subject(eventType, locale);
+            helper.setSubject(subject);
+
+            String template = pickTemplate("templates/email/game-event", locale == null ? java.util.Locale.getDefault() : locale);
+            String html = loadTemplate(template)
+                    .replace("{{appName}}", fromName)
+                    .replace("{{eventType}}", String.valueOf(eventType))
+                    .replace("{{sport}}", model.getOrDefault("sport", ""))
+                    .replace("{{location}}", model.getOrDefault("location", ""))
+                    .replace("{{actor}}", model.getOrDefault("actor", ""))
+                    .replace("{{supportEmail}}", supportEmail == null ? "" : supportEmail);
+            helper.setText(html, true);
+            mailSender.send(mime);
+        } catch (Exception e) {
+            // Fallback to plain text
+            org.springframework.mail.SimpleMailMessage message = new org.springframework.mail.SimpleMailMessage();
+            message.setFrom(String.format("%s <%s>", fromName, from));
+            message.setTo(to);
+            message.setSubject("Game notification");
+            String sport = model.getOrDefault("sport", "");
+            String location = model.getOrDefault("location", "");
+            String actor = model.getOrDefault("actor", "");
+            message.setText("Event: " + eventType + " | Sport: " + sport + " | Location: " + location + " | By: " + actor);
+            mailSender.send(message);
+        }
+        log.info("Sent game event email '{}' to {}", eventType, to);
+    }
+
+    @SuppressWarnings("unused")
+    private void fallbackGameEventEmailWithLocale(String to, String eventType, java.util.Map<String, String> model, java.util.Locale locale, Throwable ex) {
+        log.error("Failed to send game event email to {} after retries (locale {}): {}", to, locale, ex.getMessage(), ex);
+    }
+
+    @SuppressWarnings("unused")
+    private void fallbackGameEventEmail(String to, String eventType, java.util.Map<String, String> model, Throwable ex) {
+        log.error("Failed to send game event email '{}' to {} after retries: {}", eventType, to, ex.getMessage(), ex);
+    }
+
+    @Async
+    @Retry(name = "mail", fallbackMethod = "fallbackDigestEmail")
+    public void sendDigestEmail(String to, java.util.List<java.util.Map<String, String>> items, java.util.Locale locale) {
+        try {
+            var mime = mailSender.createMimeMessage();
+            var helper = new org.springframework.mail.javamail.MimeMessageHelper(mime, "UTF-8");
+            helper.setFrom(String.format("%s <%s>", fromName, from));
+            helper.setTo(to);
+            helper.setSubject("Your upcoming games");
+            String template = pickTemplate("templates/email/digest", locale == null ? java.util.Locale.getDefault() : locale);
+            StringBuilder rows = new StringBuilder();
+            for (var it : items) {
+                rows.append("<li>")
+                        .append(escapeHtml(it.getOrDefault("sport", ""))).append(" @ ")
+                        .append(escapeHtml(it.getOrDefault("location", ""))).append(" — ")
+                        .append(escapeHtml(it.getOrDefault("time", "")))
+                        .append("</li>");
+            }
+            String html = loadTemplate(template)
+                    .replace("{{appName}}", fromName)
+                    .replace("{{items}}", rows.toString())
+                    .replace("{{supportEmail}}", supportEmail == null ? "" : supportEmail);
+            helper.setText(html, true);
+            mailSender.send(mime);
+        } catch (Exception e) {
+            // Fallback to plain text
+            org.springframework.mail.SimpleMailMessage msg = new org.springframework.mail.SimpleMailMessage();
+            msg.setFrom(String.format("%s <%s>", fromName, from));
+            msg.setTo(to);
+            msg.setSubject("Your upcoming games");
+            StringBuilder sb = new StringBuilder();
+            for (var it : items) {
+                sb.append("- ").append(it.getOrDefault("sport", "")).append(" @ ")
+                        .append(it.getOrDefault("location", "")).append(" — ")
+                        .append(it.getOrDefault("time", "")).append("\n");
+            }
+            msg.setText(sb.toString());
+            mailSender.send(msg);
+        }
+        log.info("Sent digest email to {}", to);
+    }
+
+    @SuppressWarnings("unused")
+    private void fallbackDigestEmail(String to, java.util.List<java.util.Map<String, String>> items, java.util.Locale locale, Throwable ex) {
+        log.error("Failed to send digest email to {} after retries: {}", to, ex.getMessage(), ex);
+    }
+
+    private static String escapeHtml(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
 }

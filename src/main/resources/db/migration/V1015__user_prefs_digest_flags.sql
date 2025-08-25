@@ -1,0 +1,3 @@
+ALTER TABLE user_notification_prefs
+    ADD COLUMN IF NOT EXISTS email_digest_daily BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS email_digest_weekly BOOLEAN NOT NULL DEFAULT FALSE;

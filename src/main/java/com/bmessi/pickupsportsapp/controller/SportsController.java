@@ -24,6 +24,7 @@ public class SportsController {
 
     private final GameRepository gameRepository;
 
+    @org.springframework.cache.annotation.Cacheable("sports-list")
     @GetMapping("/sports")
     public ResponseEntity<List<String>> getSports(
             @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch
@@ -44,7 +45,7 @@ public class SportsController {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CACHE_CONTROL, "public, max-age=300");
         headers.add(HttpHeaders.ETAG, etag);
-        headers.add(HttpHeaders.LAST_MODIFIED, httpDate(Instant.now().toEpochMilli()));
+        headers.add(HttpHeaders.LAST_MODIFIED, com.bmessi.pickupsportsapp.web.ApiResponseUtils.httpDate(Instant.now().toEpochMilli()));
 
         // Honor If-None-Match for conditional GET
         if (ifNoneMatch != null && !ifNoneMatch.isBlank()) {

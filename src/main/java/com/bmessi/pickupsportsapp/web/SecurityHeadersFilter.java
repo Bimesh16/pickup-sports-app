@@ -15,25 +15,25 @@ import java.io.IOException;
  * Adds modern security headers to all HTTP responses.
  * These are safe defaults for APIs and can be adjusted per environment if needed.
  */
-@Component
+@Component("webSecurityHeadersFilter")
 @Order(Ordered.HIGHEST_PRECEDENCE + 20)
 public class SecurityHeadersFilter extends OncePerRequestFilter {
 
     private static final String CSP =
             "default-src 'none'; " +
-            "img-src 'self' data:; " +
-            "script-src 'none'; " +
-            "style-src 'self'; " +
-            "font-src 'self' data:; " +
-            "connect-src 'self'; " +
-            "frame-ancestors 'none'; " +
-            "base-uri 'self'";
+                    "img-src 'self' data:; " +
+                    "script-src 'none'; " +
+                    "style-src 'self'; " +
+                    "font-src 'self' data:; " +
+                    "connect-src 'self'; " +
+                    "frame-ancestors 'none'; " +
+                    "base-uri 'self'";
 
     private static final String PERMISSIONS_POLICY =
             "geolocation=(), microphone=(), camera=(), " +
-            "payment=(), usb=(), bluetooth=(), accelerometer=(), " +
-            "ambient-light-sensor=(), gyroscope=(), magnetometer=(), " +
-            "screen-wake-lock=(), clipboard-read=(), clipboard-write=()";
+                    "payment=(), usb=(), bluetooth=(), accelerometer=(), " +
+                    "ambient-light-sensor=(), gyroscope=(), magnetometer=(), " +
+                    "screen-wake-lock=(), clipboard-read=(), clipboard-write=()";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -62,3 +62,4 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
         }
     }
 }
+

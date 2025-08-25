@@ -27,7 +27,7 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
         String incoming = request.getHeader(HEADER);
         String cid = (incoming != null && !incoming.isBlank()) ? sanitize(incoming) : UUID.randomUUID().toString();
 
-        // Make available to downstream handlers and logs
+        // Propagate to logs and downstream
         request.setAttribute(HEADER, cid);
         MDC.put(MDC_KEY, cid);
         response.setHeader(HEADER, cid);

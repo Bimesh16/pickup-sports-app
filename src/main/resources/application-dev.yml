@@ -14,7 +14,42 @@ management:
   endpoint:
     health:
       show-details: always
+# Dev profile defaults
+server:
+  forward-headers-strategy: framework
 
+# Disable real Web Push in dev (uses NoopWebPushClient)
+push:
+  webpush:
+    enabled: false
+  vapid:
+    # Optional: supply keys when testing real Web Push
+    # public-key:
+    # private-key:
+    subject: "mailto:admin@example.com"
+
+# Use geospatial fallback when PostGIS isn't available
+geo:
+  postgis:
+    force-fallback: true
+
+# Short dedupe window for notifications in dev
+notifications:
+  dedupe:
+    seconds: 30
+
+# Admin MFA policy defaults
+auth:
+  login:
+    require-mfa-for-admin: true
+    admin-mfa-alert-window-minutes: 60
+
+# Spring specifics (optional Redis – app runs fine without it)
+# spring:
+#   data:
+#     redis:
+#       host: localhost
+#       port: 6379
 # WebSocket/chat dev behavior
 chat:
   redis:

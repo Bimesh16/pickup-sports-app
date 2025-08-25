@@ -78,6 +78,10 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Modifying
     int deleteByIdAndUser_Id(Long id, Long userId);
 
+    // retention cleanup: remove old read notifications
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    int deleteByReadTrueAndCreatedAtBefore(Instant cutoff);
+
     interface Summary {
         Long getId();
         String getMessage();

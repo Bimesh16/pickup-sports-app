@@ -72,10 +72,10 @@ public class NotificationController {
                 .orElse(System.currentTimeMillis());
 
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-        addPaginationLinks(request, headers, page);
+        com.bmessi.pickupsportsapp.web.ApiResponseUtils.addPaginationLinks(request, headers, page);
         headers.add("X-Total-Count", String.valueOf(page.getTotalElements()));
         headers.add("Cache-Control", "private, max-age=30");
-        headers.add("Last-Modified", httpDate(lastMod));
+        headers.add("Last-Modified", com.bmessi.pickupsportsapp.web.ApiResponseUtils.httpDate(lastMod));
 
         Long clientMillis = parseIfModifiedSince(ifModifiedSince);
         if (clientMillis != null && lastMod <= clientMillis) {
@@ -89,11 +89,11 @@ public class NotificationController {
     // Quick unread count for badge updates
     @GetMapping("/unread-count")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Object>> getUnreadCount(Principal principal) {
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.CountResponse> getUnreadCount(Principal principal) {
         String username = principal.getName();
         var all = notificationService.getUserNotifications(username);
         long unread = all.stream().filter(n -> !n.isRead()).count();
-        return ResponseEntity.ok(Map.of("unread", unread));
+        return ResponseEntity.ok(new com.bmessi.pickupsportsapp.dto.api.CountResponse(unread));
     }
 
     // Mark notification as read using the improved service method
@@ -172,7 +172,7 @@ public class NotificationController {
 
             notificationService.deleteNotificationForUser(id, username);
             log.debug("Successfully deleted notification {}", id);
-            return ResponseEntity.ok(Map.of("message", "Notification deleted successfully"));
+            return ResponseEntity.ok(new com.bmessi.pickupsportsapp.dto.api.MessageResponse("Notification deleted successfully"));
         } catch (IllegalArgumentException e) {
             log.debug("Failed to delete notification {}: {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -204,15 +204,12 @@ public class NotificationController {
     // Mark all notifications as read
     @PutMapping("/mark-all-read")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Object>> markAllAsRead(Principal principal) {
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.UpdatedResponse> markAllAsRead(Principal principal) {
         String username = principal.getName();
         int updated = notificationService.markAllAsReadForUser(username);
         log.debug("Marked {} notifications as read for user {}", updated, username);
 
-        return ResponseEntity.ok(Map.of(
-                "message", "All notifications marked as read",
-                "updatedCount", updated
-        ));
+        return ResponseEntity.ok(new com.bmessi.pickupsportsapp.dto.api.UpdatedResponse(updated));
     }
 
         // GET /notifications/{id}

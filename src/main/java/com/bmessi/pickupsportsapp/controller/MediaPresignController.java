@@ -1,5 +1,6 @@
 package com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.dto.api.PresignResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -52,13 +53,13 @@ public class MediaPresignController {
     @Operation(summary = "Presign S3 PUT upload", description = "Returns a presigned PUT URL for direct upload to S3 (provider=s3 and presign enabled)")
     @ApiResponse(responseCode = "200", description = "Presigned URL issued")
     @PostMapping("/presign")
-    public ResponseEntity<Map<String, Object>> presign(@RequestBody Map<String, String> body) {
+    public ResponseEntity<PresignResponse> presign(@RequestBody Map<String, String> body) {
         if (!presignEnabled) {
-            return ResponseEntity.status(400).body(Map.of("error", "presign_disabled", "message", "S3 presign is disabled"));
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "S3 presign is disabled");
         }
         String relativePath = body.getOrDefault("path", "");
         if (relativePath.isBlank()) {
-            return ResponseEntity.status(400).body(Map.of("error", "invalid_request", "message", "path is required"));
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "path is required");
         }
         String contentType = body.getOrDefault("contentType", "application/octet-stream");
         String key = key(relativePath);
@@ -93,11 +94,8 @@ public class MediaPresignController {
                 getUrl = urlResolver.publicUrlFor(relativePath);
             }
 
-            return ResponseEntity.ok(Map.of(
-                    "putUrl", putUrl,
-                    "getUrl", getUrl,
-                    "key", key,
-                    "relativePath", relativePath
+            return ResponseEntity.ok(new com.bmessi.pickupsportsapp.dto.api.PresignResponse(
+                    putUrl, getUrl, key, relativePath
             ));
         }
     }

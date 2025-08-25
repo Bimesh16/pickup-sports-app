@@ -238,6 +238,8 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <!-- Explicitly set the main class to avoid ambiguity during repackage -->
+                    <mainClass>com.bmessi.pickupsportsapp.PickupSportsAppApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>

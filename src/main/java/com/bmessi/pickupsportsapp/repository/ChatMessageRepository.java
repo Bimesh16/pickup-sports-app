@@ -28,4 +28,11 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     // idempotency by (game_id, client_id)
     Optional<ChatMessage> findByGame_IdAndClientId(Long gameId, String clientId);
     Optional<ChatMessage> findByGameAndClientId(Game game, String clientId);
+
+    // retention cleanup
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    int deleteBySentAtBefore(Instant cutoff);
+
+    // unread count
+    long countByGame_IdAndSentAtAfter(Long gameId, Instant after);
 }

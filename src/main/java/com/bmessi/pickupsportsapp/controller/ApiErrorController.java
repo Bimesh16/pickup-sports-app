@@ -35,9 +35,7 @@ public class ApiErrorController implements ErrorController {
         body.put("status", status);
         body.put("timestamp", Instant.now().toEpochMilli());
 
-        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-        headers.add(org.springframework.http.HttpHeaders.CACHE_CONTROL, "no-store");
-        headers.add(org.springframework.http.HttpHeaders.PRAGMA, "no-cache");
+        org.springframework.http.HttpHeaders headers = com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
         // Propagate correlation id if set by filter
         String cid = (String) request.getAttribute("X-Correlation-Id");
         if (cid != null && !cid.isBlank()) {

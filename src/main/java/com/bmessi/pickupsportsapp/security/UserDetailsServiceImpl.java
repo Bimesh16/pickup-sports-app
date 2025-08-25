@@ -29,8 +29,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("User not found: " + username);
         }
 
-        // Simple default role mapping; extend if you store roles in DB
-        Collection<? extends GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        // Map persisted roles to Spring Security authorities
+        Collection<? extends GrantedAuthority> authorities =
+                (u.getRoles() == null || u.getRoles().isEmpty())
+                        ? List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                        : u.getRoles().stream()
+                            .map(r -> new SimpleGrantedAuthority("ROLE_" + r.name()))
+                            .toList();
 
         return org.springframework.security.core.userdetails.User.withUsername(u.getUsername())
                 .password(u.getPassword())

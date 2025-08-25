@@ -60,7 +60,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .anonymous(a -> a.disable())
+            .anonymous(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
                 // Allow CORS preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

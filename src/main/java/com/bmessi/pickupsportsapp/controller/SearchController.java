@@ -58,10 +58,10 @@ public class SearchController {
                 .orElse(System.currentTimeMillis());
 
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-        addPaginationLinks(request, headers, games);
+        com.bmessi.pickupsportsapp.web.ApiResponseUtils.addPaginationLinks(request, headers, games);
         headers.add("X-Total-Count", String.valueOf(body.getTotalElements()));
         headers.add("Cache-Control", "private, max-age=30");
-        headers.add("Last-Modified", httpDate(lastMod));
+        headers.add("Last-Modified", com.bmessi.pickupsportsapp.web.ApiResponseUtils.httpDate(lastMod));
 
         Long clientMillis = parseIfModifiedSince(ifModifiedSince);
         if (clientMillis != null && lastMod <= clientMillis) {
@@ -88,7 +88,7 @@ public class SearchController {
         Page<UserDTO> body = users.map(mapper::toUserDTO);
 
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-        addPaginationLinks(request, headers, users);
+        com.bmessi.pickupsportsapp.web.ApiResponseUtils.addPaginationLinks(request, headers, users);
         headers.add("X-Total-Count", String.valueOf(body.getTotalElements()));
         headers.add("Cache-Control", "private, max-age=30");
         return org.springframework.http.ResponseEntity.ok().headers(headers).body(body);

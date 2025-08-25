@@ -16,17 +16,12 @@ public class StatusController {
     private String version;
 
     @GetMapping("/status")
-    public ResponseEntity<Map<String, Object>> status() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CACHE_CONTROL, "no-store");
-        headers.add(HttpHeaders.PRAGMA, "no-cache");
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.AppStatusResponse> status() {
+        HttpHeaders headers = com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(Map.of(
-                        "app", "Pickup Sports API",
-                        "version", version,
-                        "status", "ok",
-                        "timestamp", Instant.now().toEpochMilli()
+                .body(new com.bmessi.pickupsportsapp.dto.api.AppStatusResponse(
+                        "Pickup Sports API", version, "ok", Instant.now().toEpochMilli()
                 ));
     }
 }

@@ -105,4 +105,40 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
         sin(radians(g.latitude))))
         """)
     List<Game> findByLocationWithinRadius(@Param("lat") double lat, @Param("lng") double lng, @Param("radiusKm") double radiusKm);
+
+    /**
+     * Cursor-based explore listing with stable ordering by (time, id).
+     * Filters are optional; when cursor is provided, returns items strictly after (cursorTime, cursorId).
+     */
+    @Query(
+            value = """
+            select g.*
+            from game g
+            join app_user u on u.id = g.user_id
+            where (nullif(btrim(cast(:sport as text)), '') is null or g.sport ILIKE nullif(btrim(cast(:sport as text)), ''))
+              and (nullif(btrim(cast(:location as text)), '') is null
+                   or cast(g.location as text) ILIKE concat('%%', nullif(btrim(cast(:location as text)), ''), '%%'))
+              and (cast(:fromTime as timestamptz) is null or g.time >= cast(:fromTime as timestamptz))
+              and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
+              and (nullif(btrim(cast(:skillLevel as text)), '') is null or g.skill_level ILIKE nullif(btrim(cast(:skillLevel as text)), ''))
+              and (
+                    cast(:cursorTime as timestamptz) is null
+                    or g.time > cast(:cursorTime as timestamptz)
+                    or (g.time = cast(:cursorTime as timestamptz) and g.id > coalesce(:cursorId, 0))
+                  )
+            order by g.time, g.id
+            limit :limit
+            """,
+            nativeQuery = true
+    )
+    List<Game> exploreCursor(
+            @Param("sport") String sport,
+            @Param("location") String location,
+            @Param("fromTime") java.time.OffsetDateTime fromTime,
+            @Param("toTime") java.time.OffsetDateTime toTime,
+            @Param("skillLevel") String skillLevel,
+            @Param("cursorTime") java.time.OffsetDateTime cursorTime,
+            @Param("cursorId") Long cursorId,
+            @Param("limit") int limit
+    );
 }

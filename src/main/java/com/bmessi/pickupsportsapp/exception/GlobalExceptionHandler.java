@@ -13,10 +13,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -36,21 +43,34 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, "invalid_grant", "Invalid credentials", req);
     }
 
-    // 403: Access denied for authorized user without permission
+    // 401: Missing authentication (no SecurityContext)
+    @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthCredsNotFound(AuthenticationCredentialsNotFoundException ex, HttpServletRequest req) {
+        log.debug("Unauthenticated: {}", ex.getMessage());
+        return build(HttpStatus.UNAUTHORIZED, "unauthenticated", "Authentication is required", req);
+    }
+
+    // 403: Access denied
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex, HttpServletRequest req) {
         log.debug("Access denied: {}", ex.getMessage());
         return build(HttpStatus.FORBIDDEN, "access_denied", "Access is denied", req);
     }
 
-    // 409: Username already taken (can be used in registration flows)
+    // 409: Username already taken
     @ExceptionHandler(UsernameTakenException.class)
     public ResponseEntity<Map<String, Object>> handleUsernameTaken(UsernameTakenException ex, HttpServletRequest req) {
         log.debug("Conflict: {}", ex.getMessage());
         return build(HttpStatus.CONFLICT, "conflict", messageOr(ex, "Username is already taken"), req);
     }
 
-    // 400: Bean validation on @RequestBody DTOs (e.g., login input)
+    // 400: JSON/body parse errors
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleNotReadable(HttpMessageNotReadableException ex, HttpServletRequest req) {
+        return build(HttpStatus.BAD_REQUEST, "bad_request", "Malformed JSON request", req);
+    }
+
+    // 400: Bean validation on @RequestBody DTOs
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletRequest req) {
         Map<String, Object> body = baseBody("validation_error", "Validation failed", HttpStatus.BAD_REQUEST.value(), req);
@@ -78,11 +98,64 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).headers(noStoreHeaders()).body(body);
     }
 
-    // 409 or 423: Concurrency/conflict cases
+    // 400: Generic bad request mapping
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest req) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .headers(noStoreHeaders())
+                .body(baseBody("invalid_request", ex.getMessage() == null ? "Invalid request" : ex.getMessage(), HttpStatus.BAD_REQUEST.value(), req));
+    }
+
+    // 400: Missing/Type mismatch/Method/MediaType
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Map<String, Object>> handleMissingParam(MissingServletRequestParameterException ex, HttpServletRequest req) {
+        String msg = "Missing parameter: " + ex.getParameterName();
+        return build(HttpStatus.BAD_REQUEST, "bad_request", msg, req);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest req) {
+        String msg = "Invalid value for parameter: " + ex.getName();
+        return build(HttpStatus.BAD_REQUEST, "bad_request", msg, req);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex, HttpServletRequest req) {
+        return build(HttpStatus.METHOD_NOT_ALLOWED, "method_not_allowed", "HTTP method not supported", req);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleUnsupportedMedia(HttpMediaTypeNotSupportedException ex, HttpServletRequest req) {
+        return build(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "unsupported_media_type", "Unsupported media type", req);
+    }
+
+    // 409/423: Concurrency/conflict
     @ExceptionHandler(OptimisticLockingFailureException.class)
     public ResponseEntity<Map<String, Object>> handleOptimisticLock(OptimisticLockingFailureException ex, HttpServletRequest req) {
         log.debug("Optimistic lock failure: {}", ex.getMessage());
         return build(HttpStatus.CONFLICT, "conflict", "Resource was updated concurrently. Please retry.", req);
+    }
+
+    // 429: Rate limit exceeded (Resilience4j)
+    @ExceptionHandler(io.github.resilience4j.ratelimiter.RequestNotPermitted.class)
+    public ResponseEntity<Map<String, Object>> handleRateLimit(io.github.resilience4j.ratelimiter.RequestNotPermitted ex,
+                                                               HttpServletRequest req) {
+        HttpHeaders h = noStoreHeaders();
+        h.add("Retry-After", "60");
+        Map<String, Object> body = baseBody("too_many_requests", "Too many requests, please try again later",
+                HttpStatus.TOO_MANY_REQUESTS.value(), req);
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).headers(h).body(body);
+    }
+
+    // 4xx/5xx explicit
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex, HttpServletRequest req) {
+        int status = ex.getStatusCode().value();
+        HttpStatus resolved = HttpStatus.resolve(status);
+        String fallback = (resolved != null ? resolved.getReasonPhrase() : "Error");
+        String message = ex.getReason() != null ? ex.getReason() : fallback;
+        Map<String, Object> body = baseBody("error", message, status, req);
+        return ResponseEntity.status(ex.getStatusCode()).headers(noStoreHeaders()).body(body);
     }
 
     // 500: Fallback
@@ -109,15 +182,13 @@ public class GlobalExceptionHandler {
         body.put("path", req.getRequestURI());
         String cid = MDC.get("cid");
         if (cid != null && !cid.isBlank()) {
-            body.put("traceId", cid);
+            body.put("correlationId", cid);
         }
         return body;
     }
 
     private HttpHeaders noStoreHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CACHE_CONTROL, "no-store");
-        headers.add(HttpHeaders.PRAGMA, "no-cache");
+        HttpHeaders headers = com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
         String cid = MDC.get("cid");
         if (cid != null && !cid.isBlank()) {
             headers.add("X-Correlation-Id", cid);

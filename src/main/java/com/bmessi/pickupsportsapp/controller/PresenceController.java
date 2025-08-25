@@ -58,8 +58,7 @@ public class PresenceController {
                 "count", count,
                 "users", users
         );
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CACHE_CONTROL, "no-store");
+        HttpHeaders headers = com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
         headers.add("X-Total-Count", String.valueOf(count));
         return ResponseEntity.ok().headers(headers).body(body);
     }

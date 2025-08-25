@@ -1,10 +1,12 @@
 package com.bmessi.pickupsportsapp.entity;
 
 import com.bmessi.pickupsportsapp.model.SkillLevel;
+import com.bmessi.pickupsportsapp.security.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents an application user.  Now includes optional
@@ -31,6 +33,13 @@ public class User {
 
     @Column(nullable = false, length = 255)
     private String password;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "app_user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 20, nullable = false)
+    @Builder.Default
+    private Set<Role> roles = java.util.EnumSet.of(Role.USER);
 
     @Column(length = 100)
     private String preferredSport;
@@ -72,6 +81,14 @@ public class User {
      */
     @Column(length = 50)
     private String contactPreference;
+
+    // MFA scaffolding
+    @Column(name = "mfa_enabled", nullable = false)
+    @Builder.Default
+    private boolean mfaEnabled = false;
+
+    @Column(name = "mfa_secret", length = 64)
+    private String mfaSecret;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

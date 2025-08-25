@@ -36,10 +36,20 @@ public class RefreshToken {
 
     private String replacedByTokenHash;
 
-    // Not persisted — kept for app logic/logging only
-    @Transient
+    @Column(nullable = false, updatable = false)
     @Builder.Default
-    private Instant createdAt = Instant.now(); // @Builder.Default avoids Lombok warning
+    private Instant createdAt = Instant.now(); // persisted creation time
+
+    @Column(length = 64)
+    private String deviceId;
+
+    @Column(length = 255)
+    private String userAgent;
+
+    @Column(length = 64)
+    private String issuedIp;
+
+    private Instant lastUsedAt;
 
     public boolean isActive() {
         return revokedAt == null && expiresAt != null && expiresAt.isAfter(Instant.now());

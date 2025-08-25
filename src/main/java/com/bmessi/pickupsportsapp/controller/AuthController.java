@@ -37,12 +37,16 @@ public class AuthController {
     private final com.bmessi.pickupsportsapp.service.EmailService emailService;
     private final com.bmessi.pickupsportsapp.security.LoginAttemptService loginAttemptService;
     private final com.bmessi.pickupsportsapp.security.SecurityAuditService securityAuditService;
+    private final com.bmessi.pickupsportsapp.service.AdminAuditService adminAuditService;
     private final com.bmessi.pickupsportsapp.repository.UserRepository userRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private final com.bmessi.pickupsportsapp.service.ChangeEmailService changeEmailService;
     private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
     private final java.util.Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> redisRateLimiter; // optional
     private final com.bmessi.pickupsportsapp.config.properties.LoginPolicyProperties loginPolicyProperties;
+    private final com.bmessi.pickupsportsapp.service.MfaService mfaService;
+    private final com.bmessi.pickupsportsapp.service.MfaChallengeService mfaChallengeService;
+    private final com.bmessi.pickupsportsapp.service.TrustedDeviceService trustedDeviceService;
 
     @PostMapping("/login")
     @RateLimiter(name = "auth")
@@ -50,6 +54,24 @@ public class AuthController {
                                    jakarta.servlet.http.HttpServletRequest httpRequest) {
         try {
             log.debug("Login attempt for user: {}", request.username());
+
+            // Redis-based rate limit guard (optional)
+            try {
+                String ip = httpRequest.getHeader("X-Forwarded-For");
+                if (ip == null || ip.isBlank()) ip = httpRequest.getRemoteAddr();
+                String uname = request.username() == null ? "" : request.username().toLowerCase();
+                String key = "auth:login:" + uname + ":" + ip;
+                int limit = (loginPolicyProperties != null) ? loginPolicyProperties.getRequestsPerIpPerMinute() : 60;
+                if (redisRateLimiter.isPresent() && !redisRateLimiter.get().allow(key, Math.max(1, limit), 60)) {
+                    return ResponseEntity.status(429)
+                            .headers(noStoreHeaders())
+                            .body(Map.of(
+                                    "error", "too_many_requests",
+                                    "message", "Please try again later",
+                                    "timestamp", System.currentTimeMillis()
+                            ));
+                }
+            } catch (Exception ignore) {}
 
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.username(), request.password())
@@ -71,7 +93,44 @@ public class AuthController {
                         ));
             }
 
+            String deviceId = httpRequest.getHeader("X-Device-Id");
+            String userAgent = httpRequest.getHeader("User-Agent");
+            String ip = httpRequest.getHeader("X-Forwarded-For");
+            if (ip == null || ip.isBlank()) ip = httpRequest.getRemoteAddr();
+
+            boolean isAdmin = authentication.getAuthorities() != null &&
+                    authentication.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equalsIgnoreCase(a.getAuthority()));
+
+            // MFA gate: enforce for admins when policy enabled, or when user enabled MFA and device is not trusted
+            try {
+                boolean requireAdminMfa = loginPolicyProperties != null && Boolean.TRUE.equals(loginPolicyProperties.isRequireMfaForAdmin());
+                boolean deviceTrusted = trustedDeviceService.isTrusted(username, deviceId);
+                boolean mfaEnabled = mfaService.isEnabled(username);
+
+                if ((requireAdminMfa && isAdmin && (!mfaEnabled || !deviceTrusted)) ||
+                        (mfaEnabled && !deviceTrusted)) {
+                    String challenge = mfaChallengeService.create(username);
+                    return ResponseEntity.ok()
+                            .headers(noStoreHeaders())
+                            .body(Map.of(
+                                    "mfaRequired", true,
+                                    "methods", java.util.List.of("TOTP"),
+                                    "challenge", challenge,
+                                    "timestamp", System.currentTimeMillis()
+                            ));
+                }
+
+                // If admin and policy requires MFA but bypassed due to trusted device, audit it
+                if (requireAdminMfa && isAdmin && mfaEnabled && deviceTrusted) {
+                    try {
+                        String details = "ip=" + ip + "; ua=" + userAgent + "; deviceId=" + deviceId;
+                        adminAuditService.record(username, "admin_login_without_mfa", "user", null, details);
+                    } catch (Exception ignore) {}
+                }
+            } catch (Exception ignore) {}
+
             TokenPairResponse tokens = authService.issueTokensForAuthenticatedUser(username);
+            // Persist refresh metadata if cookie-less (request body) is used on refresh; for login, metadata is saved in storeRefresh invoked inside service
 
             log.debug("Login successful");
             HttpHeaders headers = noStoreHeaders();
@@ -128,6 +187,7 @@ public class AuthController {
             log.debug("Token refresh attempt with refresh token: {}", tokenPreview);
 
             TokenPairResponse tokens = authService.refresh(provided);
+            // Note: refresh rotation stores new refresh; metadata capture can be added in service when needed
             log.debug("Token refresh successful");
             HttpHeaders headers = noStoreHeaders();
             if (cookieProps.isEnabled()) {

@@ -302,6 +302,7 @@ public class GameController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> createGame(
             @Valid @RequestBody CreateGameRequest request,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
@@ -384,6 +385,7 @@ public class GameController {
     @PutMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> updateGame(
             @PathVariable Long id,
             @Valid @RequestBody UpdateGameRequest request,
@@ -423,6 +425,7 @@ public class GameController {
     @PatchMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> patchGame(
             @PathVariable Long id,
             @Valid @RequestBody UpdateGameRequest request,
@@ -440,6 +443,7 @@ public class GameController {
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list"}, allEntries = true)
     public ResponseEntity<Void> deleteGame(@PathVariable Long id,
                                            @RequestHeader(value = "If-Match", required = false) String ifMatch,
                                            @RequestHeader(value = "If-Unmodified-Since", required = false) String ifUnmodifiedSince,
@@ -598,6 +602,8 @@ public class GameController {
                 .eTag(etag)
                 .header("Cache-Control", CACHE_CONTROL_HEADER)
                 .header("Last-Modified", httpDate(lastMod))
+                .header("Deprecation", "true")
+                .header("Link", "</games/" + id + "/rsvp2>; rel=\"successor-version\"")
                 .body(mapper.toGameDetailsDTO(saved));
     }
 
@@ -623,10 +629,7 @@ public class GameController {
 
         notifyGameCreatorOfParticipation(game, user, "left");
 
-// Invalidate access cache for this game to reflect participant removal
-gameAccessService.invalidateForGame(game.getId());
-
-        // Invalidate access cache for this game to reflect new participant
+        // Invalidate access cache for this game to reflect participant removal
         gameAccessService.invalidateForGame(game.getId());
 
         String etag = toEtag(saved.getVersion());
@@ -635,6 +638,8 @@ gameAccessService.invalidateForGame(game.getId());
                 .eTag(etag)
                 .header("Cache-Control", CACHE_CONTROL_HEADER)
                 .header("Last-Modified", httpDate(lastMod))
+                .header("Deprecation", "true")
+                .header("Link", "</games/" + id + "/rsvp2>; rel=\"successor-version\"")
                 .body(mapper.toGameDetailsDTO(saved));
     }
 
@@ -1127,10 +1132,7 @@ gameAccessService.invalidateForGame(game.getId());
      * Formats epoch milliseconds as HTTP date.
      */
     private static String httpDate(long epochMillis) {
-        java.time.format.DateTimeFormatter fmt =
-                java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
-                        .withZone(java.time.ZoneOffset.UTC);
-        return fmt.format(java.time.Instant.ofEpochMilli(epochMillis));
+        return com.bmessi.pickupsportsapp.web.ApiResponseUtils.httpDate(epochMillis);
     }
 
     /**
@@ -1169,35 +1171,7 @@ gameAccessService.invalidateForGame(game.getId());
      * Adds RFC 5988 Link headers (first, prev, next, last) based on the current request and Page metadata.
      */
     private void addPaginationLinks(HttpServletRequest request, HttpHeaders headers, Page<?> page) {
-        if (page == null) return;
-
-        UriComponentsBuilder base = ServletUriComponentsBuilder.fromRequest(request);
-
-        int number = page.getNumber();
-        int size = page.getSize();
-        long total = page.getTotalElements();
-        int totalPages = page.getTotalPages();
-
-        java.util.List<String> links = new java.util.ArrayList<>();
-
-        // self
-        links.add(buildLink(base, number, size, "self"));
-
-        // first/prev
-        if (number > 0) {
-            links.add(buildLink(base, 0, size, "first"));
-            links.add(buildLink(base, number - 1, size, "prev"));
-        }
-
-        // next/last
-        if (number + 1 < totalPages) {
-            links.add(buildLink(base, number + 1, size, "next"));
-            links.add(buildLink(base, totalPages - 1, size, "last"));
-        }
-
-        if (!links.isEmpty()) {
-            headers.add(HttpHeaders.LINK, String.join(", ", links));
-        }
+        com.bmessi.pickupsportsapp.web.ApiResponseUtils.addPaginationLinks(request, headers, page);
     }
 
     private static String buildLink(UriComponentsBuilder base, int page, int size, String rel) {
