@@ -91,8 +91,7 @@ public class NotificationController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.CountResponse> getUnreadCount(Principal principal) {
         String username = principal.getName();
-        var all = notificationService.getUserNotifications(username);
-        long unread = all.stream().filter(n -> !n.isRead()).count();
+        long unread = notificationService.unreadCount(username);
         return ResponseEntity.ok(new com.bmessi.pickupsportsapp.dto.api.CountResponse(unread));
     }
 
