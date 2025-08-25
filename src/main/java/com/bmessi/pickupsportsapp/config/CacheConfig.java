@@ -36,7 +36,9 @@ public class CacheConfig {
                     .withCacheConfiguration("sports-list", base.entryTtl(Duration.ofMinutes(10)))
                     .withCacheConfiguration("explore-first", base.entryTtl(Duration.ofSeconds(30)))
                     .withCacheConfiguration("profile", base.entryTtl(Duration.ofMinutes(2)))
-                
+
+                    .withCacheConfiguration("user-profiles", base.entryTtl(Duration.ofMinutes(5)))
+
                     .withCacheConfiguration("nearby-games", base.entryTtl(Duration.ofSeconds(30)))
                     .build();
         }
@@ -62,6 +64,13 @@ public class CacheConfig {
                 Caffeine.newBuilder()
                         .maximumSize(10_000)
                         .expireAfterWrite(Duration.ofMinutes(2))
+                        .build()
+        ));
+        caches.add(new CaffeineCache(
+                "user-profiles",
+                Caffeine.newBuilder()
+                        .maximumSize(10_000)
+                        .expireAfterWrite(Duration.ofMinutes(5))
                         .build()
         ));
         caches.add(new CaffeineCache(

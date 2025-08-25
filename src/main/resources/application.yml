@@ -21,6 +21,11 @@ spring:
     host: localhost
     port: 6379
     # password: yourpass # if you set one
+  cache:
+    cache-names:
+      - user-profiles
+    caffeine:
+      spec: maximumSize=10000,expireAfterWrite=5m
 
 xai:
   enabled: true
