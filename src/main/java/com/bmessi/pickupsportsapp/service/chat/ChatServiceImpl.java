@@ -5,10 +5,12 @@ import com.bmessi.pickupsportsapp.entity.ChatMessage;
 import com.bmessi.pickupsportsapp.entity.Game;
 import com.bmessi.pickupsportsapp.repository.ChatMessageRepository;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
+import com.bmessi.pickupsportsapp.security.RedisRateLimiterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,13 @@ public class ChatServiceImpl implements ChatService {
     private final ChatModerationService moderationService;
     private final ProfanityFilterService profanityFilter;
     private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
+    private final RedisRateLimiterService rateLimiter;
+
+    @Value("${chat.rate-limit.limit:20}")
+    int chatRateLimit;
+
+    @Value("${chat.rate-limit.window-seconds:60}")
+    int chatRateWindowSeconds;
 
     @Override
     @Transactional
@@ -56,6 +65,13 @@ public class ChatServiceImpl implements ChatService {
         if (moderationService.isMuted(gameId, username)) {
             try { meterRegistry.counter("chat.moderation.block", "reason", "muted").increment(); } catch (Exception ignore) {}
             throw new org.springframework.security.access.AccessDeniedException("muted");
+        }
+
+        // Rate limiting
+        boolean allowed = rateLimiter.allow("chat:" + username, chatRateLimit, chatRateWindowSeconds);
+        if (!allowed) {
+            try { meterRegistry.counter("chat.rate-limit", "result", "blocked").increment(); } catch (Exception ignore) {}
+            throw new IllegalArgumentException("rate limit exceeded");
         }
 
         // Profanity handling
