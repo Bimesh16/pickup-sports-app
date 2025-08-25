@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
 import java.util.Locale;
@@ -55,10 +56,5 @@ public class UserLocaleController {
         }
     }
 
-    private static HttpHeaders noStore() {
-        HttpHeaders h = new HttpHeaders();
-        h.add(HttpHeaders.CACHE_CONTROL, "no-store");
-        h.add(HttpHeaders.PRAGMA, "no-cache");
-        return h;
-    }
+    
 }

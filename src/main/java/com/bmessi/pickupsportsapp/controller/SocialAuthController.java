@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.util.Map;
 
@@ -39,13 +40,8 @@ public class SocialAuthController {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid social token");
         }
         TokenPairResponse pair = auth.issueTokensForAuthenticatedUser(username);
-        return ResponseEntity.ok().headers(noStoreHeaders()).body(pair);
+        return ResponseEntity.ok().headers(noStore()).body(pair);
     }
 
-    private static HttpHeaders noStoreHeaders() {
-        HttpHeaders h = new HttpHeaders();
-        h.add(HttpHeaders.CACHE_CONTROL, "no-store");
-        h.add(HttpHeaders.PRAGMA, "no-cache");
-        return h;
-    }
+    
 }

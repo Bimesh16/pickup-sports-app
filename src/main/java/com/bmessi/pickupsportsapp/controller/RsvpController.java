@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
 import java.time.OffsetDateTime;
@@ -155,7 +156,4 @@ public class RsvpController {
 
     private record GameMeta(String sport, String location, OffsetDateTime time, Long ownerId, String owner, Integer capacity, boolean waitlistEnabled) {}
 
-    private static HttpHeaders noStore() {
-        return com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
-    }
 }
