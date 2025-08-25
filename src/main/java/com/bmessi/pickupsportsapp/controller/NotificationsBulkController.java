@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Collection;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/notifications")
@@ -29,19 +28,6 @@ public class NotificationsBulkController {
         return ResponseEntity.ok()
                 .headers(noStoreHeaders())
                 .body(new com.bmessi.pickupsportsapp.dto.api.UpdatedResponse(updated));
-    }
-
-    // Additional variant: GET /notifications/me/unread-count (non-conflicting with existing endpoints)
-    @GetMapping("/me/unread-count")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.CountResponse> unreadCount(Principal principal) {
-        if (principal == null || principal.getName() == null || principal.getName().isBlank()) {
-            return ResponseEntity.status(401).headers(noStoreHeaders()).build();
-        }
-        long count = notificationService.unreadCount(principal.getName());
-        return ResponseEntity.ok()
-                .headers(noStoreHeaders())
-                .body(new com.bmessi.pickupsportsapp.dto.api.CountResponse(count));
     }
 
     public record MarkReadRequest(Collection<Long> ids) {}
