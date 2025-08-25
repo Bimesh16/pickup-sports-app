@@ -8,5 +8,7 @@
   - docs/CurlExamples.md
 - Operations: health probes, key metrics, suggested dashboards and alerts
   - docs/Operations.md
+- Developer Tooling: utilities such as the password hash generator
+  - docs/Developer-Tooling.md
 
 Tip: Start with Backend-Guide for an overview, then jump to CurlExamples for hands-on verification, and WS-Guide for real-time features. Operators should review Operations for probes, metrics, and alerts.
