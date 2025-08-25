@@ -122,41 +122,6 @@ public class SearchController {
         }
     }
 
-    private static void addPaginationLinks(
-            jakarta.servlet.http.HttpServletRequest request,
-            org.springframework.http.HttpHeaders headers,
-            Page<?> page
-    ) {
-        if (page == null) return;
-        org.springframework.web.util.UriComponentsBuilder base =
-                org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromRequest(request);
-
-        int number = page.getNumber();
-        int size = page.getSize();
-        int totalPages = page.getTotalPages();
-
-        java.util.List<String> links = new java.util.ArrayList<>();
-        links.add(buildLink(base, number, size, "self"));
-        if (number > 0) {
-            links.add(buildLink(base, 0, size, "first"));
-            links.add(buildLink(base, number - 1, size, "prev"));
-        }
-        if (number + 1 < totalPages) {
-            links.add(buildLink(base, number + 1, size, "next"));
-            links.add(buildLink(base, totalPages - 1, size, "last"));
-        }
-        if (!links.isEmpty()) {
-            headers.add(org.springframework.http.HttpHeaders.LINK, String.join(", ", links));
-        }
-    }
-
-    private static String buildLink(org.springframework.web.util.UriComponentsBuilder base, int page, int size, String rel) {
-        String url = base.replaceQueryParam("page", page)
-                .replaceQueryParam("size", size)
-                .build(true)
-                .toUriString();
-        return "<" + url + ">; rel=\"" + rel + "\"";
-    }
 
     private static long lastModifiedEpochMilli(Game g) {
         if (g.getUpdatedAt() != null) return g.getUpdatedAt().toInstant().toEpochMilli();
