@@ -1,6 +1,6 @@
 package com.bmessi.pickupsportsapp.controller;
 
-import com.bmessi.pickupsportsapp.service.NotificationDispatcher;
+import com.bmessi.pickupsportsapp.service.NotificationService;
 import com.bmessi.pickupsportsapp.service.game.CapacityManager;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ class RsvpControllerWebMvcTest {
         @Bean JdbcTemplate jdbc() { return org.mockito.Mockito.mock(JdbcTemplate.class); }
         @Bean CapacityManager capacityManager() { return org.mockito.Mockito.mock(CapacityManager.class); }
         @Bean WaitlistService waitlistService() { return org.mockito.Mockito.mock(WaitlistService.class); }
-        @Bean NotificationDispatcher dispatcher() { return org.mockito.Mockito.mock(NotificationDispatcher.class); }
+        @Bean NotificationService notificationService() { return org.mockito.Mockito.mock(NotificationService.class); }
     }
 
     @Autowired MockMvc mvc;
@@ -37,7 +37,7 @@ class RsvpControllerWebMvcTest {
     @Autowired JdbcTemplate jdbc;
     @Autowired CapacityManager capacityManager;
     @Autowired WaitlistService waitlistService;
-    @Autowired NotificationDispatcher dispatcher;
+    @Autowired NotificationService notificationService;
 
     @Test
     @WithMockUser(username = "alice@example.com")
