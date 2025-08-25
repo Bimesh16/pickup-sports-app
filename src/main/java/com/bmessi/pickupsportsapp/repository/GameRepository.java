@@ -192,4 +192,50 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
      */
     @Query(value = "select coalesce(avg(cnt),0) from (select count(*) as cnt from game_participants group by game_id) gp", nativeQuery = true)
     Double averageParticipants();
+
+    /**
+     * Count games grouped by sport.
+     */
+    @Query("select g.sport as sport, count(g) as count from Game g group by g.sport")
+    List<SportCount> countBySport();
+
+    /**
+     * Count games grouped by skill level.
+     */
+    @Query("select g.skillLevel as skillLevel, count(g) as count from Game g group by g.skillLevel")
+    List<SkillLevelCount> countBySkillLevel();
+
+    /**
+     * Count games created by a user.
+     */
+    @Query("select count(g) from Game g where g.user.id = :userId")
+    long countByUserId(@Param("userId") Long userId);
+
+    /**
+     * Count games a user has participated in (past games only).
+     */
+    @Query("select count(g) from Game g join g.participants p where p.id = :userId and g.time <= :now")
+    long countParticipatedByUser(@Param("userId") Long userId, @Param("now") Instant now);
+
+    /**
+     * Count games a user has participated in grouped by sport (past games only).
+     */
+    @Query("select g.sport as sport, count(g) as count from Game g join g.participants p where p.id = :userId and g.time <= :now group by g.sport")
+    List<SportCount> countParticipatedByUserBySport(@Param("userId") Long userId, @Param("now") Instant now);
+
+    /**
+     * Count games a user has participated in during a time range.
+     */
+    @Query("select count(g) from Game g join g.participants p where p.id = :userId and g.time >= :from and g.time < :to")
+    long countParticipatedByUserBetween(@Param("userId") Long userId, @Param("from") Instant from, @Param("to") Instant to);
+
+    interface SportCount {
+        String getSport();
+        Long getCount();
+    }
+
+    interface SkillLevelCount {
+        String getSkillLevel();
+        Long getCount();
+    }
 }

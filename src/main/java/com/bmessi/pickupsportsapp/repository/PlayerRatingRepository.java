@@ -34,6 +34,12 @@ public interface PlayerRatingRepository extends JpaRepository<PlayerRating, Long
     @Query(value = "select coalesce(avg(score),0) as average, count(*) as count from player_rating where rated_id = :ratedId", nativeQuery = true)
     RatingAggregate aggregateForRated(@Param("ratedId") Long ratedId);
 
+    /**
+     * Retrieve the average score and total count for ratings given by a user.
+     */
+    @Query(value = "select coalesce(avg(score),0) as average, count(*) as count from player_rating where rater_id = :raterId", nativeQuery = true)
+    RatingAggregate aggregateForRater(@Param("raterId") Long raterId);
+
     interface RatingAggregate {
         Double getAverage();
         Integer getCount();
