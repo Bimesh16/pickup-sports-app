@@ -1,5 +1,6 @@
 package com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.controller.game.GameController;
 import com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO;
 import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.mapper.ApiMapper;

@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   db:
     image: postgres:15
@@ -32,6 +30,18 @@ services:
     image: axllent/mailpit:latest
     container_name: ps-mailpit
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: ps-rabbitmq
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # Management UI
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   app:
     container_name: pickupsports-app
     build:
@@ -46,18 +56,27 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       # Spring profile
       SPRING_PROFILES_ACTIVE: dev
+
+      # Disable OpenTelemetry SDK in dev to prevent exporter attempts
+      OTEL_SDK_DISABLED: "true"
 
       # DataSource -> points at db service
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/soccer_app
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
 
-      # Redis (enable only if you turn on distributed rate-limits or chat Redis fan-out)
+      # Redis
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+
+      # RabbitMQ
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
 
       # Mail (point to Mailpit)
       SPRING_MAIL_HOST: mailpit
@@ -72,7 +91,7 @@ services:
       APP_MEDIA_BASE_URL: /media
 
       # Toggle Redis-based features (keep off by default for dev)
-      AUTH_RATE-LIMIT_DISTRIBUTED_ENABLED: "false"
+      AUTH_RATE_LIMIT_DISTRIBUTED_ENABLED: "false"
       CHAT_REDIS_ENABLED: "false"
 
     volumes:

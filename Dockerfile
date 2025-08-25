@@ -2,7 +2,7 @@
 FROM eclipse-temurin:17-jdk AS build
 WORKDIR /workspace
 COPY . .
-RUN ./mvnw -q -DskipTests package || mvn -q -DskipTests package
+RUN ./mvnw -q -DskipTests clean package || mvn -q -DskipTests clean package
 
 # ---- Runtime stage ----
 FROM eclipse-temurin:17-jre

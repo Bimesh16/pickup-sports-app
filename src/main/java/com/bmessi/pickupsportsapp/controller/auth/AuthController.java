@@ -59,7 +59,7 @@ public class AuthController {
     @PostMapping("/login")
     @RateLimiter(name = "auth")
     public ResponseEntity<?> login(
-            @Valid @RequestBody
+            @Valid
             @RequestBody(description = "Login credentials") LoginRequest request,
             @Parameter(hidden = true) jakarta.servlet.http.HttpServletRequest httpRequest) {
         try {
@@ -177,7 +177,7 @@ public class AuthController {
     @PostMapping("/refresh")
     @RateLimiter(name = "auth")
     public ResponseEntity<?> refresh(
-            @Valid @RequestBody
+            @Valid
             @RequestBody(description = "Refresh token and optional nonce") RefreshRequest request,
             @Parameter(description = "Refresh token from cookie")
             @CookieValue(name = "refreshToken", required = false) String refreshCookie,
@@ -249,7 +249,7 @@ public class AuthController {
     @Operation(summary = "Invalidate refresh token and logout")
     @PostMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout(
-            @Valid @RequestBody
+            @Valid
             @RequestBody(description = "Refresh token to revoke") RefreshRequest request) {
         try {
             log.debug("Logout attempt");

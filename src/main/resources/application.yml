@@ -21,7 +21,6 @@ spring:
     host: localhost
     port: 6379
     # password: yourpass # if you set one
-    codex/introduce-queue-and-notificationdispatcher
   rabbitmq:
     listener:
       simple:
@@ -69,10 +68,13 @@ management:
       enabled: true
     readinessstate:
       enabled: true
+    xai:
+      enabled: false
   server:
     base-path: /actuator      # default, explicit for clarity
 
   tracing:
+    enabled: false
     sampling:
       probability: 1.0
 
@@ -84,6 +86,7 @@ management:
 springdoc:
   swagger-ui.enabled: true
   api-docs.enabled: true
+  use-kotlin: false
 
 resilience4j:
   retry:

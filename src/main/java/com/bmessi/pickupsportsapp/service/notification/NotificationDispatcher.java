@@ -1,6 +1,7 @@
 package com.bmessi.pickupsportsapp.service.notification;
 
 import com.bmessi.pickupsportsapp.dto.NotificationJob;
+import com.bmessi.pickupsportsapp.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.controller;
+package unit.com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.controller.game.GameController;
 import com.bmessi.pickupsportsapp.dto.GameDetailsDTO;
 import com.bmessi.pickupsportsapp.dto.UserDTO;
 import com.bmessi.pickupsportsapp.entity.game.Game;

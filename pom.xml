@@ -88,6 +88,13 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
 
+        <!-- Kotlin reflect required by springdoc Kotlin integration -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+            <version>1.9.24</version>
+        </dependency>
+
         <!-- Flyway -->
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -258,6 +265,15 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <!-- Exclude any lingering V1025 migrations from the classpath -->
+                    <exclude>db/migration/V1025__*.sql</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
             <!-- Spring Boot plugin -->
             <plugin>

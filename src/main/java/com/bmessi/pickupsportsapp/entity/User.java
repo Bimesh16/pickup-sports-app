@@ -1,5 +1,6 @@
 package com.bmessi.pickupsportsapp.entity;
 
+import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.model.SkillLevel;
 import com.bmessi.pickupsportsapp.security.Role;
 import jakarta.persistence.*;

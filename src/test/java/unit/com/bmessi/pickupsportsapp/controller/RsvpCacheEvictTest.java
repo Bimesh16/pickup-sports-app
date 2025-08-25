@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.controller;
+package unit.com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.controller.game.GameController;
 import com.bmessi.pickupsportsapp.dto.CreateGameRequest;
 import com.bmessi.pickupsportsapp.dto.GameDetailsDTO;
 import com.bmessi.pickupsportsapp.dto.UpdateGameRequest;
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
@@ -57,7 +57,8 @@ class RsvpCacheEvictTest {
     @jakarta.annotation.Resource UserRepository userRepository;
 
     @jakarta.annotation.Resource CacheManager cacheManager;
-    @jakarta.annotation.Resource GameController controller;
+    @jakarta.annotation.Resource
+    GameController controller;
     @jakarta.annotation.Resource ApiMapper mapper;
     @jakarta.annotation.Resource SportResolverService sportResolver;
 

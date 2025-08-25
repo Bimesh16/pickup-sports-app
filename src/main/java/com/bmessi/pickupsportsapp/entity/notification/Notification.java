@@ -1,5 +1,6 @@
 package com.bmessi.pickupsportsapp.entity.notification;
 
+import com.bmessi.pickupsportsapp.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

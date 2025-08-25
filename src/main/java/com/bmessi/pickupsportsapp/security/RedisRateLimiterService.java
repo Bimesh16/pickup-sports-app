@@ -11,7 +11,7 @@ import java.time.Duration;
  * Keys are namespaced by caller; TTL is set on first increment.
  */
 @Service
-@ConditionalOnProperty(name = "auth.rate-limit.distributed.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "auth.rate-limit.distributed.enabled", havingValue = "true", matchIfMissing = false)
 public class RedisRateLimiterService {
 
     private final StringRedisTemplate redis;

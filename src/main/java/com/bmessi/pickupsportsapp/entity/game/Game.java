@@ -1,6 +1,7 @@
 
 package com.bmessi.pickupsportsapp.entity.game;
 
+import com.bmessi.pickupsportsapp.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

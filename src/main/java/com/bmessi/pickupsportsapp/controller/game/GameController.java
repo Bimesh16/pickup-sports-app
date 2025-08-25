@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
 
@@ -298,8 +297,9 @@ public class GameController {
     @Transactional
     @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> createGame(
-            @Valid @RequestBody
-            @RequestBody(description = "Details for the game to create") CreateGameRequest request,
+            @Valid
+            @org.springframework.web.bind.annotation.RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Details for the game to create") CreateGameRequest request,
             @Parameter(description = "Idempotency key to prevent duplicate submissions")
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Parameter(description = "Header specifying response preference")
@@ -392,8 +392,9 @@ public class GameController {
     @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> updateGame(
             @Parameter(description = "Game identifier") @PathVariable Long id,
-            @Valid @RequestBody
-            @RequestBody(description = "Updated game information") UpdateGameRequest request,
+            @Valid
+            @org.springframework.web.bind.annotation.RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Updated game information") UpdateGameRequest request,
             @Parameter(description = "ETag for concurrency control")
             @RequestHeader(value = "If-Match", required = false) String ifMatch,
             @Parameter(description = "Last known update time")
@@ -525,7 +526,19 @@ public class GameController {
     ) {
         validateRadius(radiusKm);
         int effLimit = clamp(limit, 1, MAX_PAGE_SIZE, 50);
-        List<Game> games = gameRepository.findByLocationWithinRadius(lat, lon, radiusKm);
+        Pageable p = PageRequest.of(0, effLimit, Sort.by("time"));
+        Page<Game> page = gameRepository.findByLocationWithinRadius(
+                null,  // sport filter
+                null,  // location filter
+                null,  // fromTime
+                null,  // toTime
+                null,  // skill level
+                lat,
+                lon,
+                radiusKm,
+                p
+        );
+        List<Game> games = page.getContent();
         return games.stream()
                 .limit(effLimit)
                 .map(mapper::toGameSummaryDTO)

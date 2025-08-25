@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -31,7 +32,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatModerationService moderationService;
     private final ProfanityFilterService profanityFilter;
     private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
-    private final RedisRateLimiterService rateLimiter;
+    private final java.util.Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> rateLimiter;
 
     @Value("${chat.rate-limit.limit:20}")
     int chatRateLimit;
@@ -68,7 +69,9 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // Rate limiting
-        boolean allowed = rateLimiter.allow("chat:" + username, chatRateLimit, chatRateWindowSeconds);
+        boolean allowed = rateLimiter
+                .map(rl -> rl.allow("chat:" + username, chatRateLimit, chatRateWindowSeconds))
+                .orElse(true); // fail-open when limiter not configured
         if (!allowed) {
             try { meterRegistry.counter("chat.rate-limit", "result", "blocked").increment(); } catch (Exception ignore) {}
             throw new IllegalArgumentException("rate limit exceeded");
