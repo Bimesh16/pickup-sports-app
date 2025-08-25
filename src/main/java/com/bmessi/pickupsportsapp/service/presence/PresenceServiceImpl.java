@@ -1,5 +1,7 @@
 package com.bmessi.pickupsportsapp.service.presence;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 public class PresenceServiceImpl implements PresenceService {
 
     private final StringRedisTemplate redis;
+    private final MeterRegistry meterRegistry;
 
     // If clients send heartbeat every ~20s, a 30s TTL gives buffer for jitter.
     private static final long TTL_SECONDS = 30L;
@@ -27,6 +30,7 @@ public class PresenceServiceImpl implements PresenceService {
 
     @Override
     public boolean heartbeat(Long gameId, String username) {
+        Timer.Sample sample = Timer.start(meterRegistry);
         validate(gameId, username);
         long now = Instant.now().getEpochSecond();
         String k = key(gameId);
@@ -44,6 +48,9 @@ public class PresenceServiceImpl implements PresenceService {
 
         // Keep key from lingering forever
         redis.expire(k, KEY_TTL);
+
+        meterRegistry.counter("presence.heartbeat.counter").increment();
+        sample.stop(meterRegistry.timer("presence.heartbeat.timer"));
         return wasOffline;
     }
 
@@ -55,6 +62,7 @@ public class PresenceServiceImpl implements PresenceService {
 
     @Override
     public Set<String> online(Long gameId) {
+        Timer.Sample sample = Timer.start(meterRegistry);
         Assert.notNull(gameId, "gameId must not be null");
         long now = Instant.now().getEpochSecond();
         long cutoff = now - TTL_SECONDS;
@@ -62,17 +70,25 @@ public class PresenceServiceImpl implements PresenceService {
         Set<ZSetOperations.TypedTuple<String>> tuples =
                 redis.opsForZSet().rangeByScoreWithScores(key(gameId), cutoff, Double.POSITIVE_INFINITY);
 
-        if (tuples == null) return Set.of();
-        return tuples.stream().map(ZSetOperations.TypedTuple::getValue).collect(Collectors.toSet());
+        Set<String> result = (tuples == null)
+                ? Set.of()
+                : tuples.stream().map(ZSetOperations.TypedTuple::getValue).collect(Collectors.toSet());
+        meterRegistry.counter("presence.online.counter").increment();
+        sample.stop(meterRegistry.timer("presence.online.timer"));
+        return result;
     }
 
     @Override
     public long onlineCount(Long gameId) {
+        Timer.Sample sample = Timer.start(meterRegistry);
         Assert.notNull(gameId, "gameId must not be null");
         long now = Instant.now().getEpochSecond();
         long cutoff = now - TTL_SECONDS;
         Long cnt = redis.opsForZSet().count(key(gameId), cutoff, Double.POSITIVE_INFINITY);
-        return (cnt == null) ? 0L : cnt;
+        long result = (cnt == null) ? 0L : cnt;
+        meterRegistry.counter("presence.onlineCount.counter").increment();
+        sample.stop(meterRegistry.timer("presence.onlineCount.timer"));
+        return result;
     }
 
     private static void validate(Long gameId, String username) {
