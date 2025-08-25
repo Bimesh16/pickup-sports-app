@@ -29,3 +29,8 @@ app:
     allowed-headers: "*"
     exposed-headers: "Authorization,Content-Type"
     allow-credentials: true
+
+logging:
+  pattern:
+    level: "%5p [%X{requestId}]"
+

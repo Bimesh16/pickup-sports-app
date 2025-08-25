@@ -29,8 +29,11 @@ app:
     allow-credentials: true
 
 logging:
+  pattern:
+    level: "%5p [%X{requestId}]"
   level:
     root: INFO
     org.springframework.web: INFO
     org.springframework.security: INFO
     com.bmessi.pickupsportsapp: INFO
+
