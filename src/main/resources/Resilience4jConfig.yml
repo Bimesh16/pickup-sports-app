@@ -14,3 +14,9 @@ resilience4j:
         limit-for-period: 10
         limit-refresh-period: 1s
         timeout-duration: 0
+  circuitbreaker:
+    instances:
+      xai:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5s
