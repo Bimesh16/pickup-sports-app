@@ -69,7 +69,9 @@ public class StatsService {
         }
 
         // Use existing methods only
-        int gamesCreated = (int) gameRepository.findByUser_Id(userId, org.springframework.data.domain.Pageable.unpaged()).getTotalElements();
+        int gamesCreated = (int) gameRepository
+                .findByUserIdWithParticipants(userId, org.springframework.data.domain.Pageable.unpaged())
+                .getTotalElements();
         int gamesParticipated = 0; // Simplified for now
 
         Double avgRating = ratingRepository.computeAverageForRated(userId);
