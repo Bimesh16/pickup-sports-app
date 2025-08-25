@@ -41,7 +41,7 @@ build/
 *.iml
 .vscode/
 
-# OS
+# macOS system files
 .DS_Store
 
 # Logs
