@@ -1,7 +1,6 @@
 package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.dto.PromotionResultResponse;
-import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
 import com.bmessi.pickupsportsapp.websocket.GameRoomEvent;
 import lombok.RequiredArgsConstructor;

@@ -229,7 +229,6 @@ public class RsvpController {
         if (meta != null) {
             for (Long uid : result.promoted()) {
                 String promotedUsername = jdbc.queryForObject("SELECT username FROM app_user WHERE id = ?", String.class, uid);
-                notificationService.createGameNotification(promotedUsername, "system", meta.sport(), meta.location(), "promoted");
                 try {
                     emit(id, new GameRoomEvent.WaitlistPromoted(promotedUsername, uid));
                 } catch (Exception ignore) {}
@@ -402,8 +401,6 @@ public class RsvpController {
                             VALUES (?, ?)
                             ON CONFLICT DO NOTHING
                             """, id, uid);
-                    String promotedUsername = jdbc.queryForObject("SELECT username FROM app_user WHERE id = ?", String.class, uid);
-                    notificationService.createGameNotification(promotedUsername, "system", meta.sport(), meta.location(), "promoted");
                 }
                 if (!promoted.isEmpty()) {
                     notificationService.createGameNotification(meta.owner(), "system", meta.sport(), meta.location(), "promotions");
