@@ -3,6 +3,7 @@ package com.bmessi.pickupsportsapp.controller;
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import com.bmessi.pickupsportsapp.service.game.CapacityManager;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
+import com.bmessi.pickupsportsapp.websocket.GameRoomEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -103,9 +104,9 @@ public class RsvpController {
 
             // Live events
             try {
-                emit(id, "participant_joined", java.util.Map.of("user", username, "userId", userId));
+                emit(id, new GameRoomEvent.ParticipantJoined(username, userId));
                 if (meta != null && meta.capacity() != null) {
-                    emit(id, "capacity_update", java.util.Map.of("remainingSlots", jr.remainingSlots()));
+                    emit(id, new GameRoomEvent.CapacityUpdate(jr.remainingSlots(), null));
                 }
                 emitCapacityUpdate(id, null);
             } catch (Exception ignore) {}
@@ -127,7 +128,7 @@ public class RsvpController {
             try {
                 emit(id, "waitlist_joined", java.util.Map.of("user", username, "userId", userId));
                 if (meta != null && meta.capacity() != null) {
-                    emit(id, "capacity_update", java.util.Map.of("remainingSlots", jr.remainingSlots()));
+                emit(id, new GameRoomEvent.CapacityUpdate(jr.remainingSlots(), null));
                 }
                 emitCapacityUpdate(id, null);
             } catch (Exception ignore) {}
@@ -203,7 +204,7 @@ public class RsvpController {
                 String promotedUsername = jdbc.queryForObject("SELECT username FROM app_user WHERE id = ?", String.class, uid);
                 notificationService.createGameNotification(promotedUsername, "system", meta.sport(), meta.location(), "promoted");
                 try {
-                    emit(id, "waitlist_promoted", java.util.Map.of("user", promotedUsername, "userId", uid));
+                    emit(id, new GameRoomEvent.WaitlistPromoted(promotedUsername, uid));
                 } catch (Exception ignore) {}
             }
             if (!result.promoted().isEmpty()) {
@@ -408,10 +409,7 @@ public class RsvpController {
         Integer holds = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
         int remaining = capacity - (participants == null ? 0 : participants) - (holds == null ? 0 : holds);
-        var data = new java.util.HashMap<String, Object>();
-        data.put("remainingSlots", Math.max(0, remaining));
-        if (hint != null) data.put("hint", hint);
-        emit(gameId, "capacity_update", data);
+        emit(gameId, new GameRoomEvent.CapacityUpdate(Math.max(0, remaining), hint));
     }
 
     private GameMeta gameMeta(Long gameId) {
@@ -441,17 +439,17 @@ public class RsvpController {
 
     private record GameMeta(String sport, String location, OffsetDateTime time, Long ownerId, String owner, Integer capacity, boolean waitlistEnabled) {}
 
-    private void emit(Long gameId, String type, java.util.Map<String, Object> data) {
+    private void emit(Long gameId, GameRoomEvent event) {
         try {
-            broker.convertAndSend("/topic/games/" + gameId,
-                    java.util.Map.of(
-                            "type", type,
-                            "data", data,
-                            "timestamp", System.currentTimeMillis()
-                    ));
+            broker.convertAndSend("/topic/games/" + gameId, event);
         } catch (Exception ignore) {
             // do not fail user flow on WS issues
         }
+    }
+
+    // Backwards-compatible helper for generic events
+    private void emit(Long gameId, String type, java.util.Map<String, Object> data) {
+        emit(gameId, new GameRoomEvent.Generic(type, data));
     }
 
 }
