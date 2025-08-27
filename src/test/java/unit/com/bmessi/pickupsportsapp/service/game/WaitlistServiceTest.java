@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.service.game;
+package unit.com.bmessi.pickupsportsapp.service.game;
 
+import com.bmessi.pickupsportsapp.service.game.WaitlistService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +24,8 @@ class WaitlistServiceTest {
 
     @Mock JdbcTemplate jdbc;
     @Mock ApplicationEventPublisher events;
-    @InjectMocks WaitlistService svc;
+    @InjectMocks
+    WaitlistService svc;
 
     @BeforeEach
     void stubGame() {

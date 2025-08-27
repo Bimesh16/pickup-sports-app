@@ -1,7 +1,9 @@
-package com.bmessi.pickupsportsapp.repository;
+package integration.com.bmessi.pickupsportsapp.repository;
 
 import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.User;
+import com.bmessi.pickupsportsapp.repository.GameRepository;
+import com.bmessi.pickupsportsapp.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

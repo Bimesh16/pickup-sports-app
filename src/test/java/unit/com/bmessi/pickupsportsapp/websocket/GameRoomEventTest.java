@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.websocket;
+package unit.com.bmessi.pickupsportsapp.websocket;
 
+import com.bmessi.pickupsportsapp.websocket.GameRoomEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 

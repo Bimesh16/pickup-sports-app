@@ -73,7 +73,7 @@ public class RsvpController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Game not found"),
             @ApiResponse(responseCode = "409", description = "RSVP not allowed"),
-            @ApiResponse(responseCode = "429", description = "Too many requests")
+            @ApiResponse(responseCode = "429", description = "Too many requests"),
             @ApiResponse(
                     responseCode = "409",
                     description = "Game full or RSVP closed",
@@ -117,7 +117,7 @@ public class RsvpController {
             case "cutoff" -> {
                 var body = java.util.Map.of("error", "rsvp_closed", "message", "RSVP cutoff has passed");
                 if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                    rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 409, body);
+                    idempotencyService.put("join", username, id, idempotencyKey, 409, body);
                 }
                 return ResponseEntity.status(409).headers(noStore()).body(body);
             }

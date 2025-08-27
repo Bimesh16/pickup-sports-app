@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.controller;
+package integration.com.bmessi.pickupsportsapp.controller;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;

@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.controller;
+package unit.com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.controller.RsvpController;
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import com.bmessi.pickupsportsapp.service.game.CapacityManager;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
