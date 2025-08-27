@@ -14,8 +14,7 @@ import java.util.Optional;
 
 /**
  * Enforces capacity, waitlist, and RSVP cutoff policies for games.
- * Integrate by calling join(...) from RSVP flow and handleOnCancel(...) from unRSVP/cancel flow.
- * Integrate by calling enforceOnRsvp(...) from RSVP flow and handleOnLeave(...) from unRSVP/cancel flow.
+ * Integrate by calling join(...) from RSVP flow and leaveAndPromote(...) from unRSVP/cancel flow.
  */
 @Service
 @RequiredArgsConstructor
@@ -109,10 +108,11 @@ public class CapacityManager {
     }
   
     /**
-     * Handle participant leaving: remove from participants and promote from waitlist when capacity allows.
+     * Remove a participant and promote waitlisted users if capacity becomes available.
+     * Operates within a single transaction while holding a lock on the game row.
      */
     @Transactional
-    public LeaveResult handleOnLeave(Long gameId, Long userId) {
+    public LeaveResult leaveAndPromote(Long gameId, Long userId) {
         GameRow g = fetchGameForUpdate(gameId).orElse(null);
         if (g == null) return new LeaveResult(false, List.of());
 
