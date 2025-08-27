@@ -196,7 +196,7 @@ public class RsvpController {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "user not found");
         }
 
-        CapacityManager.LeaveResult result = capacityManager.handleOnLeave(id, userId);
+        CapacityManager.LeaveResult result = capacityManager.leaveAndPromote(id, userId);
         GameMeta meta = gameMeta(id);
         if (meta != null) {
             for (Long uid : result.promoted()) {
