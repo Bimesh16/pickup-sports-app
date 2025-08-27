@@ -86,8 +86,8 @@ public class RsvpController {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "user not found");
         }
 
-        CapacityManager.Decision d = capacityManager.enforceOnRsvp(id, userId);
-        switch (d.reason()) {
+        CapacityManager.JoinResult jr = capacityManager.join(id, userId);
+        switch (jr.reason()) {
             case "not_found" -> {
                 throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Game not found");
             }
@@ -95,14 +95,7 @@ public class RsvpController {
                 throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP cutoff has passed");
             }
         }
-
-        if (d.allowed()) {
-            int added = jdbc.update("""
-                    INSERT INTO game_participants (game_id, user_id)
-                    VALUES (?, ?)
-                    ON CONFLICT DO NOTHING
-                    """, id, userId);
-
+        if (jr.success()) {
             var meta = gameMeta(id);
             if (meta != null) {
                 notificationService.createGameNotification(meta.owner(), username, meta.sport(), meta.location(), "joined");
@@ -111,17 +104,20 @@ public class RsvpController {
             // Live events
             try {
                 emit(id, "participant_joined", java.util.Map.of("user", username, "userId", userId));
+                if (meta != null && meta.capacity() != null) {
+                    emit(id, "capacity_update", java.util.Map.of("remainingSlots", jr.remainingSlots()));
+                }
                 emitCapacityUpdate(id, null);
             } catch (Exception ignore) {}
 
-            var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(true, false, added == 0 ? "already_participant" : "ok");
+            var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(true, false, jr.reason());
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
                 rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 200, body);
             }
             return ResponseEntity.ok().headers(noStore()).body(body);
         }
 
-        if (d.waitlisted()) {
+        if (jr.waitlisted()) {
             var meta = gameMeta(id);
             if (meta != null) {
                 notificationService.createGameNotification(username, "system", meta.sport(), meta.location(), "waitlisted");
@@ -130,15 +126,21 @@ public class RsvpController {
             // Live event: waitlist joined
             try {
                 emit(id, "waitlist_joined", java.util.Map.of("user", username, "userId", userId));
+                if (meta != null && meta.capacity() != null) {
+                    emit(id, "capacity_update", java.util.Map.of("remainingSlots", jr.remainingSlots()));
+                }
                 emitCapacityUpdate(id, null);
             } catch (Exception ignore) {}
 
-            return ResponseEntity.status(202).headers(noStore())
-                    .body(new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted"));
+            var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted");
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 202, body);
+            }
+            return ResponseEntity.status(202).headers(noStore()).body(body);
         }
 
         // Already on waitlist: respond consistently with 202
-        if ("waitlist_exists".equals(d.reason())) {
+        if ("waitlist_exists".equals(jr.reason())) {
             try {
                 emit(id, "waitlist_joined", java.util.Map.of("user", username, "userId", userId));
             } catch (Exception ignore) {}
@@ -150,15 +152,15 @@ public class RsvpController {
         }
 
         // Game full and waitlist disabled: return clear 409
-        if ("full".equals(d.reason())) {
-            var body = java.util.Map.of("error", "game_full", "message", "No slots available");
+        if ("full".equals(jr.reason())) {
+            var body = java.util.Map.of("error", "game_full", "message", "No slots available", "remainingSlots", jr.remainingSlots());
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
                 rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 409, body);
             }
             return ResponseEntity.status(409).headers(noStore()).body(body);
         }
 
-        throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP not allowed: " + d.reason());
+        throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP not allowed: " + jr.reason());
     }
 
     // Friendly "leave" alias for unRSVP
@@ -304,8 +306,8 @@ public class RsvpController {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "user not found");
         }
 
-        CapacityManager.Decision d = capacityManager.enforceOnRsvp(id, userId);
-        switch (d.reason()) {
+        CapacityManager.JoinResult jr = capacityManager.join(id, userId);
+        switch (jr.reason()) {
             case "not_found" -> {
                 throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Game not found");
             }
@@ -314,23 +316,17 @@ public class RsvpController {
             }
         }
 
-        if (d.allowed()) {
-            int added = jdbc.update("""
-                    INSERT INTO game_participants (game_id, user_id)
-                    VALUES (?, ?)
-                    ON CONFLICT DO NOTHING
-                    """, id, userId);
-
+        if (jr.success()) {
             var meta = gameMeta(id);
             if (meta != null) {
                 notificationService.createGameNotification(meta.owner(), username, meta.sport(), meta.location(), "joined");
             }
 
             return ResponseEntity.ok().headers(noStore())
-                    .body(new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(true, false, added == 0 ? "already_participant" : "ok"));
+                    .body(new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(true, false, jr.reason()));
         }
 
-        if (d.waitlisted()) {
+        if (jr.waitlisted()) {
             var meta = gameMeta(id);
             if (meta != null) {
                 notificationService.createGameNotification(username, "system", meta.sport(), meta.location(), "waitlisted");
@@ -339,7 +335,17 @@ public class RsvpController {
                     .body(new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted"));
         }
 
-        throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP not allowed: " + d.reason());
+        if ("waitlist_exists".equals(jr.reason())) {
+            return ResponseEntity.status(202).headers(noStore())
+                    .body(new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted"));
+        }
+
+        if ("full".equals(jr.reason())) {
+            return ResponseEntity.status(409).headers(noStore())
+                    .body(java.util.Map.of("error", "game_full", "message", "No slots available", "remainingSlots", jr.remainingSlots()));
+        }
+
+        throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP not allowed: " + jr.reason());
     }
 
     @DeleteMapping("/{id}/rsvp2")
