@@ -9,6 +9,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.dao.DataAccessException;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -101,9 +104,9 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
     @Query(value = "select exists(select 1 from game_participants gp where gp.game_id = :gameId and gp.user_id = :userId)", nativeQuery = true)
     boolean existsParticipant(@Param("gameId") Long gameId, @Param("userId") Long userId);
 
-    /**
-     * Find games within a radius using PostGIS, ordered by distance.
-     */
+    // Dynamic location query with PostGIS or Haversine fallback
+    AtomicBoolean POSTGIS_AVAILABLE = new AtomicBoolean(true);
+
     @Query(
             value = """
             select g.*
@@ -116,6 +119,7 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
               and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
               and (nullif(btrim(cast(:skillLevel as text)), '') is null or g.skill_level ILIKE nullif(btrim(cast(:skillLevel as text)), ''))
               and g.geom is not null
+              and g.geom && ST_MakeEnvelope(:minLng, :minLat, :maxLng, :maxLat, 4326)
               and ST_DWithin(
                     g.geom,
                     ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
@@ -134,6 +138,7 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
               and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
               and (nullif(btrim(cast(:skillLevel as text)), '') is null or g.skill_level ILIKE nullif(btrim(cast(:skillLevel as text)), ''))
               and g.geom is not null
+              and g.geom && ST_MakeEnvelope(:minLng, :minLat, :maxLng, :maxLat, 4326)
               and ST_DWithin(
                     g.geom,
                     ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
@@ -142,7 +147,7 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
             """,
             nativeQuery = true
     )
-    Page<Game> findByLocationWithinRadius(
+    Page<Game> findByLocationWithinRadiusPostgis(
             @Param("sport") String sport,
             @Param("location") String location,
             @Param("fromTime") OffsetDateTime fromTime,
@@ -151,8 +156,93 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
             @Param("lat") double lat,
             @Param("lng") double lng,
             @Param("radiusKm") double radiusKm,
+            @Param("minLat") double minLat,
+            @Param("maxLat") double maxLat,
+            @Param("minLng") double minLng,
+            @Param("maxLng") double maxLng,
             Pageable pageable
     );
+
+    @Query(
+            value = """
+            select g.*,
+                   (6371 * 2 * ASIN(SQRT(POWER(SIN(RADIANS(g.latitude - :lat) / 2), 2) +
+                   COS(RADIANS(:lat)) * COS(RADIANS(g.latitude)) * POWER(SIN(RADIANS(g.longitude - :lng) / 2), 2)))) as distance
+            from game g
+            join app_user u on u.id = g.user_id
+            where (nullif(btrim(cast(:sport as text)), '') is null or g.sport ILIKE nullif(btrim(cast(:sport as text)), ''))
+              and (nullif(btrim(cast(:location as text)), '') is null
+                   or cast(g.location as text) ILIKE concat('%%', nullif(btrim(cast(:location as text)), ''), '%%'))
+              and (cast(:fromTime as timestamptz) is null or g.time >= cast(:fromTime as timestamptz))
+              and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
+              and (nullif(btrim(cast(:skillLevel as text)), '') is null or g.skill_level ILIKE nullif(btrim(cast(:skillLevel as text)), ''))
+              and g.latitude between :minLat and :maxLat
+              and g.longitude between :minLng and :maxLng
+              and (6371 * 2 * ASIN(SQRT(POWER(SIN(RADIANS(g.latitude - :lat) / 2), 2) +
+                   COS(RADIANS(:lat)) * COS(RADIANS(g.latitude)) * POWER(SIN(RADIANS(g.longitude - :lng) / 2), 2)))) <= :radiusKm
+            order by distance
+            """,
+            countQuery = """
+            select count(*)
+            from game g
+            join app_user u on u.id = g.user_id
+            where (nullif(btrim(cast(:sport as text)), '') is null or g.sport ILIKE nullif(btrim(cast(:sport as text)), ''))
+              and (nullif(btrim(cast(:location as text)), '') is null
+                   or cast(g.location as text) ILIKE concat('%%', nullif(btrim(cast(:location as text)), ''), '%%'))
+              and (cast(:fromTime as timestamptz) is null or g.time >= cast(:fromTime as timestamptz))
+              and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
+              and (nullif(btrim(cast(:skillLevel as text)), '') is null or g.skill_level ILIKE nullif(btrim(cast(:skillLevel as text)), ''))
+              and g.latitude between :minLat and :maxLat
+              and g.longitude between :minLng and :maxLng
+              and (6371 * 2 * ASIN(SQRT(POWER(SIN(RADIANS(g.latitude - :lat) / 2), 2) +
+                   COS(RADIANS(:lat)) * COS(RADIANS(g.latitude)) * POWER(SIN(RADIANS(g.longitude - :lng) / 2), 2)))) <= :radiusKm
+            """,
+            nativeQuery = true
+    )
+    Page<Game> findByLocationWithinRadiusHaversine(
+            @Param("sport") String sport,
+            @Param("location") String location,
+            @Param("fromTime") OffsetDateTime fromTime,
+            @Param("toTime") OffsetDateTime toTime,
+            @Param("skillLevel") String skillLevel,
+            @Param("lat") double lat,
+            @Param("lng") double lng,
+            @Param("radiusKm") double radiusKm,
+            @Param("minLat") double minLat,
+            @Param("maxLat") double maxLat,
+            @Param("minLng") double minLng,
+            @Param("maxLng") double maxLng,
+            Pageable pageable
+    );
+
+    default Page<Game> findByLocationWithinRadius(
+            String sport,
+            String location,
+            OffsetDateTime fromTime,
+            OffsetDateTime toTime,
+            String skillLevel,
+            double lat,
+            double lng,
+            double radiusKm,
+            Pageable pageable
+    ) {
+        double latDelta = radiusKm / 111.045d;
+        double lngDelta = radiusKm / (111.045d * Math.cos(Math.toRadians(lat)));
+        double minLat = lat - latDelta;
+        double maxLat = lat + latDelta;
+        double minLng = lng - lngDelta;
+        double maxLng = lng + lngDelta;
+        if (POSTGIS_AVAILABLE.get()) {
+            try {
+                return findByLocationWithinRadiusPostgis(sport, location, fromTime, toTime, skillLevel,
+                        lat, lng, radiusKm, minLat, maxLat, minLng, maxLng, pageable);
+            } catch (DataAccessException e) {
+                POSTGIS_AVAILABLE.set(false);
+            }
+        }
+        return findByLocationWithinRadiusHaversine(sport, location, fromTime, toTime, skillLevel,
+                lat, lng, radiusKm, minLat, maxLat, minLng, maxLng, pageable);
+    }
 
     /**
      * Cursor-based explore listing with stable ordering by (time, id).
