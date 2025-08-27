@@ -9,6 +9,7 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -81,11 +82,26 @@ public class RsvpHoldController {
     @RateLimiter(name = "rsvp")
     @Operation(summary = "Confirm a previously created hold", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Joined", content = @Content(schema = @Schema(implementation = RsvpResultResponse.class))),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Joined",
+                    content = @Content(schema = @Schema(implementation = RsvpResultResponse.class),
+                            examples = @ExampleObject(value = "{\n  \"joined\": true,\n  \"waitlisted\": false,\n  \"message\": \"ok\"\n}"))
+            ),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Game/hold not found"),
-            @ApiResponse(responseCode = "409", description = "Game full"),
-            @ApiResponse(responseCode = "410", description = "Hold expired")
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Game full",
+                    content = @Content(schema = @Schema(implementation = Map.class),
+                            examples = @ExampleObject(value = "{\n  \"error\": \"game_full\",\n  \"message\": \"No slots available\"\n}"))
+            ),
+            @ApiResponse(
+                    responseCode = "410",
+                    description = "Hold expired",
+                    content = @Content(schema = @Schema(implementation = Map.class),
+                            examples = @ExampleObject(value = "{\n  \"error\": \"hold_expired\",\n  \"message\": \"Hold expired\"\n}"))
+            )
     })
     @PostMapping("/{id}/confirm")
     @PreAuthorize("isAuthenticated()")
