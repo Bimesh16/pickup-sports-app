@@ -27,9 +27,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 
-// Rate limiting
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
-
 // DTOs for documentation
 import com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse;
 import com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse;
@@ -52,9 +49,9 @@ public class RsvpController {
 
 
     // Friendly "join" alias for RSVP
-    @RateLimiter(name = "rsvp")
     @Operation(
             summary = "Join a game (RSVP)",
+            description = "Rate limited: 4 requests per 10 seconds",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
@@ -74,6 +71,8 @@ public class RsvpController {
             ),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Game not found"),
+            @ApiResponse(responseCode = "409", description = "RSVP not allowed"),
+            @ApiResponse(responseCode = "429", description = "Too many requests")
             @ApiResponse(
                     responseCode = "409",
                     description = "Game full or RSVP closed",
@@ -191,15 +190,16 @@ public class RsvpController {
     }
 
     // Friendly "leave" alias for unRSVP
-    @RateLimiter(name = "rsvp")
     @Operation(
             summary = "Leave a game (unRSVP)",
+            description = "Rate limited: 4 requests per 10 seconds",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Left game; may include promotions", content = @Content(schema = @Schema(implementation = UnrsvpResponse.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Game not found")
+            @ApiResponse(responseCode = "404", description = "Game not found"),
+            @ApiResponse(responseCode = "429", description = "Too many requests")
     })
     @DeleteMapping("/{id}/leave")
     @PreAuthorize("isAuthenticated()")
