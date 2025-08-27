@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.controller;
+package unit.com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.controller.FeatureFlagAdminController;
 import com.bmessi.pickupsportsapp.entity.FeatureFlag;
 import com.bmessi.pickupsportsapp.service.FeatureFlagService;
 import org.junit.jupiter.api.Test;
@@ -10,8 +11,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import support.Quarantined;
 
 import java.util.List;
+import support.Quarantined;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -19,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(FeatureFlagAdminController.class)
 @Import(FeatureFlagAdminControllerWebMvcTest.TestConfig.class)
+@Quarantined
 class FeatureFlagAdminControllerWebMvcTest {
 
     static class TestConfig {

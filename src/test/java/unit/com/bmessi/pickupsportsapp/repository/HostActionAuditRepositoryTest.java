@@ -1,14 +1,20 @@
-package com.bmessi.pickupsportsapp.unit;
+package unit.com.bmessi.pickupsportsapp.repository;
 
 import com.bmessi.pickupsportsapp.entity.HostActionAudit;
 import com.bmessi.pickupsportsapp.repository.HostActionAuditRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import support.Quarantined;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@EntityScan(basePackages = "com.bmessi.pickupsportsapp.entity")
+@EnableJpaRepositories(basePackages = "com.bmessi.pickupsportsapp.repository")
+@Quarantined
 class HostActionAuditRepositoryTest {
 
     @Autowired

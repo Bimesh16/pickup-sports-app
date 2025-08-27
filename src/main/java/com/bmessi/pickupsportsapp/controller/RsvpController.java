@@ -53,7 +53,6 @@ public class RsvpController {
     private final NotificationService notificationService;
     private final PaymentService paymentService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
-    private final com.bmessi.pickupsportsapp.service.game.RsvpIdempotencyService rsvpIdempotencyService;
     private final VelocityCheckService velocityCheckService;
     private final SecurityAuditService securityAuditService;
     private final CaptchaService captchaService;
@@ -239,11 +238,11 @@ public class RsvpController {
     @DeleteMapping("/{id}/leave")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse> leave(@PathVariable Long id,
-                                                                                   Principal principal,
-                                                                                   @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
-                                                                                   @RequestHeader(value = "X-Captcha-Token", required = false) String captchaToken,
-                                                                                   @Parameter(hidden = true) HttpServletRequest request) {
+    public ResponseEntity<?> leave(@PathVariable Long id,
+                                   Principal principal,
+                                   @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+                                   @RequestHeader(value = "X-Captcha-Token", required = false) String captchaToken,
+                                   @Parameter(hidden = true) HttpServletRequest request) {
         String username = principal.getName();
 
         String ip = request.getHeader("X-Forwarded-For");
@@ -284,7 +283,6 @@ public class RsvpController {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "refund_failed");
         }
 
-        CapacityManager.LeaveResult result = capacityManager.handleOnLeave(id, userId);
         CapacityManager.LeaveResult result = capacityManager.leaveAndPromote(id, userId);
         GameMeta meta = gameMeta(id);
         if (meta != null) {
@@ -312,29 +310,8 @@ public class RsvpController {
         return ResponseEntity.ok().headers(noStore()).body(body);
     }
 
-    // List current participants
-    @Operation(summary = "List participants of a game")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Participants list", content = @Content(schema = @Schema(implementation = ParticipantsResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Game not found", content = @Content)
-    })
-    @GetMapping("/{id}/participants")
-    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.ParticipantsResponse> participants(@PathVariable Long id, Principal principal) {
-        List<com.bmessi.pickupsportsapp.dto.api.ParticipantsResponse.Item> items = jdbc.query("""
-                SELECT gp.user_id, u.username, gp.joined_at
-                  FROM game_participants gp
-                  JOIN app_user u ON u.id = gp.user_id
-                 WHERE gp.game_id = ?
-                 ORDER BY gp.joined_at ASC
-                """, ps -> ps.setLong(1, id), (rs, rn) -> new com.bmessi.pickupsportsapp.dto.api.ParticipantsResponse.Item(
-                        rs.getLong("user_id"),
-                        rs.getString("username"),
-                        ((java.sql.Timestamp) rs.getObject("joined_at")).toInstant().atOffset(java.time.ZoneOffset.UTC)
-                ));
-        Integer total = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, id);
-        return ResponseEntity.ok().headers(noStore())
-                .body(new com.bmessi.pickupsportsapp.dto.api.ParticipantsResponse(items, total == null ? 0 : total));
-    }
+    // Participants endpoint is served by GameController (/games/{id}/participants).
+    // Removed here to avoid ambiguous mapping with the canonical route.
 
     // List waitlist and the caller's position (if authenticated)
     @Operation(summary = "List waitlist for a game; includes your queue position when authenticated")

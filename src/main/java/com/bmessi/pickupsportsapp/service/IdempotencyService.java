@@ -12,7 +12,7 @@ import java.util.Optional;
  * Simple in-memory idempotency store keyed by "user:Idempotency-Key".
  * Use for best-effort deduplication of unsafe operations (e.g., POST /games).
  */
-@Service
+@Service("inMemoryIdempotencyService")
 public class IdempotencyService {
 
     private final Cache<String, Long> cache = Caffeine.newBuilder()

@@ -102,48 +102,8 @@ public class GameController {
     // Chat Endpoints
     // ================================================================================
 
-    /**
-     * Retrieves chat message history for a specific game.
-     */
-    @Operation(
-            summary = "Retrieve chat message history for a specific game",
-            description = "Returns messages older than or equal to the provided 'before' timestamp, in ascending order."
-    )
-    @io.swagger.v3.oas.annotations.responses.ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "Chat messages",
-                    content = @io.swagger.v3.oas.annotations.media.Content(
-                            array = @io.swagger.v3.oas.annotations.media.ArraySchema(
-                                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ChatMessageDTO.class)
-                            ),
-                            examples = {
-                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
-                                            name = "SampleHistory",
-                                            summary = "Example chat history",
-                                            value = "[{\"messageId\":101,\"clientId\":\"c1\",\"sender\":\"alice\",\"content\":\"Hi!\",\"sentAt\":\"2025-08-25T10:00:00Z\"}," +
-                                                    "{\"messageId\":102,\"clientId\":\"c2\",\"sender\":\"bob\",\"content\":\"Welcome\",\"sentAt\":\"2025-08-25T10:01:00Z\"}]"
-                                    )
-                            }
-                    )
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @GetMapping("/{gameId}/chat/history")
-    @PreAuthorize("isAuthenticated()")
-    public List<ChatMessageDTO> getChatHistory(
-            @Parameter(description = "ID of the game") @PathVariable Long gameId,
-            @Parameter(description = "Return messages before this timestamp")
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant before,
-            @Parameter(description = "Maximum number of messages to return")
-            @RequestParam(defaultValue = "50") int limit,
-            @Parameter(hidden = true) Principal principal
-    ) {
-        validateGameAccess(gameId, principal.getName());
-        return chatService.history(gameId, before, limit);
-    }
+    // Chat history endpoints are handled by ChatHistoryController.
+    // Removed duplicate mapping to avoid ambiguous routes.
 
     // ================================================================================
     // Game CRUD Endpoints
@@ -195,10 +155,10 @@ public class GameController {
         validateTimeRange(fromTime, toTime);
         validateGeoParams(lat, lon, radiusKm);
 
-        // Branch: geo-filtered list using PostGIS
+        // Branch: geo-filtered list (use generic lat/lon search; works with or without PostGIS)
         if (lat != null && lon != null && radiusKm != null) {
             validateRadius(radiusKm);
-            Page<Game> page = gameRepository.findByLocationWithinRadius(
+            Page<Game> page = gameRepository.search(
                     nsport,
                     nloc,
                     fromTime,

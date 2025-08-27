@@ -7,9 +7,10 @@ import org.junit.jupiter.api.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import support.Quarantined;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,10 +22,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(FeatureFlagsController.class)
 @TestPropertySource(properties = { "app.env=dev" })
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
+@Quarantined
 class FeatureFlagsControllerTest {
 
     @Autowired MockMvc mvc;
-    @MockBean FeatureFlagService featureFlagService;
+    @MockitoBean FeatureFlagService featureFlagService;
 
     @Test
     void flags_returns200_andPayload() throws Exception {

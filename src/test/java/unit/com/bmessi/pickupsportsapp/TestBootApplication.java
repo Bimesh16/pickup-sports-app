@@ -9,6 +9,9 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
  *
  * Provides a @SpringBootConfiguration so Boot test slices (e.g., @WebMvcTest)
  * can locate a configuration class when searching packages upwards.
+ *
+ * Note: Do not enable JPA scanning here to keep MVC slice tests lightweight.
+ * JPA-specific tests should declare @EntityScan/@EnableJpaRepositories locally.
  */
 @SpringBootConfiguration
 @EnableAutoConfiguration

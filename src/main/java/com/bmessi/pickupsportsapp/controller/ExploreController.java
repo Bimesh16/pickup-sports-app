@@ -18,7 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Base64;
 
 @RestController
 @RequestMapping("/games")
@@ -67,5 +71,25 @@ public class ExploreController {
         if (s == null) return null;
         String t = s.trim();
         return t.isEmpty() ? null : t;
+    }
+
+    // --- pagination cursor helpers (used by tests via reflection) ---
+
+    // Public nested record so reflection-based tests can access it without IllegalAccess
+    public static record Cursor(OffsetDateTime time, Long id) {}
+
+    private static String encodeCursor(long millisUtc, Long id) {
+        String payload = millisUtc + ":" + (id == null ? "" : id.toString());
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static Cursor decodeCursor(String cursor) {
+        byte[] raw = Base64.getUrlDecoder().decode(cursor);
+        String payload = new String(raw, StandardCharsets.UTF_8);
+        String[] parts = payload.split(":", 2);
+        long millis = Long.parseLong(parts[0]);
+        Long rid = (parts.length > 1 && !parts[1].isBlank()) ? Long.parseLong(parts[1]) : null;
+        OffsetDateTime time = OffsetDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC);
+        return new Cursor(time, rid);
     }
 }

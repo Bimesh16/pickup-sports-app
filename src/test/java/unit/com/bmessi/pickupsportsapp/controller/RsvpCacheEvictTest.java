@@ -47,7 +47,7 @@ class RsvpCacheEvictTest {
     @EnableCaching
     static class TestCacheConfig {
         @Bean CacheManager cacheManager() {
-            return new ConcurrentMapCacheManager("explore-first", "sports-list", "search-filters", "nearby-games");
+            return new ConcurrentMapCacheManager("explore-first", "sports-list", "search-filters", "nearby-games", "game-details");
         }
         @Bean ApiMapper mapper() { return Mockito.mock(ApiMapper.class); }
         @Bean NotificationService notificationService() { return Mockito.mock(NotificationService.class); }

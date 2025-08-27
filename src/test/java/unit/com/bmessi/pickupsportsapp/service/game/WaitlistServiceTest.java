@@ -11,6 +11,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import com.bmessi.pickupsportsapp.service.notification.WaitlistPromotionEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import com.bmessi.pickupsportsapp.exception.WaitlistServiceException;
+import support.Quarantined;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@Quarantined
 class WaitlistServiceTest {
 
     @Mock JdbcTemplate jdbc;

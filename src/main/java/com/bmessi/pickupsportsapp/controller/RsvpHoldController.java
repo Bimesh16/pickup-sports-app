@@ -23,6 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.security.Principal;
 import java.util.Map;
@@ -38,10 +39,10 @@ public class RsvpHoldController {
     private final HoldService holdService;
     private final JdbcTemplate jdbc;
     private final NotificationService notificationService;
-    private final PaymentService paymentService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
-    private final MeterRegistry meterRegistry;
-    private final RsvpIdempotencyService rsvpIdempotencyService;
+    private final ObjectProvider<MeterRegistry> meterRegistry;
+    private final ObjectProvider<RsvpIdempotencyService> rsvpIdempotencyService;
+    private final ObjectProvider<PaymentService> paymentService;
 
     @RateLimiter(name = "rsvp")
     @Operation(summary = "Create a temporary hold for a game slot", security = @SecurityRequirement(name = "bearerAuth"))
@@ -59,8 +60,9 @@ public class RsvpHoldController {
                                   Principal principal,
                                   @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
         String username = principal.getName();
-        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            var cached = rsvpIdempotencyService.getHold(username, id, idempotencyKey);
+        var idem = rsvpIdempotencyService.getIfAvailable();
+        if (idempotencyKey != null && !idempotencyKey.isBlank() && idem != null) {
+            var cached = idem.getHold(username, id, idempotencyKey);
             if (cached.isPresent()) {
                 return ResponseEntity.status(cached.get().status())
                         .headers(noStore())
@@ -75,46 +77,54 @@ public class RsvpHoldController {
 
         var res = holdService.createHold(id, userId, ttlSeconds);
         if (!res.created()) {
-            meterRegistry.counter("holds_error", "action", "create", "reason", res.reason()).increment();
+            var mr = meterRegistry.getIfAvailable();
+            if (mr != null) {
+                mr.counter("holds_error", "action", "create", "reason", res.reason()).increment();
+            }
             return switch (res.reason()) {
                 case "not_found" -> ResponseEntity.status(404).headers(noStore()).build();
                 case "cutoff" -> {
                     var body = Map.of("error", "rsvp_closed", "message", "RSVP cutoff has passed");
-                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                        rsvpIdempotencyService.putHold(username, id, idempotencyKey, 409, body);
+                    if (idempotencyKey != null && !idempotencyKey.isBlank() && idem != null) {
+                        idem.putHold(username, id, idempotencyKey, 409, body);
                     }
                     yield ResponseEntity.status(409).headers(noStore()).body(body);
                 }
                 case "full" -> {
                     var body = Map.of("error", "game_full", "message", "No slots available");
-                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                        rsvpIdempotencyService.putHold(username, id, idempotencyKey, 409, body);
+                    if (idempotencyKey != null && !idempotencyKey.isBlank() && idem != null) {
+                        idem.putHold(username, id, idempotencyKey, 409, body);
                     }
                     yield ResponseEntity.status(409).headers(noStore()).body(body);
                 }
                 default -> {
                     var body = Map.of("error", "internal", "message", "Failed to create hold");
-                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                        rsvpIdempotencyService.putHold(username, id, idempotencyKey, 500, body);
+                    if (idempotencyKey != null && !idempotencyKey.isBlank() && idem != null) {
+                        idem.putHold(username, id, idempotencyKey, 500, body);
                     }
                     yield ResponseEntity.status(500).headers(noStore()).body(body);
                 }
             };
         }
 
-        meterRegistry.counter("holds_created").increment();
-        String paymentIntentId = paymentService.createIntentForHold(id, res.holdId(), userId);
+        var mr2 = meterRegistry.getIfAvailable();
+        if (mr2 != null) {
+            mr2.counter("holds_created").increment();
+        }
+        String paymentIntentId = null;
+        var ps = paymentService.getIfAvailable();
+        if (ps != null) {
+            paymentIntentId = ps.createIntentForHold(id, res.holdId(), userId);
+        }
 
         // Live event: capacity update (one slot reserved)
         try {
             emitCapacityUpdate(id, "hold_created");
         } catch (Exception ignore) {}
 
-        return ResponseEntity.status(201).headers(noStore())
-                .body(new HoldResponse(res.holdId(), paymentIntentId, res.expiresAt()));
-        var body = new HoldResponse(res.holdId(), res.expiresAt());
-        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            rsvpIdempotencyService.putHold(username, id, idempotencyKey, 201, body);
+        var body = new HoldResponse(res.holdId(), paymentIntentId, res.expiresAt());
+        if (idempotencyKey != null && !idempotencyKey.isBlank() && idem != null) {
+            idem.putHold(username, id, idempotencyKey, 201, body);
         }
         return ResponseEntity.status(201).headers(noStore()).body(body);
     }
@@ -136,8 +146,9 @@ public class RsvpHoldController {
                                      Principal principal,
                                      @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
         String username = principal.getName();
-        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            var cached = rsvpIdempotencyService.getConfirm(username, id, request.holdId(), idempotencyKey);
+        var idem = rsvpIdempotencyService.getIfAvailable();
+        if (idempotencyKey != null && !idempotencyKey.isBlank() && idem != null) {
+            var cached = idem.getConfirm(username, id, request.holdId(), idempotencyKey);
             if (cached.isPresent()) {
                 return ResponseEntity.status(cached.get().status())
                         .headers(noStore())
@@ -153,38 +164,46 @@ public class RsvpHoldController {
         var res = holdService.confirmHold(id, request.holdId(), userId);
         if (!res.joined()) {
             if ("expired".equals(res.reason())) {
-                meterRegistry.counter("holds_expired").increment();
+                var mr = meterRegistry.getIfAvailable();
+                if (mr != null) {
+                    mr.counter("holds_expired").increment();
+                }
             }
-            meterRegistry.counter("holds_error", "action", "confirm", "reason", res.reason()).increment();
+            var mr2 = meterRegistry.getIfAvailable();
+            if (mr2 != null) {
+                mr2.counter("holds_error", "action", "confirm", "reason", res.reason()).increment();
+            }
             return switch (res.reason()) {
                 case "not_found", "invalid_hold" -> ResponseEntity.status(404).headers(noStore()).build();
                 case "expired" -> {
                     var body = Map.of("error", "hold_expired", "message", "Hold expired");
-                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                        rsvpIdempotencyService.putConfirm(username, id, request.holdId(), idempotencyKey, 410, body);
+                    if (idempotencyKey != null && !idempotencyKey.isBlank() && idem != null) {
+                        idem.putConfirm(username, id, request.holdId(), idempotencyKey, 410, body);
                     }
                     yield ResponseEntity.status(410).headers(noStore()).body(body);
                 }
                 case "full" -> {
                     var body = Map.of("error", "game_full", "message", "No slots available");
-                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                        rsvpIdempotencyService.putConfirm(username, id, request.holdId(), idempotencyKey, 409, body);
+                    if (idempotencyKey != null && !idempotencyKey.isBlank() && idem != null) {
+                        idem.putConfirm(username, id, request.holdId(), idempotencyKey, 409, body);
                     }
                     yield ResponseEntity.status(409).headers(noStore()).body(body);
                 }
                 default -> {
                     var body = Map.of("error", "internal", "message", "Failed to confirm hold");
-                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                        rsvpIdempotencyService.putConfirm(username, id, request.holdId(), idempotencyKey, 500, body);
+                    if (idempotencyKey != null && !idempotencyKey.isBlank() && idem != null) {
+                        idem.putConfirm(username, id, request.holdId(), idempotencyKey, 500, body);
                     }
                     yield ResponseEntity.status(500).headers(noStore()).body(body);
                 }
             };
         }
 
-        meterRegistry.counter("holds_confirmed").increment();
+        var mr3 = meterRegistry.getIfAvailable();
+        if (mr3 != null) {
+            mr3.counter("holds_confirmed").increment();
+        }
 
-        String username = principal.getName();
         // Live event: participant joined + capacity update
         try {
             emit(id, "participant_joined", Map.of("user", username, "userId", userId));
@@ -199,8 +218,8 @@ public class RsvpHoldController {
         } catch (Exception ignore) {}
 
         var body = new RsvpResultResponse(true, false, "ok");
-        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            rsvpIdempotencyService.putConfirm(username, id, request.holdId(), idempotencyKey, 200, body);
+        if (idempotencyKey != null && !idempotencyKey.isBlank() && idem != null) {
+            idem.putConfirm(username, id, request.holdId(), idempotencyKey, 200, body);
         }
         return ResponseEntity.ok().headers(noStore()).body(body);
     }
@@ -218,7 +237,7 @@ public class RsvpHoldController {
         if (capacity == null) return;
         Integer participants = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
         Integer holds = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
+                "SELECT COUNT(*) FROM game_holds WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
         int remaining = capacity - (participants == null ? 0 : participants) - (holds == null ? 0 : holds);
         var data = new java.util.HashMap<String, Object>();
         data.put("remainingSlots", Math.max(0, remaining));

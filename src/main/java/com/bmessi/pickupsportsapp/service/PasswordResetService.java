@@ -29,7 +29,8 @@ public class PasswordResetService {
     private final AuthFlowProperties props;
     private final EmailService emailService;
     private final com.bmessi.pickupsportsapp.security.SecurityAuditService audit;
-    private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private io.micrometer.core.instrument.MeterRegistry meterRegistry;
 
     private final java.util.concurrent.ConcurrentHashMap<String, Window> userWindows = new java.util.concurrent.ConcurrentHashMap<>();
     private final java.util.concurrent.ConcurrentHashMap<String, Window> ipWindows = new java.util.concurrent.ConcurrentHashMap<>();
@@ -93,7 +94,6 @@ public class PasswordResetService {
                 .username(user.getUsername())
                 .tokenHash(tokenHash)
                 .expiresAt(Instant.now().plus(props.getResetTtlHours(), ChronoUnit.HOURS))
-                .requestedIp(requesterIp)
                 .build();
         tokenRepo.save(prt);
         try { meterRegistry.counter("auth.forgot.attempts", "result", "allowed", "scope", "user").increment(); } catch (Exception ignore) {}

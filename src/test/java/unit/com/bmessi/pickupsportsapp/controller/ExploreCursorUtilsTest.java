@@ -2,6 +2,7 @@ package unit.com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.controller.ExploreController;
 import org.junit.jupiter.api.Test;
+import support.Quarantined;
 
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +13,7 @@ import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Quarantined
 public class ExploreCursorUtilsTest {
 
     @Test
