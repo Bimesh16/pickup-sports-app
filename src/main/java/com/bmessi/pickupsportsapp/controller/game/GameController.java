@@ -10,6 +10,7 @@ import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.mapper.ApiMapper;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
+import com.bmessi.pickupsportsapp.service.game.GameService;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import com.bmessi.pickupsportsapp.service.SportResolverService;
@@ -72,6 +73,7 @@ public class GameController {
 
     // Dependencies
     private final GameRepository gameRepository;
+    private final GameService gameService;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final AiRecommendationResilientService xaiRecommendationService;
@@ -276,9 +278,11 @@ public class GameController {
             @Parameter(description = "Last known modification time")
             @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSince
     ) {
-        return gameRepository.findWithParticipantsById(id)
-                .map(game -> buildGameResponse(game, ifNoneMatch, ifModifiedSince))
-                .orElseGet(this::gameNotFound);
+        Game game = gameService.getGameWithParticipants(id);
+        if (game == null) {
+            return gameNotFound();
+        }
+        return buildGameResponse(game, ifNoneMatch, ifModifiedSince);
     }
 
     /**
@@ -298,11 +302,10 @@ public class GameController {
     })
     @GetMapping("/{id}/participants")
     public ResponseEntity<List<UserDTO>> getParticipants(@Parameter(description = "Game identifier") @PathVariable Long id) {
-        var opt = gameRepository.findWithParticipantsById(id);
-        if (opt.isEmpty()) {
+        Game game = gameService.getGameWithParticipants(id);
+        if (game == null) {
             return ResponseEntity.notFound().build();
         }
-        Game game = opt.get();
 
         // Map participants to DTOs and sort by username for stable output
         List<UserDTO> users = game.getParticipants().stream()
@@ -330,11 +333,10 @@ public class GameController {
             @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
             @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSince
     ) {
-        var opt = gameRepository.findWithParticipantsById(id);
-        if (opt.isEmpty()) {
+        Game game = gameService.getGameWithParticipants(id);
+        if (game == null) {
             return ResponseEntity.notFound().build();
         }
-        var game = opt.get();
         ResponseEntity<GameDetailsDTO> full = buildGameResponse(game, ifNoneMatch, ifModifiedSince);
         return ResponseEntity.status(full.getStatusCodeValue())
                 .headers(full.getHeaders())
@@ -349,7 +351,7 @@ public class GameController {
     @PreAuthorize("isAuthenticated()")
     @RateLimiter(name = "games")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games", "game-details"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> createGame(
             @Valid
             @org.springframework.web.bind.annotation.RequestBody
@@ -443,7 +445,7 @@ public class GameController {
     @PreAuthorize("isAuthenticated()")
     @RateLimiter(name = "games")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games", "game-details"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> updateGame(
             @Parameter(description = "Game identifier") @PathVariable Long id,
             @Valid
@@ -492,7 +494,7 @@ public class GameController {
     @PatchMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games", "game-details"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> patchGame(
             @PathVariable Long id,
             @Valid @RequestBody UpdateGameRequest request,
@@ -512,7 +514,7 @@ public class GameController {
     @PreAuthorize("isAuthenticated()")
     @RateLimiter(name = "games")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games", "game-details"}, allEntries = true)
     public ResponseEntity<Void> deleteGame(
             @Parameter(description = "Game identifier") @PathVariable Long id,
             @Parameter(description = "ETag for concurrency control")

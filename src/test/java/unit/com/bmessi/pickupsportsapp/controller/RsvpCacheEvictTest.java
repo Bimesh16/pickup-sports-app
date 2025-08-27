@@ -56,6 +56,7 @@ class RsvpCacheEvictTest {
         @Bean GameAccessService gameAccessService() { return Mockito.mock(GameAccessService.class); }
         @Bean GameRepository gameRepository() { return Mockito.mock(GameRepository.class); }
         @Bean UserRepository userRepository() { return Mockito.mock(UserRepository.class); }
+        @Bean com.bmessi.pickupsportsapp.service.game.GameService gameService() { return Mockito.mock(com.bmessi.pickupsportsapp.service.game.GameService.class); }
         @Bean com.bmessi.pickupsportsapp.service.AiRecommendationResilientService xaiRecommendationService() { return Mockito.mock(com.bmessi.pickupsportsapp.service.AiRecommendationResilientService.class); }
     }
 

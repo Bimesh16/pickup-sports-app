@@ -15,7 +15,12 @@ import java.util.Set;
  * games can be filtered by proximity.
  */
 @Entity
-@Table(name = "game")
+@Table(name = "game", indexes = {
+        @Index(name = "idx_game_time", columnList = "time"),
+        @Index(name = "idx_game_location", columnList = "location"),
+        @Index(name = "idx_game_user_time", columnList = "user_id, time"),
+        @Index(name = "idx_game_sport", columnList = "sport")
+})
 @Getter
 @Setter
 @Builder

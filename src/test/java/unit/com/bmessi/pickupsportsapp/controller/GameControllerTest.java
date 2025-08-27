@@ -10,6 +10,7 @@ import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import com.bmessi.pickupsportsapp.service.SportResolverService;
 import com.bmessi.pickupsportsapp.service.AiRecommendationResilientService;
 import com.bmessi.pickupsportsapp.service.chat.ChatService;
+import com.bmessi.pickupsportsapp.service.game.GameService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,7 @@ class GameControllerTest {
     @Mock private ApiMapper mapper;
     @Mock private ChatService chatService;
     @Mock private SportResolverService sportResolver;
+    @Mock private GameService gameService;
 
     @InjectMocks
     private GameController controller;
