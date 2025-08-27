@@ -65,6 +65,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     })
     Stream<User> streamByPreferredSportIgnoreCase(String preferredSport);
 
+    void deleteByUsername(String username);
+
     interface Summary {
         Long getId();
         String getUsername();
