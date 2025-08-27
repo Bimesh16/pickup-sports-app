@@ -1,0 +1,50 @@
+{
+  "title": "RSVP Metrics",
+  "uid": "rsvp-metrics",
+  "schemaVersion": 30,
+  "version": 1,
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Joins",
+      "targets": [
+        { "expr": "joins_success_total", "legendFormat": "success" },
+        { "expr": "joins_waitlisted_total", "legendFormat": "waitlisted" }
+      ],
+      "id": 1
+    },
+    {
+      "type": "graph",
+      "title": "Promotions",
+      "targets": [
+        { "expr": "promotions_total", "legendFormat": "promoted" }
+      ],
+      "id": 2
+    },
+    {
+      "type": "graph",
+      "title": "Hold Flow",
+      "targets": [
+        { "expr": "holds_created_total", "legendFormat": "created" },
+        { "expr": "holds_confirmed_total", "legendFormat": "confirmed" },
+        { "expr": "holds_expired_total", "legendFormat": "expired" }
+      ],
+      "id": 3
+    },
+    {
+      "type": "graph",
+      "title": "Errors",
+      "targets": [
+        { "expr": "joins_error_total", "legendFormat": "joins" },
+        { "expr": "holds_error_total", "legendFormat": "holds" },
+        { "expr": "notifications_dispatch_error_total", "legendFormat": "notifications" },
+        { "expr": "notifications_publish_error_total", "legendFormat": "publish" }
+      ],
+      "id": 4
+    }
+  ],
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  }
+}

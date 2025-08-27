@@ -29,3 +29,4 @@
 - Storage or mail health DOWN
 - Spikes in denied auth attempts for forgot/resend
 - Unusual spikes in retention deletions
+- High error rate > 5% over 5m ([runbook](runbooks/error-spike.md))

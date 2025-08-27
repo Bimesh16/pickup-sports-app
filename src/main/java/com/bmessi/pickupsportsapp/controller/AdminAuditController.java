@@ -1,7 +1,9 @@
 package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.entity.AdminAudit;
+import com.bmessi.pickupsportsapp.entity.HostActionAudit;
 import com.bmessi.pickupsportsapp.service.AdminAuditService;
+import com.bmessi.pickupsportsapp.service.HostActionAuditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +15,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 @RestController
 @RequestMapping("/admin/audit")
@@ -21,6 +22,7 @@ import java.util.List;
 public class AdminAuditController {
 
     private final AdminAuditService service;
+    private final HostActionAuditService hostService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -49,6 +51,30 @@ public class AdminAuditController {
         HttpHeaders h = new HttpHeaders();
         h.setContentType(MediaType.valueOf("text/csv; charset=utf-8"));
         h.setContentDisposition(ContentDisposition.attachment().filename("admin_audit.csv").build());
+        return ResponseEntity.ok().headers(h).body(bytes);
+    }
+
+    @GetMapping("/host/export")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<byte[]> exportHost(Pageable pageable) {
+        Page<HostActionAudit> page = hostService.list(pageable);
+        StringBuilder sb = new StringBuilder();
+        sb.append("id,createdAt,actor,action,targetType,targetId,correlationId,details\n");
+        for (HostActionAudit a : page.getContent()) {
+            sb.append(a.getId()).append(",")
+              .append(a.getCreatedAt()).append(",")
+              .append(escape(a.getActor())).append(",")
+              .append(escape(a.getAction())).append(",")
+              .append(escape(a.getTargetType())).append(",")
+              .append(a.getTargetId()).append(",")
+              .append(escape(a.getCorrelationId())).append(",")
+              .append(escape(a.getDetails()))
+              .append("\n");
+        }
+        byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
+        HttpHeaders h = new HttpHeaders();
+        h.setContentType(MediaType.valueOf("text/csv; charset=utf-8"));
+        h.setContentDisposition(ContentDisposition.attachment().filename("host_action_audit.csv").build());
         return ResponseEntity.ok().headers(h).body(bytes);
     }
 

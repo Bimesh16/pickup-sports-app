@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.controller;
+package unit.com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.controller.ExploreController;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;

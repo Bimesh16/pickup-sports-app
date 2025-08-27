@@ -1,10 +1,12 @@
-package com.bmessi.pickupsportsapp.service;
+package unit.com.bmessi.pickupsportsapp.service;
 
 import com.bmessi.pickupsportsapp.entity.SocialAccount;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.SocialAccountRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.repository.VerifiedUserRepository;
+import com.bmessi.pickupsportsapp.service.JwksVerifierService;
+import com.bmessi.pickupsportsapp.service.SocialAuthService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import org.junit.jupiter.api.Test;
@@ -21,7 +23,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class SocialAuthServiceTest {
 
-    @Mock JwksVerifierService jwks;
+    @Mock
+    JwksVerifierService jwks;
     @Mock UserRepository users;
     @Mock SocialAccountRepository socials;
     @Mock VerifiedUserRepository verified;

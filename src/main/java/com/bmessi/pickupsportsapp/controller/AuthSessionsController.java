@@ -6,7 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import com.bmessi.pickupsportsapp.dto.SessionDTO;
+import com.bmessi.pickupsportsapp.dto.api.UpdatedResponse;
 import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.security.Principal;
@@ -23,10 +26,10 @@ public class AuthSessionsController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<com.bmessi.pickupsportsapp.dto.SessionDTO>> list(Principal principal) {
+    public ResponseEntity<List<SessionDTO>> list(Principal principal) {
         List<RefreshToken> rows = repo.findByUser_UsernameAndRevokedAtIsNull(principal.getName());
-        List<com.bmessi.pickupsportsapp.dto.SessionDTO> items = rows.stream()
-                .map(rt -> new com.bmessi.pickupsportsapp.dto.SessionDTO(
+        List<SessionDTO> items = rows.stream()
+                .map(rt -> new SessionDTO(
                         rt.getId(),
                         rt.getDeviceId(),
                         rt.getUserAgent(),
@@ -40,8 +43,8 @@ public class AuthSessionsController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    @org.springframework.transaction.annotation.Transactional
-    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.UpdatedResponse> revokeOne(@PathVariable Long id, Principal principal) {
+    @Transactional
+    public ResponseEntity<UpdatedResponse> revokeOne(@PathVariable Long id, Principal principal) {
         List<RefreshToken> rows = repo.findByUser_UsernameAndRevokedAtIsNull(principal.getName());
         RefreshToken target = rows.stream().filter(r -> r.getId().equals(id)).findFirst().orElse(null);
         if (target == null) {
@@ -49,13 +52,13 @@ public class AuthSessionsController {
         }
         target.setRevokedAt(Instant.now());
         repo.save(target);
-        return ResponseEntity.ok().headers(noStore()).body(new com.bmessi.pickupsportsapp.dto.api.UpdatedResponse(1));
+        return ResponseEntity.ok().headers(noStore()).body(new UpdatedResponse(1));
     }
 
     @DeleteMapping
     @PreAuthorize("isAuthenticated()")
-    @org.springframework.transaction.annotation.Transactional
-    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.UpdatedResponse> revokeAll(Principal principal) {
+    @Transactional
+    public ResponseEntity<UpdatedResponse> revokeAll(Principal principal) {
         List<RefreshToken> rows = repo.findByUser_UsernameAndRevokedAtIsNull(principal.getName());
         int count = 0;
         for (RefreshToken rt : rows) {
@@ -63,7 +66,7 @@ public class AuthSessionsController {
             repo.save(rt);
             count++;
         }
-        return ResponseEntity.ok().headers(noStore()).body(new com.bmessi.pickupsportsapp.dto.api.UpdatedResponse(count));
+        return ResponseEntity.ok().headers(noStore()).body(new UpdatedResponse(count));
     }
 
     

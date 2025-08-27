@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp;
+package integration.com.bmessi.pickupsportsapp;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
