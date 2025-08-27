@@ -15,3 +15,9 @@ export async function getGames(): Promise<any> {
   if (!res.ok) throw new Error('Failed to load games')
   return res.json()
 }
+
+export async function getGame(id: number): Promise<any> {
+  const res = await fetch(`/games/${id}`)
+  if (!res.ok) throw new Error('Failed to load game')
+  return res.json()
+}
