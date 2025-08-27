@@ -2,8 +2,8 @@ package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
+import com.bmessi.pickupsportsapp.service.HostActionAuditService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +19,7 @@ public class GameAdminController {
 
     private final GameRepository games;
     private final com.bmessi.pickupsportsapp.service.notification.NotificationService notificationService;
-    private final com.bmessi.pickupsportsapp.service.AdminAuditService adminAuditService;
+    private final HostActionAuditService hostAuditService;
     private final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GameAdminController.class);
 
     @PutMapping("/{id}/lock")
@@ -48,7 +48,7 @@ public class GameAdminController {
         // Audit log
         log.info("Admin updated game {} status to {}", id, status);
         String actor = (principal != null && principal.getName() != null) ? principal.getName() : "admin";
-        try { adminAuditService.record(actor, "game_status_" + status.toLowerCase(), "game", id, null); } catch (Exception ignore) {}
+        try { hostAuditService.record(actor, "game_status_" + status.toLowerCase(), "game", id, null); } catch (Exception ignore) {}
 
         // Notify participants and creator, best-effort
         notifyParticipants(g, status);
