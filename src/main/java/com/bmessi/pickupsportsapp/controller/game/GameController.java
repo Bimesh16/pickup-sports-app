@@ -15,6 +15,7 @@ import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import com.bmessi.pickupsportsapp.service.SportResolverService;
 import com.bmessi.pickupsportsapp.service.AiRecommendationResilientService;
 import com.bmessi.pickupsportsapp.service.chat.ChatService;
+import com.bmessi.pickupsportsapp.service.SavedSearchMatchService;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
@@ -78,6 +79,7 @@ public class GameController {
     private final ApiMapper mapper;
     private final ChatService chatService;
     private final SportResolverService sportResolver;
+    private final SavedSearchMatchService savedSearchMatchService;
     private final com.bmessi.pickupsportsapp.service.IdempotencyService idempotencyService;
     private final com.bmessi.pickupsportsapp.service.gameaccess.GameAccessService gameAccessService;
     private final java.util.Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> redisRateLimiter;
@@ -407,6 +409,8 @@ public class GameController {
                 .updatedAt(OffsetDateTime.now())
                 .build();
         Game saved = gameRepository.save(game);
+
+        savedSearchMatchService.handleNewGame(saved);
 
         // Store idempotency mapping for future replays
         if (idem != null) {
