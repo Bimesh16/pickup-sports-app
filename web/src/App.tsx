@@ -1,70 +1,127 @@
-import React, { useEffect, useState } from 'react'
-import { getFlags, getGames, joinGame, FeatureFlags } from './api'
-import { getFlags, getGames, FeatureFlags } from './api'
-import AdminPanel from './AdminPanel'
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useAuthStore } from './lib/auth';
+import Layout from './components/Layout';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import GameDetailsPage from './pages/games/GameDetailsPage';
+import CreateGamePage from './pages/games/CreateGamePage';
+import ProfilePage from './pages/profile/ProfilePage';
+import SearchPage from './pages/SearchPage';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import './index.css';
 
-export default function App() {
-  const [flags, setFlags] = useState<FeatureFlags | null>(null)
-  const [games, setGames] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-  const handleJoin = async (id: number) => {
-    try {
-      await joinGame(id)
-      alert('Joined game')
-    } catch (e: any) {
-      if (e.message === 'captcha_required') {
-        const token = window.prompt('CAPTCHA required. Enter token:')
-        if (token) {
-          try {
-            await joinGame(id, token)
-            alert('Joined game')
-          } catch (err: any) {
-            alert(err.message || 'Join failed')
-          }
-        }
-      } else {
-        alert(e.message || 'Join failed')
-      }
-    }
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuthStore();
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      </div>
+    );
   }
-
-  useEffect(() => {
-    ;(async () => {
-      try {
-        const f = await getFlags()
-        setFlags(f)
-        const g = await getGames()
-        setGames(g)
-      } catch (e: any) {
-        setError(e.message ?? 'Error')
-      }
-    })()
-  }, [])
-
-  return (
-    <div style={{ maxWidth: 720, margin: '2rem auto', fontFamily: 'system-ui, Arial' }}>
-      <h1>Pickup Sports</h1>
-      {error && <div style={{ color: 'crimson' }}>Error: {error}</div>}
-      {flags && (
-        <div style={{ padding: '0.5rem 0' }}>
-          <strong>Env:</strong> {flags.env} • <strong>AI Recommend:</strong> {flags.recommend ? 'on' : 'off'} •{' '}
-          <strong>Chat:</strong> {flags.chatEnabled ? 'on' : 'off'}
-        </div>
-      )}
-      <h2>Explore Games</h2>
-      {!games && !error && <div>Loading…</div>}
-      {games && games.content && (
-        <ul>
-          {games.content.map((g: any) => (
-            <li key={g.id}>
-              <strong>{g.sport}</strong> at {g.location} • {g.time}{' '}
-              <button onClick={() => handleJoin(g.id)}>Join</button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <AdminPanel />
-    </div>
-  )
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
 }
+
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuthStore();
+  
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
+}
+
+function App() {
+  const { loadUser, isAuthenticated } = useAuthStore();
+  
+  useEffect(() => {
+    if (!isAuthenticated) {
+      loadUser();
+    }
+  }, [loadUser, isAuthenticated]);
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          } />
+          <Route path="/register" element={
+            <PublicRoute>
+              <RegisterPage />
+            </PublicRoute>
+          } />
+          
+          {/* Protected routes */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout>
+                <HomePage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/search" element={
+            <ProtectedRoute>
+              <Layout>
+                <SearchPage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/games/:id" element={
+            <ProtectedRoute>
+              <Layout>
+                <GameDetailsPage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/create-game" element={
+            <ProtectedRoute>
+              <Layout>
+                <CreateGamePage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/profile/:id?" element={
+            <ProtectedRoute>
+              <Layout>
+                <ProfilePage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <Layout>
+                <AdminDashboard />
+              </Layout>
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </Router>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
