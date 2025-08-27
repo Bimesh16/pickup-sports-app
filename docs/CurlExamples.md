@@ -31,3 +31,23 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
 curl -H "Authorization: Bearer $TOKEN" \
   http://localhost:8080/notifications/unread-count
 ```
+
+## Search and Explore
+
+### Search games with filters
+
+```bash
+curl 'http://localhost:8080/search/games?sport=Basketball&skillLevel=Intermediate&fromDate=2025-01-01T00:00:00Z&toDate=2025-01-31T23:59:59Z&lat=37.7749&lng=-122.4194&radiusKm=10'
+```
+
+### Explore paginated games
+
+```bash
+curl 'http://localhost:8080/games/explore?page=0&size=20&sort=time,asc'
+```
+
+### Find nearby games
+
+```bash
+curl 'http://localhost:8080/games/nearby?lat=37.7749&lon=-122.4194&radiusKm=5&page=0&size=10&sort=time,asc'
+```

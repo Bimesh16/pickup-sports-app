@@ -229,7 +229,7 @@ public class GameController {
 
         // Default DB-backed paging
         Page<Game> page = hasAnyFilter(nsport, nloc, fromTime, toTime, normalizedSkill)
-                ? gameRepository.search(nsport, nloc, fromTime, toTime, normalizedSkill, effective)
+                ? gameRepository.search(nsport, nloc, fromTime, toTime, normalizedSkill, null, null, null, effective)
                 : gameRepository.findAll(effective);
 
         Page<GameSummaryDTO> body = page.map(mapper::toGameSummaryDTO);
