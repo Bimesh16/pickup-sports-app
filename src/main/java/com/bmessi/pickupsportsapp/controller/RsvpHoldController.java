@@ -20,6 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import java.security.Principal;
 import java.util.Map;
@@ -36,6 +37,7 @@ public class RsvpHoldController {
     private final JdbcTemplate jdbc;
     private final NotificationService notificationService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
+    private final MeterRegistry meterRegistry;
 
     @RateLimiter(name = "rsvp")
     @Operation(summary = "Create a temporary hold for a game slot", security = @SecurityRequirement(name = "bearerAuth"))
@@ -58,6 +60,7 @@ public class RsvpHoldController {
 
         var res = holdService.createHold(id, userId, ttlSeconds);
         if (!res.created()) {
+            meterRegistry.counter("holds_error", "action", "create", "reason", res.reason()).increment();
             return switch (res.reason()) {
                 case "not_found" -> ResponseEntity.status(404).headers(noStore()).build();
                 case "cutoff"    -> ResponseEntity.status(409).headers(noStore())
@@ -68,6 +71,8 @@ public class RsvpHoldController {
                         .body(Map.of("error", "internal", "message", "Failed to create hold"));
             };
         }
+
+        meterRegistry.counter("holds_created").increment();
 
         // Live event: capacity update (one slot reserved)
         try {
@@ -100,6 +105,10 @@ public class RsvpHoldController {
 
         var res = holdService.confirmHold(id, request.holdId(), userId);
         if (!res.joined()) {
+            if ("expired".equals(res.reason())) {
+                meterRegistry.counter("holds_expired").increment();
+            }
+            meterRegistry.counter("holds_error", "action", "confirm", "reason", res.reason()).increment();
             return switch (res.reason()) {
                 case "not_found", "invalid_hold" -> ResponseEntity.status(404).headers(noStore()).build();
                 case "expired" -> ResponseEntity.status(410).headers(noStore())
@@ -110,6 +119,8 @@ public class RsvpHoldController {
                         .body(Map.of("error", "internal", "message", "Failed to confirm hold"));
             };
         }
+
+        meterRegistry.counter("holds_confirmed").increment();
 
         String username = principal.getName();
         // Live event: participant joined + capacity update

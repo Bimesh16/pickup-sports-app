@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -22,6 +23,7 @@ public class CapacityManager {
 
     private final JdbcTemplate jdbc;
     private final WaitlistService waitlist;
+    private final MeterRegistry meterRegistry;
     public record JoinResult(boolean success, boolean waitlisted, String reason, int remainingSlots) {}
     public record Decision(boolean allowed, boolean waitlisted, String reason) {}
     public record LeaveResult(boolean removed, List<Long> promoted) {}
@@ -30,7 +32,10 @@ public class CapacityManager {
     @Transactional
     public JoinResult join(Long gameId, Long userId) {
         GameRow g = fetchGameForUpdate(gameId).orElse(null);
-        if (g == null) return new JoinResult(false, false, "not_found", 0);
+        if (g == null) {
+            meterRegistry.counter("joins_error", "reason", "not_found").increment();
+            return new JoinResult(false, false, "not_found", 0);
+        }
 
         int capacity = g.capacity != null ? g.capacity : Integer.MAX_VALUE;
         int participants = Optional.ofNullable(jdbc.queryForObject(
@@ -39,6 +44,7 @@ public class CapacityManager {
 
         // Cutoff enforcement
         if (g.rsvpCutoff != null && Instant.now().isAfter(g.rsvpCutoff.toInstant())) {
+            meterRegistry.counter("joins_error", "reason", "cutoff").increment();
             return new JoinResult(false, false, "cutoff", remaining);
         }
 
@@ -55,13 +61,20 @@ public class CapacityManager {
                     "INSERT INTO game_participants (game_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING",
                     gameId, userId);
             remaining -= added;
+            if (added > 0) {
+                meterRegistry.counter("joins_success").increment();
+            }
             return new JoinResult(true, false, added == 0 ? "already_participant" : "ok", remaining);
         }
 
         if (!g.waitlistEnabled) {
+            meterRegistry.counter("joins_error", "reason", "full").increment();
             return new JoinResult(false, false, "full", remaining);
         }
         boolean added = waitlist.addToWaitlist(gameId, userId);
+        if (added) {
+            meterRegistry.counter("joins_waitlisted").increment();
+        }
         return new JoinResult(false, added, added ? "waitlisted" : "waitlist_exists", remaining);
     }
 
@@ -89,6 +102,9 @@ public class CapacityManager {
                         gameId, uid);
             } catch (Exception ignore) {}
         }
+        if (!promote.isEmpty()) {
+            meterRegistry.counter("promotions").increment(promote.size());
+        }
         return added;
     }
   
@@ -112,6 +128,9 @@ public class CapacityManager {
                     try {
                         jdbc.update("INSERT INTO game_participants (game_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING", gameId, uid);
                     } catch (Exception ignore) {}
+                }
+                if (!promoted.isEmpty()) {
+                    meterRegistry.counter("promotions").increment(promoted.size());
                 }
             }
         }
