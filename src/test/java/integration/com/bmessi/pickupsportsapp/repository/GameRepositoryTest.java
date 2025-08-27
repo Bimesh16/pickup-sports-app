@@ -29,7 +29,7 @@ class GameRepositoryTest {
         gameRepository.save(Game.builder().sport("Basketball").location("NYC").time(Instant.now()).user(owner).build());
         gameRepository.save(Game.builder().sport("Soccer").location("LA").time(Instant.now()).user(owner).build());
 
-        Page<Game> result = gameRepository.search("Basketball", "NYC", null, null, null, Pageable.unpaged());
+        Page<Game> result = gameRepository.search("Basketball", "NYC", null, null, null, null, null, null, Pageable.unpaged());
         assertEquals(1, result.getTotalElements());
         assertEquals("Basketball", result.getContent().get(0).getSport());
     }

@@ -36,6 +36,12 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
               and (cast(:fromTime as timestamptz) is null or g.time >= cast(:fromTime as timestamptz))
               and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
               and (nullif(btrim(cast(:skillLevel as text)), '') is null or g.skill_level ILIKE nullif(btrim(cast(:skillLevel as text)), ''))
+              and ((cast(:lat as double precision) is null or cast(:lng as double precision) is null)
+                   or (g.geom is not null and ST_DWithin(
+                        g.geom,
+                        ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+                        :radiusKm * 1000
+                   )))
             order by g.time
             """,
             countQuery = """
@@ -48,6 +54,12 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
               and (cast(:fromTime as timestamptz) is null or g.time >= cast(:fromTime as timestamptz))
               and (cast(:toTime as timestamptz) is null or g.time <= cast(:toTime as timestamptz))
               and (nullif(btrim(cast(:skillLevel as text)), '') is null or g.skill_level ILIKE nullif(btrim(cast(:skillLevel as text)), ''))
+              and ((cast(:lat as double precision) is null or cast(:lng as double precision) is null)
+                   or (g.geom is not null and ST_DWithin(
+                        g.geom,
+                        ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+                        :radiusKm * 1000
+                   )))
             """,
             nativeQuery = true
     )
@@ -57,6 +69,9 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
             @Param("fromTime") OffsetDateTime fromTime,
             @Param("toTime") OffsetDateTime toTime,
             @Param("skillLevel") String skillLevel,
+            @Param("lat") Double lat,
+            @Param("lng") Double lng,
+            @Param("radiusKm") Double radiusKm,
             Pageable pageable
     );
 
@@ -106,7 +121,7 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
                     ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
                     :radiusKm * 1000
                 )
-            order by ST_Distance(g.geom, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography)
+            order by g.time
             """,
             countQuery = """
             select count(*)
