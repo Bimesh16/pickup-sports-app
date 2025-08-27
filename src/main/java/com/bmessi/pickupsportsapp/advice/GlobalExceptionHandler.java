@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.exception;
+package com.bmessi.pickupsportsapp.advice;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -25,6 +26,9 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.server.ResponseStatusException;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+
+import com.bmessi.pickupsportsapp.exception.UsernameTakenException;
+import com.bmessi.pickupsportsapp.security.MfaRequiredException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -48,6 +52,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleAuthCredsNotFound(AuthenticationCredentialsNotFoundException ex, HttpServletRequest req) {
         log.debug("Unauthenticated: {}", ex.getMessage());
+        return build(HttpStatus.UNAUTHORIZED, "unauthenticated", "Authentication is required", req);
+    }
+
+    // 401: MFA required but not satisfied
+    @ExceptionHandler(MfaRequiredException.class)
+    public ResponseEntity<Map<String, Object>> handleMfaRequired(MfaRequiredException ex, HttpServletRequest req) {
+        log.debug("MFA required: {}", ex.getMessage());
+        return build(HttpStatus.UNAUTHORIZED, "mfa_required", "MFA required", req);
+    }
+
+    // 401: Generic authentication failures
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthentication(AuthenticationException ex, HttpServletRequest req) {
+        log.debug("Authentication failure: {}", ex.getMessage());
         return build(HttpStatus.UNAUTHORIZED, "unauthenticated", "Authentication is required", req);
     }
 

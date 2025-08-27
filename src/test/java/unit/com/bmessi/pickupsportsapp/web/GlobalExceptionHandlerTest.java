@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = GlobalExceptionHandlerTest.TestErrorController.class)
-@Import(com.bmessi.pickupsportsapp.exception.GlobalExceptionHandler.class)
+@Import(com.bmessi.pickupsportsapp.advice.GlobalExceptionHandler.class)
 class GlobalExceptionHandlerTest {
 
     @Autowired
