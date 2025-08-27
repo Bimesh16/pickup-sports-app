@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 
 // Rate limiting
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
@@ -57,11 +58,33 @@ public class RsvpController {
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Joined", content = @Content(schema = @Schema(implementation = RsvpResultResponse.class))),
-            @ApiResponse(responseCode = "202", description = "Waitlisted", content = @Content(schema = @Schema(implementation = RsvpResultResponse.class))),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Joined",
+                    content = @Content(
+                            schema = @Schema(implementation = RsvpResultResponse.class),
+                            examples = @ExampleObject(value = "{\n  \"joined\": true,\n  \"waitlisted\": false,\n  \"message\": \"ok\"\n}"))
+            ),
+            @ApiResponse(
+                    responseCode = "202",
+                    description = "Waitlisted",
+                    content = @Content(
+                            schema = @Schema(implementation = RsvpResultResponse.class),
+                            examples = @ExampleObject(value = "{\n  \"joined\": false,\n  \"waitlisted\": true,\n  \"message\": \"waitlisted\"\n}"))
+            ),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Game not found"),
-            @ApiResponse(responseCode = "409", description = "RSVP not allowed")
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Game full or RSVP closed",
+                    content = @Content(
+                            schema = @Schema(implementation = Map.class),
+                            examples = {
+                                    @ExampleObject(name = "game_full", value = "{\n  \"error\": \"game_full\",\n  \"message\": \"No slots available\"\n}"),
+                                    @ExampleObject(name = "rsvp_closed", value = "{\n  \"error\": \"rsvp_closed\",\n  \"message\": \"RSVP cutoff has passed\"\n}")
+                            }
+                    )
+            )
     })
     @PostMapping("/{id}/join")
     @PreAuthorize("isAuthenticated()")
@@ -92,7 +115,11 @@ public class RsvpController {
                 throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Game not found");
             }
             case "cutoff" -> {
-                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP cutoff has passed");
+                var body = java.util.Map.of("error", "rsvp_closed", "message", "RSVP cutoff has passed");
+                if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                    rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 409, body);
+                }
+                return ResponseEntity.status(409).headers(noStore()).body(body);
             }
         }
         if (jr.success()) {
@@ -312,7 +339,8 @@ public class RsvpController {
                 throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Game not found");
             }
             case "cutoff" -> {
-                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP cutoff has passed");
+                return ResponseEntity.status(409).headers(noStore())
+                        .body(java.util.Map.of("error", "rsvp_closed", "message", "RSVP cutoff has passed"));
             }
         }
 
