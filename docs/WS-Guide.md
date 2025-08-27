@@ -15,3 +15,7 @@
 ### Example payloads
 
 Chat message:
+
+## Events
+
+- Capacity updates: clients subscribed to `/topic/games/{gameId}` receive `{ "type": "capacity_update", "data": { "remainingSlots": number, "hint": "optional" } }` when game availability changes.
