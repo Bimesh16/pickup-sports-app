@@ -48,14 +48,7 @@ public class HoldCleanupJob {
 
                 for (Long gameId : gameIds) {
                     try {
-                        broker.convertAndSend(
-                                "/topic/games/" + gameId,
-                                Map.of(
-                                        "type", "capacity_update_hint",
-                                        "data", Map.of("hint", "holds_expired"),
-                                        "timestamp", System.currentTimeMillis()
-                                )
-                        );
+                        emitCapacityUpdate(gameId, "holds_expired");
                     } catch (Exception e) {
                         log.debug("WS hint emit failed for game {}", gameId, e);
                     }
@@ -65,5 +58,25 @@ public class HoldCleanupJob {
         } catch (Exception e) {
             log.warn("Hold cleanup job failed: {}", e.getMessage());
         }
+    }
+
+    private void emitCapacityUpdate(Long gameId, String hint) {
+        Integer capacity = jdbc.queryForObject("SELECT capacity FROM game WHERE id = ?", Integer.class, gameId);
+        if (capacity == null) return;
+        Integer participants = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
+        Integer holds = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
+        int remaining = capacity - (participants == null ? 0 : participants) - (holds == null ? 0 : holds);
+        var data = new java.util.HashMap<String, Object>();
+        data.put("remainingSlots", Math.max(0, remaining));
+        if (hint != null) data.put("hint", hint);
+        broker.convertAndSend(
+                "/topic/games/" + gameId,
+                Map.of(
+                        "type", "capacity_update",
+                        "data", data,
+                        "timestamp", System.currentTimeMillis()
+                )
+        );
     }
 }

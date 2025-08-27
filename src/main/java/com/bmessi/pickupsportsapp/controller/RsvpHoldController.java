@@ -71,7 +71,7 @@ public class RsvpHoldController {
 
         // Live event: capacity update (one slot reserved)
         try {
-            emit(id, "capacity_update_hint", Map.of("hint", "hold_created"));
+            emitCapacityUpdate(id, "hold_created");
         } catch (Exception ignore) {}
 
         return ResponseEntity.status(201).headers(noStore())
@@ -115,7 +115,7 @@ public class RsvpHoldController {
         // Live event: participant joined + capacity update
         try {
             emit(id, "participant_joined", Map.of("user", username, "userId", userId));
-            emit(id, "capacity_update", Map.of("hint", "hold_confirmed"));
+            emitCapacityUpdate(id, "hold_confirmed");
         } catch (Exception ignore) {}
 
         // Optional notification to owner
@@ -135,6 +135,19 @@ public class RsvpHoldController {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private void emitCapacityUpdate(Long gameId, String hint) {
+        Integer capacity = jdbc.queryForObject("SELECT capacity FROM game WHERE id = ?", Integer.class, gameId);
+        if (capacity == null) return;
+        Integer participants = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
+        Integer holds = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
+        int remaining = capacity - (participants == null ? 0 : participants) - (holds == null ? 0 : holds);
+        var data = new java.util.HashMap<String, Object>();
+        data.put("remainingSlots", Math.max(0, remaining));
+        if (hint != null) data.put("hint", hint);
+        emit(gameId, "capacity_update", data);
     }
 
     private void emit(Long gameId, String type, Map<String, Object> data) {

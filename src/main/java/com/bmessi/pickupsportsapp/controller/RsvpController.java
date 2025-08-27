@@ -111,11 +111,7 @@ public class RsvpController {
             // Live events
             try {
                 emit(id, "participant_joined", java.util.Map.of("user", username, "userId", userId));
-                var meta2 = gameMeta(id);
-                if (meta2 != null && meta2.capacity() != null) {
-                    int remaining = Math.max(0, meta2.capacity() - countParticipants(id));
-                    emit(id, "capacity_update", java.util.Map.of("remainingSlots", remaining));
-                }
+                emitCapacityUpdate(id, null);
             } catch (Exception ignore) {}
 
             var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(true, false, added == 0 ? "already_participant" : "ok");
@@ -134,10 +130,7 @@ public class RsvpController {
             // Live event: waitlist joined
             try {
                 emit(id, "waitlist_joined", java.util.Map.of("user", username, "userId", userId));
-                if (meta != null && meta.capacity() != null) {
-                    int remaining = Math.max(0, meta.capacity() - countParticipants(id));
-                    emit(id, "capacity_update", java.util.Map.of("remainingSlots", remaining));
-                }
+                emitCapacityUpdate(id, null);
             } catch (Exception ignore) {}
 
             return ResponseEntity.status(202).headers(noStore())
@@ -232,11 +225,7 @@ public class RsvpController {
         // Live: participant left + capacity update
         try {
             emit(id, "participant_left", java.util.Map.of("user", username, "userId", userId));
-            var meta2 = gameMeta(id);
-            if (meta2 != null && meta2.capacity() != null) {
-                int remaining = Math.max(0, meta2.capacity() - countParticipants(id));
-                emit(id, "capacity_update", java.util.Map.of("remainingSlots", remaining));
-            }
+            emitCapacityUpdate(id, null);
         } catch (Exception ignore) {}
 
         var body = new com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse(removed > 0, promotedCount);
@@ -417,6 +406,19 @@ public class RsvpController {
     private int countParticipants(Long gameId) {
         Integer n = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
         return n == null ? 0 : n;
+    }
+
+    private void emitCapacityUpdate(Long gameId, String hint) {
+        Integer capacity = jdbc.queryForObject("SELECT capacity FROM game WHERE id = ?", Integer.class, gameId);
+        if (capacity == null) return;
+        Integer participants = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
+        Integer holds = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
+        int remaining = capacity - (participants == null ? 0 : participants) - (holds == null ? 0 : holds);
+        var data = new java.util.HashMap<String, Object>();
+        data.put("remainingSlots", Math.max(0, remaining));
+        if (hint != null) data.put("hint", hint);
+        emit(gameId, "capacity_update", data);
     }
 
     private GameMeta gameMeta(Long gameId) {
