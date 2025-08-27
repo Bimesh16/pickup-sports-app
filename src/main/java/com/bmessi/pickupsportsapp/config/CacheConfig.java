@@ -40,6 +40,7 @@ public class CacheConfig {
                     .withCacheConfiguration("user-profiles", base.entryTtl(Duration.ofMinutes(5)))
 
                     .withCacheConfiguration("nearby-games", base.entryTtl(Duration.ofSeconds(30)))
+                    .withCacheConfiguration("game-details", base.entryTtl(Duration.ofSeconds(30)))
                     .build();
         }
 
@@ -78,6 +79,15 @@ public class CacheConfig {
                 Caffeine.newBuilder()
                         .maximumSize(5_000)
                         .expireAfterWrite(Duration.ofSeconds(30))
+                        .recordStats()
+                        .build()
+        ));
+        caches.add(new CaffeineCache(
+                "game-details",
+                Caffeine.newBuilder()
+                        .maximumSize(10_000)
+                        .expireAfterWrite(Duration.ofSeconds(30))
+                        .recordStats()
                         .build()
         ));
         // Optional extra caches

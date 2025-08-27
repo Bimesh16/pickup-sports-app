@@ -41,6 +41,7 @@ spring:
     cache-names:
       - user-profiles
       - search-filters # caches search filters response (TTL 5m, key=SimpleKey.EMPTY)
+      - game-details # short-lived cache for game details
     caffeine:
       spec: maximumSize=10000,expireAfterWrite=5m # TTL for caches
 
