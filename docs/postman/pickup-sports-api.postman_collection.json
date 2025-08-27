@@ -1,0 +1,119 @@
+{
+  "info": {
+    "name": "Pickup Sports API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081" },
+    { "key": "token", "value": "" },
+    { "key": "gameId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Join Game",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/games/{{gameId}}/join",
+          "host": ["{{baseUrl}}"],
+          "path": ["games", "{{gameId}}", "join"]
+        }
+      }
+    },
+    {
+      "name": "Leave Game",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/games/{{gameId}}/leave",
+          "host": ["{{baseUrl}}"],
+          "path": ["games", "{{gameId}}", "leave"]
+        }
+      }
+    },
+    {
+      "name": "Participants",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/games/{{gameId}}/participants",
+          "host": ["{{baseUrl}}"],
+          "path": ["games", "{{gameId}}", "participants"]
+        }
+      }
+    },
+    {
+      "name": "Waitlist",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/games/{{gameId}}/waitlist",
+          "host": ["{{baseUrl}}"],
+          "path": ["games", "{{gameId}}", "waitlist"]
+        }
+      }
+    },
+    {
+      "name": "Create Hold",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/games/{{gameId}}/hold?ttl=120",
+          "host": ["{{baseUrl}}"],
+          "path": ["games", "{{gameId}}", "hold"],
+          "query": [
+            { "key": "ttl", "value": "120" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Confirm Hold",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"holdId\": 42\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/games/{{gameId}}/confirm",
+          "host": ["{{baseUrl}}"],
+          "path": ["games", "{{gameId}}", "confirm"]
+        }
+      }
+    },
+    {
+      "name": "RSVP Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/games/{{gameId}}/rsvp-status",
+          "host": ["{{baseUrl}}"],
+          "path": ["games", "{{gameId}}", "rsvp-status"]
+        }
+      }
+    }
+  ]
+}
