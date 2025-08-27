@@ -5,6 +5,7 @@ import com.bmessi.pickupsportsapp.dto.api.HoldResponse;
 import com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse;
 import com.bmessi.pickupsportsapp.service.game.HoldService;
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
+import com.bmessi.pickupsportsapp.websocket.GameRoomEvent;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -162,7 +163,7 @@ public class RsvpHoldController {
 
         // Live event: participant joined + capacity update
         try {
-            emit(id, "participant_joined", Map.of("user", username, "userId", userId));
+            emit(id, new GameRoomEvent.ParticipantJoined(username, userId));
             emitCapacityUpdate(id, "hold_confirmed");
         } catch (Exception ignore) {}
 
@@ -196,16 +197,12 @@ public class RsvpHoldController {
         Integer holds = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
         int remaining = capacity - (participants == null ? 0 : participants) - (holds == null ? 0 : holds);
-        var data = new java.util.HashMap<String, Object>();
-        data.put("remainingSlots", Math.max(0, remaining));
-        if (hint != null) data.put("hint", hint);
-        emit(gameId, "capacity_update", data);
+        emit(gameId, new GameRoomEvent.CapacityUpdate(Math.max(0, remaining), hint));
     }
 
-    private void emit(Long gameId, String type, Map<String, Object> data) {
+    private void emit(Long gameId, GameRoomEvent event) {
         try {
-            broker.convertAndSend("/topic/games/" + gameId,
-                    Map.of("type", type, "data", data, "timestamp", System.currentTimeMillis()));
+            broker.convertAndSend("/topic/games/" + gameId, event);
         } catch (Exception ignore) {}
     }
 }
