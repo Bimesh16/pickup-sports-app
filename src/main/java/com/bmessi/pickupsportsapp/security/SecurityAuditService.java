@@ -65,6 +65,11 @@ public class SecurityAuditService {
         count("email_change_confirmed");
     }
 
+    public void suspiciousActivity(String event, String details) {
+        log.warn("SUSPICIOUS_ACTIVITY event={} details={}", event, details);
+        count("suspicious_activity");
+    }
+
     private void count(String type) {
         try {
             meterRegistry.counter("security.events", "type", type).increment();

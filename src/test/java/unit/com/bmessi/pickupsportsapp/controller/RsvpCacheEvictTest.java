@@ -14,6 +14,7 @@ import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import com.bmessi.pickupsportsapp.service.SportResolverService;
 import com.bmessi.pickupsportsapp.service.chat.ChatService;
 import com.bmessi.pickupsportsapp.service.gameaccess.GameAccessService;
+import com.bmessi.pickupsportsapp.service.SavedSearchMatchService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -54,6 +55,7 @@ class RsvpCacheEvictTest {
         @Bean SportResolverService sportResolver() { return Mockito.mock(SportResolverService.class); }
         @Bean com.bmessi.pickupsportsapp.service.IdempotencyService idempotencyService() { return Mockito.mock(com.bmessi.pickupsportsapp.service.IdempotencyService.class); }
         @Bean GameAccessService gameAccessService() { return Mockito.mock(GameAccessService.class); }
+        @Bean SavedSearchMatchService savedSearchMatchService() { return Mockito.mock(SavedSearchMatchService.class); }
         @Bean GameRepository gameRepository() { return Mockito.mock(GameRepository.class); }
         @Bean UserRepository userRepository() { return Mockito.mock(UserRepository.class); }
         @Bean com.bmessi.pickupsportsapp.service.game.GameService gameService() { return Mockito.mock(com.bmessi.pickupsportsapp.service.game.GameService.class); }

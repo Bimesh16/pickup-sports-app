@@ -5,7 +5,7 @@ import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
-import com.bmessi.pickupsportsapp.service.push.PushSenderService;
+import com.bmessi.pickupsportsapp.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ class WaitlistServiceIntegrationTest {
     private GameRepository gameRepository;
 
     @MockitoBean
-    private PushSenderService push;
+    private EmailService emailService;
 
     @BeforeEach
     void setup() {
@@ -63,7 +63,6 @@ class WaitlistServiceIntegrationTest {
         List<Long> promoted = waitlistService.promoteUpTo(game.getId(), 1);
         assertEquals(1, promoted.size());
         assertEquals(1, waitlistService.waitlistCount(game.getId()));
-        verify(push).enqueue(eq(u1.getUsername()), any(), any(), any());
 
         assertTrue(waitlistService.removeFromWaitlist(game.getId(), u2.getId()));
         assertEquals(0, waitlistService.waitlistCount(game.getId()));

@@ -36,6 +36,9 @@ public class XaiRecommendationService {
                         OffsetDateTime.now(),
                         null,
                         skillLevel,
+                        null,
+                        null,
+                        null,
                         PageRequest.of(0, Math.max(1, pageable.getPageSize()))
                 );
                 page.getContent().forEach(g -> {
@@ -59,6 +62,9 @@ public class XaiRecommendationService {
                 OffsetDateTime.now(),
                 null,
                 emptyToNull(skillLevel),
+                null,
+                null,
+                null,
                 pageable
         );
         log.debug("Fallback recommendations (no XAI): {} games for sport={}, location={}, skillLevel={}",

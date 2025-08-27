@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.controller;
+package unit.com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.controller.game.GameController;
 import com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO;
@@ -11,6 +11,7 @@ import com.bmessi.pickupsportsapp.service.SportResolverService;
 import com.bmessi.pickupsportsapp.service.AiRecommendationResilientService;
 import com.bmessi.pickupsportsapp.service.chat.ChatService;
 import com.bmessi.pickupsportsapp.service.game.GameService;
+import com.bmessi.pickupsportsapp.service.SavedSearchMatchService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,7 @@ class GameControllerTest {
     @Mock private ChatService chatService;
     @Mock private SportResolverService sportResolver;
     @Mock private GameService gameService;
+    @Mock private SavedSearchMatchService savedSearchMatchService;
 
     @InjectMocks
     private GameController controller;

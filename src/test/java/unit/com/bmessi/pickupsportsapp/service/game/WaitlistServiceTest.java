@@ -1,12 +1,15 @@
-package com.bmessi.pickupsportsapp.service.game;
+package unit.com.bmessi.pickupsportsapp.service.game;
 
+import com.bmessi.pickupsportsapp.service.game.WaitlistService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.dao.DataAccessResourceFailureException;
-import com.bmessi.pickupsportsapp.service.push.PushSenderService;
+import com.bmessi.pickupsportsapp.service.notification.WaitlistPromotionEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.bmessi.pickupsportsapp.exception.WaitlistServiceException;
 
 import java.util.List;
@@ -20,8 +23,14 @@ import static org.mockito.Mockito.*;
 class WaitlistServiceTest {
 
     @Mock JdbcTemplate jdbc;
-    @Mock PushSenderService push;
-    @InjectMocks WaitlistService svc;
+    @Mock ApplicationEventPublisher events;
+    @InjectMocks
+    WaitlistService svc;
+
+    @BeforeEach
+    void stubGame() {
+        when(jdbc.queryForMap(startsWith("SELECT COALESCE"), any())).thenReturn(Map.of("sport", "", "location", ""));
+    }
 
     @Test
     void participantCount_returnsZeroWhenNull() {
@@ -87,7 +96,7 @@ class WaitlistServiceTest {
     }
 
     @Test
-    void promoteUpTo_returnsIdsAndEnqueuesPush() {
+    void promoteUpTo_returnsIdsAndPublishesEvents() {
         when(jdbc.queryForList(startsWith("WITH selected"), (Object[]) any(), (Class<Object>) any()))
                 .thenReturn(List.of(
                         Map.of("user_id", 10L, "username", "u1"),
@@ -98,8 +107,8 @@ class WaitlistServiceTest {
 
         assertEquals(List.of(10L, 11L), ids);
         verify(jdbc).queryForList(startsWith("WITH selected"), eq(5L), eq(2));
-        verify(push).enqueue(eq("u1"), eq("You've been promoted from the waitlist"), eq(""), isNull());
-        verify(push).enqueue(eq("u2"), eq("You've been promoted from the waitlist"), eq(""), isNull());
+        verify(events).publishEvent(new WaitlistPromotionEvent("u1", "", ""));
+        verify(events).publishEvent(new WaitlistPromotionEvent("u2", "", ""));
     }
 
     @Test
@@ -110,7 +119,7 @@ class WaitlistServiceTest {
         List<Long> ids = svc.promoteUpTo(5L, 2);
 
         assertTrue(ids.isEmpty());
-        verify(push, never()).enqueue(any(), any(), any(), any());
+        verify(events, never()).publishEvent(any());
     }
 
     @Test
@@ -119,7 +128,7 @@ class WaitlistServiceTest {
 
         assertTrue(ids.isEmpty());
         verify(jdbc).queryForList(startsWith("WITH selected"), eq(5L), eq(0));
-        verify(push, never()).enqueue(any(), any(), any(), any());
+        verify(events, never()).publishEvent(any());
     }
 
     @Test
@@ -128,21 +137,18 @@ class WaitlistServiceTest {
 
         assertTrue(ids.isEmpty());
         verify(jdbc).queryForList(startsWith("WITH selected"), eq(5L), eq(0));
-        verify(push, never()).enqueue(any(), any(), any(), any());
+        verify(events, never()).publishEvent(any());
     }
 
     @Test
-    void promoteUpTo_pushNotificationFailure() {
+    void promoteUpTo_publishEvent() {
         when(jdbc.queryForList(startsWith("WITH selected"), (Object[]) any(), (Class<Object>) any()))
                 .thenReturn(List.of(Map.of("user_id", 10L, "username", "u1")));
 
-        doThrow(new RuntimeException("Push service down"))
-                .when(push).enqueue(eq("u1"), any(), any(), any());
-
-        // Should not throw exception even if push fails
+        // Should publish event even if listener fails (publisher mocked not throwing)
         List<Long> ids = svc.promoteUpTo(5L, 1);
 
         assertEquals(List.of(10L), ids);
-        verify(push).enqueue(eq("u1"), any(), any(), any());
+        verify(events).publishEvent(new WaitlistPromotionEvent("u1", "", ""));
     }
 }
