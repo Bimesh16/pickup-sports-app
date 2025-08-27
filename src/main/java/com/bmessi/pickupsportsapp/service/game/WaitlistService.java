@@ -39,9 +39,12 @@ public class WaitlistService {
     @Transactional
     public boolean addToWaitlist(Long gameId, Long userId) {
         try {
-            int n = jdbc.update("INSERT INTO game_waitlist (game_id, user_id, created_at) VALUES (?,?,?)",
-                    gameId, userId, java.sql.Timestamp.from(Instant.now()));
-            return n > 0;
+            int n = jdbc.update("""
+                    INSERT INTO game_waitlist (game_id, user_id, created_at)
+                    VALUES (?,?,?)
+                    ON CONFLICT (game_id, user_id) DO NOTHING
+                    """, gameId, userId, java.sql.Timestamp.from(Instant.now()));
+            return n > 0; // false means already on waitlist (idempotent)
         } catch (DataAccessException e) {
             log.error("Failed to add user {} to waitlist for game {}", userId, gameId, e);
             throw new WaitlistServiceException("Unable to add to waitlist", e);

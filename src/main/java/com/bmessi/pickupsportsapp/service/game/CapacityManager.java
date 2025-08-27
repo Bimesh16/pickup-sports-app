@@ -23,9 +23,10 @@ public class CapacityManager {
 
     public record Decision(boolean allowed, boolean waitlisted, String reason) {}
 
-    @Transactional(readOnly = true)
+    // Lock the game row to prevent race conditions on capacity checks
+    @Transactional
     public Decision enforceOnRsvp(Long gameId, Long userId) {
-        GameRow g = fetchGame(gameId).orElse(null);
+        GameRow g = fetchGameForUpdate(gameId).orElse(null);
         if (g == null) return new Decision(false, false, "not_found");
 
         // Cutoff enforcement
@@ -62,7 +63,7 @@ public class CapacityManager {
      */
     @Transactional
     public int handleOnCancel(Long gameId) {
-        GameRow g = fetchGame(gameId).orElse(null);
+        GameRow g = fetchGameForUpdate(gameId).orElse(null);
         if (g == null) return 0;
 
         int capacity = g.capacity != null ? g.capacity : Integer.MAX_VALUE;
@@ -85,6 +86,23 @@ public class CapacityManager {
             return Optional.ofNullable(jdbc.queryForObject("""
                 SELECT capacity, waitlist_enabled, rsvp_cutoff, time
                   FROM game WHERE id = ?
+                """, (rs, rn) -> new GameRow(
+                    (Integer) rs.getObject("capacity"),
+                    rs.getBoolean("waitlist_enabled"),
+                    toOdt(rs.getObject("rsvp_cutoff")),
+                    toOdt(rs.getObject("time"))
+                ), gameId));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<GameRow> fetchGameForUpdate(Long gameId) {
+        try {
+            return Optional.ofNullable(jdbc.queryForObject("""
+                SELECT capacity, waitlist_enabled, rsvp_cutoff, time
+                  FROM game WHERE id = ?
+                  FOR UPDATE
                 """, (rs, rn) -> new GameRow(
                     (Integer) rs.getObject("capacity"),
                     rs.getBoolean("waitlist_enabled"),
