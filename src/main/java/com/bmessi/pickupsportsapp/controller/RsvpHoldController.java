@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import java.security.Principal;
 import java.util.Map;
@@ -39,6 +40,7 @@ public class RsvpHoldController {
     private final NotificationService notificationService;
     private final PaymentService paymentService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
+    private final MeterRegistry meterRegistry;
     private final RsvpIdempotencyService rsvpIdempotencyService;
 
     @RateLimiter(name = "rsvp")
@@ -73,6 +75,7 @@ public class RsvpHoldController {
 
         var res = holdService.createHold(id, userId, ttlSeconds);
         if (!res.created()) {
+            meterRegistry.counter("holds_error", "action", "create", "reason", res.reason()).increment();
             return switch (res.reason()) {
                 case "not_found" -> ResponseEntity.status(404).headers(noStore()).build();
                 case "cutoff" -> {
@@ -99,6 +102,7 @@ public class RsvpHoldController {
             };
         }
 
+        meterRegistry.counter("holds_created").increment();
         String paymentIntentId = paymentService.createIntentForHold(id, res.holdId(), userId);
 
         // Live event: capacity update (one slot reserved)
@@ -148,6 +152,10 @@ public class RsvpHoldController {
 
         var res = holdService.confirmHold(id, request.holdId(), userId);
         if (!res.joined()) {
+            if ("expired".equals(res.reason())) {
+                meterRegistry.counter("holds_expired").increment();
+            }
+            meterRegistry.counter("holds_error", "action", "confirm", "reason", res.reason()).increment();
             return switch (res.reason()) {
                 case "not_found", "invalid_hold" -> ResponseEntity.status(404).headers(noStore()).build();
                 case "expired" -> {
@@ -174,6 +182,9 @@ public class RsvpHoldController {
             };
         }
 
+        meterRegistry.counter("holds_confirmed").increment();
+
+        String username = principal.getName();
         // Live event: participant joined + capacity update
         try {
             emit(id, "participant_joined", Map.of("user", username, "userId", userId));

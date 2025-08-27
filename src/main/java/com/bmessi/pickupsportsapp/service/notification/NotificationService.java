@@ -72,7 +72,9 @@ public class NotificationService {
             );
             rabbitTemplate.convertAndSend(notificationQueue,
                     new com.bmessi.pickupsportsapp.dto.NotificationJob(recipientUsername, actorUsername, sport, location, action, model, java.util.Locale.getDefault()));
+            meterRegistry.counter("notifications_publish_success").increment();
         } catch (Exception e) {
+            meterRegistry.counter("notifications_publish_error").increment();
             log.error("Failed to publish notification job", e);
         }
     }

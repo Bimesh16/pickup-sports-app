@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
+import io.micrometer.core.instrument.MeterRegistry;
 
 /**
  * Consumes notification jobs from the queue and delivers them via the
@@ -18,6 +19,7 @@ public class NotificationDispatcher {
 
     private final NotificationService notificationService;
     private final EmailService emailService;
+    private final MeterRegistry meterRegistry;
 
     @RabbitListener(queues = "${notifications.queue:notifications.queue}")
     public void dispatch(NotificationJob job) {
@@ -25,7 +27,9 @@ public class NotificationDispatcher {
             String msg = formatGameNotificationMessage(job.actor(), job.action(), job.sport(), job.location());
             notificationService.createNotification(job.recipient(), msg);
             emailService.sendGameEventEmailNow(job.recipient(), job.action(), job.model(), job.locale());
+            meterRegistry.counter("notifications_dispatch_success").increment();
         } catch (Exception e) {
+            meterRegistry.counter("notifications_dispatch_error").increment();
             log.error("Failed to process notification job", e);
         }
     }
