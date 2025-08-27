@@ -34,6 +34,12 @@ import com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse;
 import com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse;
 import com.bmessi.pickupsportsapp.dto.api.ParticipantsResponse;
 import com.bmessi.pickupsportsapp.dto.api.WaitlistResponse;
+import com.bmessi.pickupsportsapp.security.VelocityCheckService;
+import com.bmessi.pickupsportsapp.security.SecurityAuditService;
+import com.bmessi.pickupsportsapp.security.CaptchaService;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.servlet.http.HttpServletRequest;
+import io.swagger.v3.oas.annotations.Parameter;
 
 @RestController
 @RequestMapping("/games")
@@ -47,6 +53,11 @@ public class RsvpController {
     private final NotificationService notificationService;
     private final PaymentService paymentService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
+    private final com.bmessi.pickupsportsapp.service.game.RsvpIdempotencyService rsvpIdempotencyService;
+    private final VelocityCheckService velocityCheckService;
+    private final SecurityAuditService securityAuditService;
+    private final CaptchaService captchaService;
+    private final MeterRegistry meterRegistry;
     private final com.bmessi.pickupsportsapp.service.idempotency.IdempotencyService idempotencyService;
 
 
@@ -93,8 +104,29 @@ public class RsvpController {
     @Transactional
     public ResponseEntity<?> join(@PathVariable Long id,
                                   Principal principal,
-                                  @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+                                  @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+                                  @RequestHeader(value = "X-Captcha-Token", required = false) String captchaToken,
+                                  @Parameter(hidden = true) HttpServletRequest request) {
         String username = principal.getName();
+
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isBlank()) ip = request.getRemoteAddr();
+        meterRegistry.counter("rsvp.events", "action", "join").increment();
+
+        String key = "rsvp:join:" + username + ":" + ip;
+        boolean allowed = velocityCheckService.incrementAndCheck(key, 20, 60_000);
+        if (!allowed) {
+            if (captchaToken == null || !captchaService.verify(captchaToken)) {
+                securityAuditService.suspiciousActivity("rsvp_velocity", key);
+                return ResponseEntity.status(429)
+                        .headers(noStore())
+                        .body(Map.of(
+                                "error", "too_many_requests",
+                                "captchaRequired", true,
+                                "message", "Please complete CAPTCHA"
+                        ));
+            }
+        }
 
         // Early idempotency replay
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
@@ -209,8 +241,29 @@ public class RsvpController {
     @Transactional
     public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse> leave(@PathVariable Long id,
                                                                                    Principal principal,
-                                                                                   @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+                                                                                   @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+                                                                                   @RequestHeader(value = "X-Captcha-Token", required = false) String captchaToken,
+                                                                                   @Parameter(hidden = true) HttpServletRequest request) {
         String username = principal.getName();
+
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isBlank()) ip = request.getRemoteAddr();
+        meterRegistry.counter("rsvp.events", "action", "leave").increment();
+
+        String key = "rsvp:leave:" + username + ":" + ip;
+        boolean allowed = velocityCheckService.incrementAndCheck(key, 20, 60_000);
+        if (!allowed) {
+            if (captchaToken == null || !captchaService.verify(captchaToken)) {
+                securityAuditService.suspiciousActivity("rsvp_velocity", key);
+                return ResponseEntity.status(429)
+                        .headers(noStore())
+                        .body(Map.of(
+                                "error", "too_many_requests",
+                                "captchaRequired", true,
+                                "message", "Please complete CAPTCHA"
+                        ));
+            }
+        }
 
         // Early idempotency replay
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
