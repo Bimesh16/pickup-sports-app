@@ -46,4 +46,8 @@ export async function generateInviteToken(gameId: number): Promise<string> {
   if (!res.ok) throw new Error('Failed to generate token')
   const data = await res.json()
   return data.token
+export async function getGame(id: number): Promise<any> {
+  const res = await fetch(`/games/${id}`)
+  if (!res.ok) throw new Error('Failed to load game')
+  return res.json()
 }

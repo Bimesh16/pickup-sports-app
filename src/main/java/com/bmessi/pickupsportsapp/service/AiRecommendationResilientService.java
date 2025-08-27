@@ -90,7 +90,9 @@ public class AiRecommendationResilientService {
         var page = gameRepository.search(
                 sport, location,
                 (OffsetDateTime) null, (OffsetDateTime) null,
-                skillLevel, pageable
+                skillLevel,
+                null, null, null,
+                pageable
         );
         return page.map(mapper::toGameSummaryDTO);
     }

@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.it;
+package integration.com.bmessi.pickupsportsapp.it;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

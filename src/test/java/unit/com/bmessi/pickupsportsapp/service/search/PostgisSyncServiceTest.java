@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.service.search;
+package unit.com.bmessi.pickupsportsapp.service.search;
 
+import com.bmessi.pickupsportsapp.service.search.PostgisSyncService;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PostgisSyncServiceTest {
 
     @Autowired JdbcTemplate jdbc;
-    @Autowired PostgisSyncService service;
+    @Autowired
+    PostgisSyncService service;
 
     @Test
     void backfillRunsOnPostgresOnly() throws Exception {

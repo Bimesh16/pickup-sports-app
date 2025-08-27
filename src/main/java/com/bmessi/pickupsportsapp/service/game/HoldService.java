@@ -29,7 +29,7 @@ public class HoldService {
 
         int capacity = g.capacity != null ? g.capacity : Integer.MAX_VALUE;
         int participants = optCount("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", gameId);
-        int activeHolds = optCount("SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", gameId);
+        int activeHolds = optCount("SELECT COUNT(*) FROM game_holds WHERE game_id = ? AND expires_at > now()", gameId);
 
         if (participants + activeHolds >= capacity) {
             return new HoldResult(false, null, null, "full");
@@ -37,7 +37,7 @@ public class HoldService {
 
         // Upsert-like: renew an existing hold for same user/game or create a new one
         var rs = jdbc.queryForRowSet("""
-                INSERT INTO game_hold (game_id, user_id, expires_at)
+                INSERT INTO game_holds (game_id, user_id, expires_at)
                 VALUES (?, ?, now() + make_interval(secs => ?))
                 ON CONFLICT (game_id, user_id) DO UPDATE
                    SET expires_at = excluded.expires_at
@@ -58,36 +58,37 @@ public class HoldService {
 
         // Lock the hold row to prevent double confirm
         var hold = jdbc.query("""
-                SELECT id, expires_at FROM game_hold
+                SELECT id, expires_at, payment_intent_id FROM game_hold
+                SELECT id, expires_at FROM game_holds
                  WHERE id = ? AND game_id = ? AND user_id = ? FOR UPDATE
                 """, ps -> { ps.setLong(1, holdId); ps.setLong(2, gameId); ps.setLong(3, userId); },
-                (rs, rn) -> rs.getTimestamp("expires_at")).stream().findFirst().orElse(null);
+                (rs, rn) -> new HoldRow(rs.getTimestamp("expires_at"), rs.getString("payment_intent_id"))).stream().findFirst().orElse(null);
 
         if (hold == null) {
             return new ConfirmResult(false, "invalid_hold");
         }
-        if (hold.toInstant().isBefore(java.time.Instant.now())) {
+        if (hold.expiresAt().toInstant().isBefore(java.time.Instant.now())) {
             // Expired: delete and return 410
-            jdbc.update("DELETE FROM game_hold WHERE id = ?", holdId);
+            jdbc.update("DELETE FROM game_holds WHERE id = ?", holdId);
             return new ConfirmResult(false, "expired");
         }
 
         // Ensure still capacity (participants + active holds includes this hold)
         int capacity = g.capacity != null ? g.capacity : Integer.MAX_VALUE;
         int participants = optCount("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", gameId);
-        int activeHolds = optCount("SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", gameId);
+        int activeHolds = optCount("SELECT COUNT(*) FROM game_holds WHERE game_id = ? AND expires_at > now()", gameId);
         if (participants >= capacity) {
             // Should not happen often because this hold already reserved a slot
             return new ConfirmResult(false, "full");
         }
 
         // Convert hold -> participant atomically under game row + hold row lock
-        jdbc.update("DELETE FROM game_hold WHERE id = ?", holdId);
+        jdbc.update("DELETE FROM game_holds WHERE id = ?", holdId);
         jdbc.update("""
-                INSERT INTO game_participants (game_id, user_id)
-                VALUES (?, ?)
+                INSERT INTO game_participants (game_id, user_id, payment_intent_id)
+                VALUES (?, ?, ?)
                 ON CONFLICT DO NOTHING
-                """, gameId, userId);
+                """, gameId, userId, hold.paymentIntentId());
 
         return new ConfirmResult(true, "ok");
     }
@@ -121,4 +122,5 @@ public class HoldService {
     }
 
     private record GameRow(Integer capacity, OffsetDateTime rsvpCutoff, OffsetDateTime time) {}
+    private record HoldRow(java.sql.Timestamp expiresAt, String paymentIntentId) {}
 }

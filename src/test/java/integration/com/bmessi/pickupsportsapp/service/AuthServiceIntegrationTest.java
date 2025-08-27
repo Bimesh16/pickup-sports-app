@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.service;
+package integration.com.bmessi.pickupsportsapp.service;
 
 import com.bmessi.pickupsportsapp.dto.auth.TokenPairResponse;
 import com.bmessi.pickupsportsapp.entity.auth.RefreshToken;

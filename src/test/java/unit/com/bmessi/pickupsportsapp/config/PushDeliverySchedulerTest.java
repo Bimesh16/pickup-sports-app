@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.config;
+package unit.com.bmessi.pickupsportsapp.config;
 
+import com.bmessi.pickupsportsapp.config.PushDeliveryScheduler;
 import com.bmessi.pickupsportsapp.entity.PushOutbox;
 import com.bmessi.pickupsportsapp.entity.PushSubscription;
 import com.bmessi.pickupsportsapp.entity.User;
@@ -18,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureTestDatabase
 class PushDeliverySchedulerTest {
 
-    @Autowired PushDeliveryScheduler scheduler;
+    @Autowired
+    PushDeliveryScheduler scheduler;
     @Autowired PushOutboxRepository outbox;
     @Autowired PushSubscriptionRepository subs;
     @Autowired UserRepository users;

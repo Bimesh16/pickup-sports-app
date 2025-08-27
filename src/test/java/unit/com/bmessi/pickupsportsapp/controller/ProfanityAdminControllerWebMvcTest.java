@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.controller;
+package unit.com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.controller.ProfanityAdminController;
 import com.bmessi.pickupsportsapp.service.chat.ProfanityFilterService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

@@ -1,8 +1,10 @@
 package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
+import com.bmessi.pickupsportsapp.service.payment.PaymentService;
 import com.bmessi.pickupsportsapp.service.game.CapacityManager;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
+import com.bmessi.pickupsportsapp.websocket.GameRoomEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-
-// Rate limiting
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 
 // DTOs for documentation
 import com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse;
@@ -45,23 +45,48 @@ public class RsvpController {
     private final CapacityManager capacityManager;
     private final WaitlistService waitlistService;
     private final NotificationService notificationService;
+    private final PaymentService paymentService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
-    private final com.bmessi.pickupsportsapp.service.game.RsvpIdempotencyService rsvpIdempotencyService;
+    private final com.bmessi.pickupsportsapp.service.idempotency.IdempotencyService idempotencyService;
 
 
 
     // Friendly "join" alias for RSVP
-    @RateLimiter(name = "rsvp")
     @Operation(
             summary = "Join a game (RSVP)",
+            description = "Rate limited: 4 requests per 10 seconds",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Joined", content = @Content(schema = @Schema(implementation = RsvpResultResponse.class))),
-            @ApiResponse(responseCode = "202", description = "Waitlisted", content = @Content(schema = @Schema(implementation = RsvpResultResponse.class))),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Joined",
+                    content = @Content(
+                            schema = @Schema(implementation = RsvpResultResponse.class),
+                            examples = @ExampleObject(value = "{\n  \"joined\": true,\n  \"waitlisted\": false,\n  \"message\": \"ok\"\n}"))
+            ),
+            @ApiResponse(
+                    responseCode = "202",
+                    description = "Waitlisted",
+                    content = @Content(
+                            schema = @Schema(implementation = RsvpResultResponse.class),
+                            examples = @ExampleObject(value = "{\n  \"joined\": false,\n  \"waitlisted\": true,\n  \"message\": \"waitlisted\"\n}"))
+            ),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Game not found"),
-            @ApiResponse(responseCode = "409", description = "RSVP not allowed")
+            @ApiResponse(responseCode = "409", description = "RSVP not allowed"),
+            @ApiResponse(responseCode = "429", description = "Too many requests"),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Game full or RSVP closed",
+                    content = @Content(
+                            schema = @Schema(implementation = Map.class),
+                            examples = {
+                                    @ExampleObject(name = "game_full", value = "{\n  \"error\": \"game_full\",\n  \"message\": \"No slots available\"\n}"),
+                                    @ExampleObject(name = "rsvp_closed", value = "{\n  \"error\": \"rsvp_closed\",\n  \"message\": \"RSVP cutoff has passed\"\n}")
+                            }
+                    )
+            )
     })
     @PostMapping("/{id}/join")
     @PreAuthorize("isAuthenticated()")
@@ -73,7 +98,7 @@ public class RsvpController {
 
         // Early idempotency replay
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            var cached = rsvpIdempotencyService.getJoin(username, id, idempotencyKey);
+            var cached = idempotencyService.get("join", username, id, idempotencyKey);
             if (cached.isPresent()) {
                 return ResponseEntity.status(cached.get().status())
                         .headers(noStore())
@@ -92,7 +117,11 @@ public class RsvpController {
                 throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Game not found");
             }
             case "cutoff" -> {
-                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP cutoff has passed");
+                var body = java.util.Map.of("error", "rsvp_closed", "message", "RSVP cutoff has passed");
+                if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                    idempotencyService.put("join", username, id, idempotencyKey, 409, body);
+                }
+                return ResponseEntity.status(409).headers(noStore()).body(body);
             }
         }
         if (jr.success()) {
@@ -103,16 +132,16 @@ public class RsvpController {
 
             // Live events
             try {
-                emit(id, "participant_joined", java.util.Map.of("user", username, "userId", userId));
+                emit(id, new GameRoomEvent.ParticipantJoined(username, userId));
                 if (meta != null && meta.capacity() != null) {
-                    emit(id, "capacity_update", java.util.Map.of("remainingSlots", jr.remainingSlots()));
+                    emit(id, new GameRoomEvent.CapacityUpdate(jr.remainingSlots(), null));
                 }
                 emitCapacityUpdate(id, null);
             } catch (Exception ignore) {}
 
             var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(true, false, jr.reason());
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 200, body);
+                idempotencyService.put("join", username, id, idempotencyKey, 200, body);
             }
             return ResponseEntity.ok().headers(noStore()).body(body);
         }
@@ -127,14 +156,14 @@ public class RsvpController {
             try {
                 emit(id, "waitlist_joined", java.util.Map.of("user", username, "userId", userId));
                 if (meta != null && meta.capacity() != null) {
-                    emit(id, "capacity_update", java.util.Map.of("remainingSlots", jr.remainingSlots()));
+                emit(id, new GameRoomEvent.CapacityUpdate(jr.remainingSlots(), null));
                 }
                 emitCapacityUpdate(id, null);
             } catch (Exception ignore) {}
 
             var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted");
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 202, body);
+                idempotencyService.put("join", username, id, idempotencyKey, 202, body);
             }
             return ResponseEntity.status(202).headers(noStore()).body(body);
         }
@@ -146,7 +175,7 @@ public class RsvpController {
             } catch (Exception ignore) {}
             var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted");
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 202, body);
+                idempotencyService.put("join", username, id, idempotencyKey, 202, body);
             }
             return ResponseEntity.status(202).headers(noStore()).body(body);
         }
@@ -155,7 +184,7 @@ public class RsvpController {
         if ("full".equals(jr.reason())) {
             var body = java.util.Map.of("error", "game_full", "message", "No slots available", "remainingSlots", jr.remainingSlots());
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 409, body);
+                idempotencyService.put("join", username, id, idempotencyKey, 409, body);
             }
             return ResponseEntity.status(409).headers(noStore()).body(body);
         }
@@ -164,15 +193,16 @@ public class RsvpController {
     }
 
     // Friendly "leave" alias for unRSVP
-    @RateLimiter(name = "rsvp")
     @Operation(
             summary = "Leave a game (unRSVP)",
+            description = "Rate limited: 4 requests per 10 seconds",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Left game; may include promotions", content = @Content(schema = @Schema(implementation = UnrsvpResponse.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Game not found")
+            @ApiResponse(responseCode = "404", description = "Game not found"),
+            @ApiResponse(responseCode = "429", description = "Too many requests")
     })
     @DeleteMapping("/{id}/leave")
     @PreAuthorize("isAuthenticated()")
@@ -184,7 +214,7 @@ public class RsvpController {
 
         // Early idempotency replay
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            var cached = rsvpIdempotencyService.getLeave(username, id, idempotencyKey);
+            var cached = idempotencyService.get("leave", username, id, idempotencyKey);
             if (cached.isPresent()) {
                 @SuppressWarnings("unchecked")
                 var body = (com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse) cached.get().body();
@@ -195,15 +225,20 @@ public class RsvpController {
         if (userId == null) {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "user not found");
         }
+        try {
+            paymentService.refundIfPreCutoff(id, userId);
+        } catch (Exception e) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "refund_failed");
+        }
 
         CapacityManager.LeaveResult result = capacityManager.handleOnLeave(id, userId);
+        CapacityManager.LeaveResult result = capacityManager.leaveAndPromote(id, userId);
         GameMeta meta = gameMeta(id);
         if (meta != null) {
             for (Long uid : result.promoted()) {
                 String promotedUsername = jdbc.queryForObject("SELECT username FROM app_user WHERE id = ?", String.class, uid);
-                notificationService.createGameNotification(promotedUsername, "system", meta.sport(), meta.location(), "promoted");
                 try {
-                    emit(id, "waitlist_promoted", java.util.Map.of("user", promotedUsername, "userId", uid));
+                    emit(id, new GameRoomEvent.WaitlistPromoted(promotedUsername, uid));
                 } catch (Exception ignore) {}
             }
             if (!result.promoted().isEmpty()) {
@@ -219,7 +254,7 @@ public class RsvpController {
 
         var body = new com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse(result.removed(), result.promoted().size());
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            rsvpIdempotencyService.putLeave(username, id, idempotencyKey, 200, body);
+            idempotencyService.put("leave", username, id, idempotencyKey, 200, body);
         }
         return ResponseEntity.ok().headers(noStore()).body(body);
     }
@@ -312,7 +347,8 @@ public class RsvpController {
                 throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Game not found");
             }
             case "cutoff" -> {
-                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP cutoff has passed");
+                return ResponseEntity.status(409).headers(noStore())
+                        .body(java.util.Map.of("error", "rsvp_closed", "message", "RSVP cutoff has passed"));
             }
         }
 
@@ -373,8 +409,6 @@ public class RsvpController {
                             VALUES (?, ?)
                             ON CONFLICT DO NOTHING
                             """, id, uid);
-                    String promotedUsername = jdbc.queryForObject("SELECT username FROM app_user WHERE id = ?", String.class, uid);
-                    notificationService.createGameNotification(promotedUsername, "system", meta.sport(), meta.location(), "promoted");
                 }
                 if (!promoted.isEmpty()) {
                     notificationService.createGameNotification(meta.owner(), "system", meta.sport(), meta.location(), "promotions");
@@ -406,12 +440,9 @@ public class RsvpController {
         if (capacity == null) return;
         Integer participants = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
         Integer holds = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
+                "SELECT COUNT(*) FROM game_holds WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
         int remaining = capacity - (participants == null ? 0 : participants) - (holds == null ? 0 : holds);
-        var data = new java.util.HashMap<String, Object>();
-        data.put("remainingSlots", Math.max(0, remaining));
-        if (hint != null) data.put("hint", hint);
-        emit(gameId, "capacity_update", data);
+        emit(gameId, new GameRoomEvent.CapacityUpdate(Math.max(0, remaining), hint));
     }
 
     private GameMeta gameMeta(Long gameId) {
@@ -441,17 +472,17 @@ public class RsvpController {
 
     private record GameMeta(String sport, String location, OffsetDateTime time, Long ownerId, String owner, Integer capacity, boolean waitlistEnabled) {}
 
-    private void emit(Long gameId, String type, java.util.Map<String, Object> data) {
+    private void emit(Long gameId, GameRoomEvent event) {
         try {
-            broker.convertAndSend("/topic/games/" + gameId,
-                    java.util.Map.of(
-                            "type", type,
-                            "data", data,
-                            "timestamp", System.currentTimeMillis()
-                    ));
+            broker.convertAndSend("/topic/games/" + gameId, event);
         } catch (Exception ignore) {
             // do not fail user flow on WS issues
         }
+    }
+
+    // Backwards-compatible helper for generic events
+    private void emit(Long gameId, String type, java.util.Map<String, Object> data) {
+        emit(gameId, new GameRoomEvent.Generic(type, data));
     }
 
 }
