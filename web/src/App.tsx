@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { getFlags, getGames, FeatureFlags } from './api'
+import AdminPanel from './AdminPanel'
 
 export default function App() {
   const [flags, setFlags] = useState<FeatureFlags | null>(null)
@@ -40,6 +41,7 @@ export default function App() {
           ))}
         </ul>
       )}
+      <AdminPanel />
     </div>
   )
 }
