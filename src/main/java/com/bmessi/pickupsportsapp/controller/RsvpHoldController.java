@@ -5,6 +5,7 @@ import com.bmessi.pickupsportsapp.dto.api.HoldResponse;
 import com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse;
 import com.bmessi.pickupsportsapp.service.game.HoldService;
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
+import com.bmessi.pickupsportsapp.service.payment.PaymentService;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,6 +36,7 @@ public class RsvpHoldController {
     private final HoldService holdService;
     private final JdbcTemplate jdbc;
     private final NotificationService notificationService;
+    private final PaymentService paymentService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
 
     @RateLimiter(name = "rsvp")
@@ -69,13 +71,15 @@ public class RsvpHoldController {
             };
         }
 
+        String paymentIntentId = paymentService.createIntentForHold(id, res.holdId(), userId);
+
         // Live event: capacity update (one slot reserved)
         try {
             emitCapacityUpdate(id, "hold_created");
         } catch (Exception ignore) {}
 
         return ResponseEntity.status(201).headers(noStore())
-                .body(new HoldResponse(res.holdId(), res.expiresAt()));
+                .body(new HoldResponse(res.holdId(), paymentIntentId, res.expiresAt()));
     }
 
     @RateLimiter(name = "rsvp")
