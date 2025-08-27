@@ -1,9 +1,10 @@
-package com.bmessi.pickupsportsapp.service;
+package unit.com.bmessi.pickupsportsapp.service;
 
 import com.bmessi.pickupsportsapp.entity.TrustedDevice;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.TrustedDeviceRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
+import com.bmessi.pickupsportsapp.service.TrustedDeviceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +25,8 @@ class TrustedDeviceServiceTest {
     @Mock TrustedDeviceRepository repo;
     @Mock UserRepository users;
 
-    @InjectMocks TrustedDeviceService svc;
+    @InjectMocks
+    TrustedDeviceService svc;
 
     private User user;
 

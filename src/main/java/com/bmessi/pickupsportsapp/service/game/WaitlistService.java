@@ -8,7 +8,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.bmessi.pickupsportsapp.exception.WaitlistServiceException;
-import com.bmessi.pickupsportsapp.service.push.PushSenderService;
+import com.bmessi.pickupsportsapp.service.notification.WaitlistPromotionEvent;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public class WaitlistService {
     private static final Logger log = LoggerFactory.getLogger(WaitlistService.class);
 
     private final JdbcTemplate jdbc;
-    private final PushSenderService push;
+    private final ApplicationEventPublisher events;
 
     @Transactional(readOnly = true)
     public int participantCount(Long gameId) {
@@ -59,6 +60,10 @@ public class WaitlistService {
 
     @Transactional
     public List<Long> promoteUpTo(Long gameId, int slots) {
+        Map<String, Object> game = jdbc.queryForMap("SELECT COALESCE(CAST(location AS TEXT), '') AS location, COALESCE(sport, '') AS sport FROM game WHERE id = ?", gameId);
+        String sport = String.valueOf(game.get("sport"));
+        String location = String.valueOf(game.get("location"));
+
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 WITH selected AS (
                     SELECT gw.game_id, gw.user_id, u.username
@@ -81,9 +86,9 @@ public class WaitlistService {
             userIds.add(uid);
             String username = (String) row.get("username");
             try {
-                push.enqueue(username, "You've been promoted from the waitlist", "", null);
+                events.publishEvent(new WaitlistPromotionEvent(username, sport, location));
             } catch (Exception e) {
-                log.warn("Failed to enqueue push for user {}", username, e);
+                log.warn("Failed to publish promotion event for {}", username, e);
             }
         }
         return userIds;

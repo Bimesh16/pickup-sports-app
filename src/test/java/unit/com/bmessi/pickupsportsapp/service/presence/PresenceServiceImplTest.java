@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.service.presence;
+package unit.com.bmessi.pickupsportsapp.service.presence;
 
+import com.bmessi.pickupsportsapp.service.presence.PresenceServiceImpl;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
