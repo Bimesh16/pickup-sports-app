@@ -1,6 +1,7 @@
 package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
+import com.bmessi.pickupsportsapp.service.payment.PaymentService;
 import com.bmessi.pickupsportsapp.service.game.CapacityManager;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
 import com.bmessi.pickupsportsapp.websocket.GameRoomEvent;
@@ -44,6 +45,7 @@ public class RsvpController {
     private final CapacityManager capacityManager;
     private final WaitlistService waitlistService;
     private final NotificationService notificationService;
+    private final PaymentService paymentService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
     private final com.bmessi.pickupsportsapp.service.idempotency.IdempotencyService idempotencyService;
 
@@ -223,7 +225,13 @@ public class RsvpController {
         if (userId == null) {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "user not found");
         }
+        try {
+            paymentService.refundIfPreCutoff(id, userId);
+        } catch (Exception e) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "refund_failed");
+        }
 
+        CapacityManager.LeaveResult result = capacityManager.handleOnLeave(id, userId);
         CapacityManager.LeaveResult result = capacityManager.leaveAndPromote(id, userId);
         GameMeta meta = gameMeta(id);
         if (meta != null) {

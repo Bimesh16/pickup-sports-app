@@ -58,15 +58,16 @@ public class HoldService {
 
         // Lock the hold row to prevent double confirm
         var hold = jdbc.query("""
+                SELECT id, expires_at, payment_intent_id FROM game_hold
                 SELECT id, expires_at FROM game_holds
                  WHERE id = ? AND game_id = ? AND user_id = ? FOR UPDATE
                 """, ps -> { ps.setLong(1, holdId); ps.setLong(2, gameId); ps.setLong(3, userId); },
-                (rs, rn) -> rs.getTimestamp("expires_at")).stream().findFirst().orElse(null);
+                (rs, rn) -> new HoldRow(rs.getTimestamp("expires_at"), rs.getString("payment_intent_id"))).stream().findFirst().orElse(null);
 
         if (hold == null) {
             return new ConfirmResult(false, "invalid_hold");
         }
-        if (hold.toInstant().isBefore(java.time.Instant.now())) {
+        if (hold.expiresAt().toInstant().isBefore(java.time.Instant.now())) {
             // Expired: delete and return 410
             jdbc.update("DELETE FROM game_holds WHERE id = ?", holdId);
             return new ConfirmResult(false, "expired");
@@ -84,10 +85,10 @@ public class HoldService {
         // Convert hold -> participant atomically under game row + hold row lock
         jdbc.update("DELETE FROM game_holds WHERE id = ?", holdId);
         jdbc.update("""
-                INSERT INTO game_participants (game_id, user_id)
-                VALUES (?, ?)
+                INSERT INTO game_participants (game_id, user_id, payment_intent_id)
+                VALUES (?, ?, ?)
                 ON CONFLICT DO NOTHING
-                """, gameId, userId);
+                """, gameId, userId, hold.paymentIntentId());
 
         return new ConfirmResult(true, "ok");
     }
@@ -121,4 +122,5 @@ public class HoldService {
     }
 
     private record GameRow(Integer capacity, OffsetDateTime rsvpCutoff, OffsetDateTime time) {}
+    private record HoldRow(java.sql.Timestamp expiresAt, String paymentIntentId) {}
 }
