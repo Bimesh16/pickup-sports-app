@@ -8,11 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 
 /**
  * Enforces capacity, waitlist, and RSVP cutoff policies for games.
- * Integrate by calling enforceOnRsvp(...) from RSVP flow and handleOnCancel(...) from unRSVP/cancel flow.
+ * Integrate by calling enforceOnRsvp(...) from RSVP flow and handleOnLeave(...) from unRSVP/cancel flow.
  */
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class CapacityManager {
     private final WaitlistService waitlist;
 
     public record Decision(boolean allowed, boolean waitlisted, String reason) {}
+    public record LeaveResult(boolean removed, List<Long> promoted) {}
 
     // Lock the game row to prevent race conditions on capacity checks
     @Transactional
@@ -79,6 +81,33 @@ public class CapacityManager {
             } catch (Exception ignore) {}
         }
         return added;
+    }
+
+    /**
+     * Handle participant leaving: remove from participants and promote from waitlist when capacity allows.
+     */
+    @Transactional
+    public LeaveResult handleOnLeave(Long gameId, Long userId) {
+        GameRow g = fetchGameForUpdate(gameId).orElse(null);
+        if (g == null) return new LeaveResult(false, List.of());
+
+        boolean removed = jdbc.update("DELETE FROM game_participants WHERE game_id = ? AND user_id = ?", gameId, userId) > 0;
+
+        List<Long> promoted = List.of();
+        if (g.capacity != null && g.waitlistEnabled) {
+            int participants = Optional.ofNullable(jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId)).orElse(0);
+            int slots = Math.max(0, g.capacity - participants);
+            if (slots > 0) {
+                promoted = waitlist.promoteUpTo(gameId, slots);
+                for (Long uid : promoted) {
+                    try {
+                        jdbc.update("INSERT INTO game_participants (game_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING", gameId, uid);
+                    } catch (Exception ignore) {}
+                }
+            }
+        }
+
+        return new LeaveResult(removed, promoted);
     }
 
     private Optional<GameRow> fetchGame(Long gameId) {
