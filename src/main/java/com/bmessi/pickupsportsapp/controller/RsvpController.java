@@ -107,6 +107,7 @@ public class RsvpController {
                 if (meta != null && meta.capacity() != null) {
                     emit(id, "capacity_update", java.util.Map.of("remainingSlots", jr.remainingSlots()));
                 }
+                emitCapacityUpdate(id, null);
             } catch (Exception ignore) {}
 
             var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(true, false, jr.reason());
@@ -128,6 +129,7 @@ public class RsvpController {
                 if (meta != null && meta.capacity() != null) {
                     emit(id, "capacity_update", java.util.Map.of("remainingSlots", jr.remainingSlots()));
                 }
+                emitCapacityUpdate(id, null);
             } catch (Exception ignore) {}
 
             var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted");
@@ -194,45 +196,28 @@ public class RsvpController {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "user not found");
         }
 
-        int removed = jdbc.update("DELETE FROM game_participants WHERE game_id = ? AND user_id = ?", id, userId);
-
+        CapacityManager.LeaveResult result = capacityManager.handleOnLeave(id, userId);
         GameMeta meta = gameMeta(id);
-        int promotedCount = 0;
-        if (meta != null && meta.capacity() != null && meta.waitlistEnabled()) {
-            int participants = countParticipants(id);
-            int slots = Math.max(0, meta.capacity() - participants);
-            if (slots > 0) {
-                List<Long> promoted = waitlistService.promoteUpTo(id, slots);
-                for (Long uid : promoted) {
-                    promotedCount += jdbc.update("""
-                            INSERT INTO game_participants (game_id, user_id)
-                            VALUES (?, ?)
-                            ON CONFLICT DO NOTHING
-                            """, id, uid);
-                    String promotedUsername = jdbc.queryForObject("SELECT username FROM app_user WHERE id = ?", String.class, uid);
-                    notificationService.createGameNotification(promotedUsername, "system", meta.sport(), meta.location(), "promoted");
-                    // Live: one user promoted
-                    try {
-                        emit(id, "waitlist_promoted", java.util.Map.of("user", promotedUsername, "userId", uid));
-                    } catch (Exception ignore) {}
-                }
-                if (!promoted.isEmpty()) {
-                    notificationService.createGameNotification(meta.owner(), "system", meta.sport(), meta.location(), "promotions");
-                }
+        if (meta != null) {
+            for (Long uid : result.promoted()) {
+                String promotedUsername = jdbc.queryForObject("SELECT username FROM app_user WHERE id = ?", String.class, uid);
+                notificationService.createGameNotification(promotedUsername, "system", meta.sport(), meta.location(), "promoted");
+                try {
+                    emit(id, "waitlist_promoted", java.util.Map.of("user", promotedUsername, "userId", uid));
+                } catch (Exception ignore) {}
+            }
+            if (!result.promoted().isEmpty()) {
+                notificationService.createGameNotification(meta.owner(), "system", meta.sport(), meta.location(), "promotions");
             }
         }
 
         // Live: participant left + capacity update
         try {
             emit(id, "participant_left", java.util.Map.of("user", username, "userId", userId));
-            var meta2 = gameMeta(id);
-            if (meta2 != null && meta2.capacity() != null) {
-                int remaining = Math.max(0, meta2.capacity() - countParticipants(id));
-                emit(id, "capacity_update", java.util.Map.of("remainingSlots", remaining));
-            }
+            emitCapacityUpdate(id, null);
         } catch (Exception ignore) {}
 
-        var body = new com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse(removed > 0, promotedCount);
+        var body = new com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse(result.removed(), result.promoted().size());
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
             rsvpIdempotencyService.putLeave(username, id, idempotencyKey, 200, body);
         }
@@ -414,6 +399,19 @@ public class RsvpController {
     private int countParticipants(Long gameId) {
         Integer n = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
         return n == null ? 0 : n;
+    }
+
+    private void emitCapacityUpdate(Long gameId, String hint) {
+        Integer capacity = jdbc.queryForObject("SELECT capacity FROM game WHERE id = ?", Integer.class, gameId);
+        if (capacity == null) return;
+        Integer participants = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
+        Integer holds = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
+        int remaining = capacity - (participants == null ? 0 : participants) - (holds == null ? 0 : holds);
+        var data = new java.util.HashMap<String, Object>();
+        data.put("remainingSlots", Math.max(0, remaining));
+        if (hint != null) data.put("hint", hint);
+        emit(gameId, "capacity_update", data);
     }
 
     private GameMeta gameMeta(Long gameId) {
