@@ -73,6 +73,8 @@ public class SecurityConfig {
                 auth.requestMatchers("/error").permitAll();
                 // public REST (login handled by controller)
                 auth.requestMatchers("/auth/**", "/users/register", "/sports", "/games", "/games/**").permitAll();
+                // admin endpoints
+                auth.requestMatchers("/admin/**").hasRole("ADMIN");
                 // everything else
                 auth.anyRequest().authenticated();
             })
