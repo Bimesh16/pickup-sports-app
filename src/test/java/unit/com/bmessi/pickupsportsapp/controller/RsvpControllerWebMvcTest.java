@@ -44,9 +44,8 @@ class RsvpControllerWebMvcTest {
     void rsvp2_success_returnsDto() throws Exception {
         Mockito.when(jdbc.queryForObject(eq("SELECT id FROM app_user WHERE username = ?"), eq(Long.class), any()))
                 .thenReturn(1L);
-        Mockito.when(capacityManager.enforceOnRsvp(eq(42L), eq(1L)))
-                .thenReturn(new CapacityManager.Decision(true, false, "ok"));
-        Mockito.when(jdbc.update(anyString(), any(), any())).thenReturn(1);
+        Mockito.when(capacityManager.join(eq(42L), eq(1L)))
+                .thenReturn(new CapacityManager.JoinResult(true, false, "ok", 0));
 
         mvc.perform(post("/games/{id}/rsvp2", 42L))
                 .andExpect(status().isOk())
