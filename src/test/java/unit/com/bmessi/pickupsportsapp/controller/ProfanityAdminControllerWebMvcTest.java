@@ -1,5 +1,6 @@
 package unit.com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.service.HostActionAuditService;
 import com.bmessi.pickupsportsapp.controller.ProfanityAdminController;
 import com.bmessi.pickupsportsapp.service.chat.ProfanityFilterService;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,9 @@ class ProfanityAdminControllerWebMvcTest {
     static class TestBeans {
         @Bean ProfanityFilterService profanity() {
             return Mockito.mock(ProfanityFilterService.class);
+        }
+        @Bean HostActionAuditService hostAuditService() {
+            return Mockito.mock(HostActionAuditService.class);
         }
     }
 
