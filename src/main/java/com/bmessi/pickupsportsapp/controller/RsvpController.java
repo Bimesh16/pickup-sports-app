@@ -46,7 +46,7 @@ public class RsvpController {
     private final WaitlistService waitlistService;
     private final NotificationService notificationService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
-    private final com.bmessi.pickupsportsapp.service.game.RsvpIdempotencyService rsvpIdempotencyService;
+    private final com.bmessi.pickupsportsapp.service.idempotency.IdempotencyService idempotencyService;
 
 
 
@@ -73,7 +73,7 @@ public class RsvpController {
 
         // Early idempotency replay
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            var cached = rsvpIdempotencyService.getJoin(username, id, idempotencyKey);
+            var cached = idempotencyService.get("join", username, id, idempotencyKey);
             if (cached.isPresent()) {
                 return ResponseEntity.status(cached.get().status())
                         .headers(noStore())
@@ -112,7 +112,7 @@ public class RsvpController {
 
             var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(true, false, jr.reason());
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 200, body);
+                idempotencyService.put("join", username, id, idempotencyKey, 200, body);
             }
             return ResponseEntity.ok().headers(noStore()).body(body);
         }
@@ -134,7 +134,7 @@ public class RsvpController {
 
             var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted");
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 202, body);
+                idempotencyService.put("join", username, id, idempotencyKey, 202, body);
             }
             return ResponseEntity.status(202).headers(noStore()).body(body);
         }
@@ -146,7 +146,7 @@ public class RsvpController {
             } catch (Exception ignore) {}
             var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted");
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 202, body);
+                idempotencyService.put("join", username, id, idempotencyKey, 202, body);
             }
             return ResponseEntity.status(202).headers(noStore()).body(body);
         }
@@ -155,7 +155,7 @@ public class RsvpController {
         if ("full".equals(jr.reason())) {
             var body = java.util.Map.of("error", "game_full", "message", "No slots available", "remainingSlots", jr.remainingSlots());
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                rsvpIdempotencyService.putJoin(username, id, idempotencyKey, 409, body);
+                idempotencyService.put("join", username, id, idempotencyKey, 409, body);
             }
             return ResponseEntity.status(409).headers(noStore()).body(body);
         }
@@ -184,7 +184,7 @@ public class RsvpController {
 
         // Early idempotency replay
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            var cached = rsvpIdempotencyService.getLeave(username, id, idempotencyKey);
+            var cached = idempotencyService.get("leave", username, id, idempotencyKey);
             if (cached.isPresent()) {
                 @SuppressWarnings("unchecked")
                 var body = (com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse) cached.get().body();
@@ -219,7 +219,7 @@ public class RsvpController {
 
         var body = new com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse(result.removed(), result.promoted().size());
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            rsvpIdempotencyService.putLeave(username, id, idempotencyKey, 200, body);
+            idempotencyService.put("leave", username, id, idempotencyKey, 200, body);
         }
         return ResponseEntity.ok().headers(noStore()).body(body);
     }
