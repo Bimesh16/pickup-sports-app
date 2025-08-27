@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.web;
+package unit.com.bmessi.pickupsportsapp.web;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

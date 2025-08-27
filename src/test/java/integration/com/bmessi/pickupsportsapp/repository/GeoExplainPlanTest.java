@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.repository;
+package integration.com.bmessi.pickupsportsapp.repository;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;

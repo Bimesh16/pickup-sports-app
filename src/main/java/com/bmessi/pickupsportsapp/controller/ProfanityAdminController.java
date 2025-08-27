@@ -1,5 +1,6 @@
 package com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.service.HostActionAuditService;
 import com.bmessi.pickupsportsapp.service.chat.ProfanityFilterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class ProfanityAdminController {
 
     private final ProfanityFilterService profanity;
+    private final HostActionAuditService hostAuditService;
 
     @GetMapping("/words")
     @PreAuthorize("hasRole('ADMIN')")
@@ -27,22 +29,28 @@ public class ProfanityAdminController {
 
     @PutMapping("/words")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.ReplaceResultResponse> replaceAll(@RequestBody java.util.List<String> words) {
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.ReplaceResultResponse> replaceAll(@RequestBody java.util.List<String> words, java.security.Principal principal) {
         profanity.replaceAllWords(words);
+        String actor = principal != null ? principal.getName() : "admin";
+        try { hostAuditService.record(actor, "profanity_replace_all", "profanity", null, String.join(",", words)); } catch (Exception ignore) {}
         return ResponseEntity.ok().headers(noStore()).body(new com.bmessi.pickupsportsapp.dto.api.ReplaceResultResponse("Replaced", profanity.listWords().size()));
     }
 
     @PostMapping("/words/{word}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.MessageResponse> addWord(@PathVariable String word) {
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.MessageResponse> addWord(@PathVariable String word, java.security.Principal principal) {
         profanity.addWord(word);
+        String actor = principal != null ? principal.getName() : "admin";
+        try { hostAuditService.record(actor, "profanity_add_word", "profanity", null, word); } catch (Exception ignore) {}
         return ResponseEntity.ok().headers(noStore()).body(new com.bmessi.pickupsportsapp.dto.api.MessageResponse("Added"));
     }
 
     @DeleteMapping("/words/{word}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.MessageResponse> removeWord(@PathVariable String word) {
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.MessageResponse> removeWord(@PathVariable String word, java.security.Principal principal) {
         profanity.removeWord(word);
+        String actor = principal != null ? principal.getName() : "admin";
+        try { hostAuditService.record(actor, "profanity_remove_word", "profanity", null, word); } catch (Exception ignore) {}
         return ResponseEntity.ok().headers(noStore()).body(new com.bmessi.pickupsportsapp.dto.api.MessageResponse("Removed"));
     }
 
@@ -58,9 +66,11 @@ public class ProfanityAdminController {
 
     @PutMapping("/config")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.ProfanityConfigResponse> updateConfig(@RequestBody UpdateConfig req) {
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.ProfanityConfigResponse> updateConfig(@RequestBody UpdateConfig req, java.security.Principal principal) {
         profanity.setEnabled(req.enabled());
         profanity.setReject(req.reject());
+        String actor = principal != null ? principal.getName() : "admin";
+        try { hostAuditService.record(actor, "profanity_update_config", "profanity", null, "enabled=" + req.enabled() + ",reject=" + req.reject()); } catch (Exception ignore) {}
         return ResponseEntity.ok().headers(noStore()).body(new com.bmessi.pickupsportsapp.dto.api.ProfanityConfigResponse(
                 profanity.isEnabled(), profanity.shouldReject()
         ));
@@ -68,8 +78,10 @@ public class ProfanityAdminController {
 
     @PostMapping("/reload")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.ReplaceResultResponse> reload() {
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.ReplaceResultResponse> reload(java.security.Principal principal) {
         profanity.reloadFromFile();
+        String actor = principal != null ? principal.getName() : "admin";
+        try { hostAuditService.record(actor, "profanity_reload", "profanity", null, null); } catch (Exception ignore) {}
         return ResponseEntity.ok().headers(noStore()).body(new com.bmessi.pickupsportsapp.dto.api.ReplaceResultResponse(
                 "Reloaded from file", profanity.listWords().size()
         ));

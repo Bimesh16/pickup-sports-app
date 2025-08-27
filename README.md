@@ -19,14 +19,18 @@ This repository contains the backend (Java 17, Spring Boot) with WebSocket chat,
 3. Verify:
    - Health: http://localhost:8081/actuator/health
    - Swagger: http://localhost:8081/swagger-ui/index.html
-   - SockJS info: http://localhost:8081/ws/info
-   - Mail UI: http://localhost:8026
+- SockJS info: http://localhost:8081/ws/info
+- Mail UI: http://localhost:8026
 
 4. Chat test page:
-   - http://localhost:8081/chat-test.html
-   - Paste a fresh JWT from POST /auth/login
-   - Use a real Game ID (from POST /games response)
-   - Connect, then Send
+- http://localhost:8081/chat-test.html
+- Paste a fresh JWT from POST /auth/login
+- Use a real Game ID (from POST /games response)
+- Connect, then Send
+
+## Observability
+
+Grafana dashboards for RSVP and notification metrics are published under [`docs/ops`](docs/ops). Import `rsvp-metrics.json` into Grafana to visualize joins, holds, promotions, and error rates.
 
 ## Postman collection
 
