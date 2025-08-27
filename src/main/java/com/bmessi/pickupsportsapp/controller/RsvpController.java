@@ -406,7 +406,7 @@ public class RsvpController {
         if (capacity == null) return;
         Integer participants = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
         Integer holds = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
+                "SELECT COUNT(*) FROM game_holds WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
         int remaining = capacity - (participants == null ? 0 : participants) - (holds == null ? 0 : holds);
         var data = new java.util.HashMap<String, Object>();
         data.put("remainingSlots", Math.max(0, remaining));
