@@ -1,9 +1,10 @@
-package com.bmessi.pickupsportsapp.service;
+package unit.com.bmessi.pickupsportsapp.service;
 
 import com.bmessi.pickupsportsapp.entity.MfaRecoveryCode;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.MfaRecoveryCodeRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
+import com.bmessi.pickupsportsapp.service.MfaRecoveryService;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,8 @@ class MfaRecoveryServiceTest {
     @Mock UserRepository users;
     @Mock MeterRegistry meter;
 
-    @InjectMocks MfaRecoveryService svc;
+    @InjectMocks
+    MfaRecoveryService svc;
 
     private User user;
 

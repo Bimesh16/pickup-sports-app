@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.service.chat;
+package unit.com.bmessi.pickupsportsapp.service.chat;
 
 import com.bmessi.pickupsportsapp.dto.chat.ChatMessageDTO;
 import com.bmessi.pickupsportsapp.entity.chat.ChatMessage;
@@ -6,6 +6,9 @@ import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.repository.ChatMessageRepository;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.security.RedisRateLimiterService;
+import com.bmessi.pickupsportsapp.service.chat.ChatModerationService;
+import com.bmessi.pickupsportsapp.service.chat.ChatServiceImpl;
+import com.bmessi.pickupsportsapp.service.chat.ProfanityFilterService;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,12 +29,15 @@ class ChatServiceImplTest {
 
     @Mock ChatMessageRepository chatRepo;
     @Mock GameRepository gameRepo;
-    @Mock ChatModerationService moderationService;
-    @Mock ProfanityFilterService profanityFilter;
+    @Mock
+    ChatModerationService moderationService;
+    @Mock
+    ProfanityFilterService profanityFilter;
     @Mock MeterRegistry meterRegistry;
     @Mock RedisRateLimiterService rateLimiter;
 
-    @InjectMocks ChatServiceImpl service;
+    @InjectMocks
+    ChatServiceImpl service;
 
     @BeforeEach
     void setUp() {

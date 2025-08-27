@@ -1,0 +1,25 @@
+{
+  "id": null,
+  "title": "Idempotency",
+  "schemaVersion": 16,
+  "version": 0,
+  "panels": [
+    {
+      "type": "graph",
+      "title": "RSVP Idempotency Hits/Misses",
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum by (result) (rate(idempotency_rsvp_total{operation=\"hold\"}[5m]))", "legendFormat": "hold {{result}}"},
+        {"expr": "sum by (result) (rate(idempotency_rsvp_total{operation=\"confirm\"}[5m]))", "legendFormat": "confirm {{result}}"}
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "General Idempotency Hits/Misses",
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum by (result) (rate(idempotency_general_total[5m]))", "legendFormat": "{{result}}"}
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@ package com.bmessi.pickupsportsapp.controller;
 import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.service.HostActionAuditService;
+import com.bmessi.pickupsportsapp.service.game.HostManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,8 @@ public class GameAdminController {
     private final GameRepository games;
     private final com.bmessi.pickupsportsapp.service.notification.NotificationService notificationService;
     private final HostActionAuditService hostAuditService;
+    private final com.bmessi.pickupsportsapp.service.AdminAuditService adminAuditService;
+    private final HostManagementService hostManagementService;
     private final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GameAdminController.class);
 
     @PutMapping("/{id}/lock")
@@ -32,6 +35,48 @@ public class GameAdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> takedown(@PathVariable Long id, java.security.Principal principal) {
         return setStatus(id, "CANCELLED", principal);
+    }
+
+    @PostMapping("/{id}/waitlist/{userId}/promote")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> promoteFromWaitlist(@PathVariable Long id, @PathVariable Long userId, java.security.Principal principal) {
+        hostManagementService.promoteFromWaitlist(id, userId, principal != null ? principal.getName() : null);
+        return ResponseEntity.ok().headers(noStore()).body(Map.of("status", "promoted"));
+    }
+
+    @DeleteMapping("/{id}/participants/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> kickParticipant(@PathVariable Long id, @PathVariable Long userId, java.security.Principal principal) {
+        hostManagementService.kickParticipant(id, userId, principal != null ? principal.getName() : null);
+        return ResponseEntity.ok().headers(noStore()).body(Map.of("status", "kicked"));
+    }
+
+    @PostMapping("/{id}/ban/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> banParticipant(@PathVariable Long id, @PathVariable Long userId, java.security.Principal principal) {
+        hostManagementService.banParticipant(id, userId, principal != null ? principal.getName() : null);
+        return ResponseEntity.ok().headers(noStore()).body(Map.of("status", "banned"));
+    }
+
+    @PostMapping("/{id}/cohosts/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> addCohost(@PathVariable Long id, @PathVariable Long userId, java.security.Principal principal) {
+        hostManagementService.addCoHost(id, userId, principal != null ? principal.getName() : null);
+        return ResponseEntity.ok().headers(noStore()).body(Map.of("status", "added"));
+    }
+
+    @DeleteMapping("/{id}/cohosts/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> removeCohost(@PathVariable Long id, @PathVariable Long userId, java.security.Principal principal) {
+        hostManagementService.removeCoHost(id, userId, principal != null ? principal.getName() : null);
+        return ResponseEntity.ok().headers(noStore()).body(Map.of("status", "removed"));
+    }
+
+    @PostMapping("/{id}/invite-token")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> generateInviteToken(@PathVariable Long id, java.security.Principal principal) {
+        String token = hostManagementService.generateInviteToken(id, principal != null ? principal.getName() : null);
+        return ResponseEntity.ok().headers(noStore()).body(Map.of("token", token));
     }
 
     private ResponseEntity<?> setStatus(Long id, String status, java.security.Principal principal) {
