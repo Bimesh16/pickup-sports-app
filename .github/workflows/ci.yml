@@ -32,19 +32,14 @@ jobs:
           java-version: '17'
       - name: Build (skip tests; smoke runs against compose)
         run: ./mvnw -q -DskipTests clean package
-      - name: Start stack (dev compose)
+      - name: Dev bootstrap
+        run: ./scripts/dev-bootstrap.sh
+
+      - name: Quickstart smoke test
+        run: USER=jane@example.com PASS=password ./scripts/quickstart.sh
+
+      - name: Check frontend
         run: |
-          docker compose -f docker-compose.dev.yml up -d --build
-          echo "Waiting for app readiness..."
-          for i in {1..60}; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health/readiness || true)
-            if [ "$code" = "200" ]; then echo "Backend ready!"; break; fi
-            sleep 2
-          done
-          echo "Checking backend endpoints..."
-          curl -s http://localhost:8080/actuator/health || true
-          curl -s http://localhost:8080/games || true
-          echo "Checking frontend index..."
           for i in {1..30}; do
             code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 || true)
             if [ "$code" = "200" ]; then echo "Frontend ready!"; break; fi
