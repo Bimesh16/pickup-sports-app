@@ -2,6 +2,7 @@ package com.bmessi.pickupsportsapp.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -19,12 +20,22 @@ public class IdempotencyService {
             .maximumSize(10_000)
             .build();
 
+    private final MeterRegistry meterRegistry;
+
+    public IdempotencyService(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
+
     /**
      * Returns the stored entity id if this user+key pair was used before.
      */
     public Optional<Long> get(String username, String key) {
         String k = compound(username, key);
-        return Optional.ofNullable(cache.getIfPresent(k));
+        Long existing = cache.getIfPresent(k);
+        try {
+            meterRegistry.counter("idempotency.general", "result", existing != null ? "hit" : "miss").increment();
+        } catch (Exception ignore) {}
+        return Optional.ofNullable(existing);
     }
 
     /**
