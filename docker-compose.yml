@@ -31,12 +31,10 @@ services:
       - db
       - mailhog
       - redis
-    env_file:
-      - .env.local
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/soccer_app}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-yourpassword}
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-none}
 
       # Mail (acts as health source and for welcome emails)
@@ -48,8 +46,8 @@ services:
       SPRING_DATA_REDIS_PORT: ${SPRING_DATA_REDIS_PORT:-6379}
       CHAT_REDIS_ENABLED: ${CHAT_REDIS_ENABLED:-false}
 
-      # JWT secret (REQUIRED; no default for safety)
-      SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET}
+      # JWT secret (REQUIRED; default only for local dev; override in prod)
+      SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET:-dev-insecure-secret-change-me}
 
       # Swagger in dev
       SPRINGDOC_SWAGGER_UI_ENABLED: ${SPRINGDOC_SWAGGER_UI_ENABLED:-true}

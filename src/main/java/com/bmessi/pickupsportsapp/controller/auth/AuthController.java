@@ -60,7 +60,7 @@ public class AuthController {
     @RateLimiter(name = "auth")
     public ResponseEntity<?> login(
             @Valid
-            @RequestBody(description = "Login credentials") LoginRequest request,
+            @org.springframework.web.bind.annotation.RequestBody LoginRequest request,
             @Parameter(hidden = true) jakarta.servlet.http.HttpServletRequest httpRequest) {
         try {
             log.debug("Login attempt for user: {}", request.username());
@@ -178,7 +178,7 @@ public class AuthController {
     @RateLimiter(name = "auth")
     public ResponseEntity<?> refresh(
             @Valid
-            @RequestBody(description = "Refresh token and optional nonce") RefreshRequest request,
+            @org.springframework.web.bind.annotation.RequestBody RefreshRequest request,
             @Parameter(description = "Refresh token from cookie")
             @CookieValue(name = "refreshToken", required = false) String refreshCookie,
             @Parameter(hidden = true) jakarta.servlet.http.HttpServletRequest httpRequest) {
@@ -250,7 +250,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout(
             @Valid
-            @RequestBody(description = "Refresh token to revoke") RefreshRequest request) {
+            @org.springframework.web.bind.annotation.RequestBody RefreshRequest request) {
         try {
             log.debug("Logout attempt");
             authService.logout(request.refreshToken());

@@ -1,7 +1,6 @@
 services:
   db:
     image: postgres:15
-    container_name: ps-postgres
     environment:
       POSTGRES_DB: soccer_app
       POSTGRES_USER: postgres
@@ -18,7 +17,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: ps-redis
     command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -28,11 +26,9 @@ services:
 
   mailpit:
     image: axllent/mailpit:latest
-    container_name: ps-mailpit
 
   rabbitmq:
     image: rabbitmq:3.13-management
-    container_name: ps-rabbitmq
     ports:
       - "5672:5672"    # AMQP
       - "15672:15672"  # Management UI
@@ -43,7 +39,6 @@ services:
       retries: 10
 
   app:
-    container_name: pickupsports-app
     build:
       context: .
       dockerfile: Dockerfile
@@ -98,7 +93,6 @@ services:
       - media_data:/data/media
 
   web:
-    container_name: ps-web
     build:
       context: ./web
       dockerfile: Dockerfile

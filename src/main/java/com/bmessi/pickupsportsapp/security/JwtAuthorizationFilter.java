@@ -94,7 +94,15 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         try {
             var claims = tokenService.parse(token).getPayload();
             String jti = claims.getId();
-            if (jti != null && revokedTokenRepository.existsById(jti)) {
+            boolean revoked = false;
+            if (jti != null) {
+                try {
+                    revoked = revokedTokenRepository.existsById(jti);
+                } catch (Exception ex) {
+                    log.warn("Skipping revoked-token check due to repository error: {}", ex.getMessage());
+                }
+            }
+            if (revoked) {
                 SecurityContextHolder.clearContext();
             } else {
                 String username = claims.getSubject();
