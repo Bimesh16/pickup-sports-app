@@ -30,10 +30,15 @@ This repository contains the backend (Java 17, Spring Boot) with WebSocket chat,
 
 ## Postman collection
 
-Import the provided JSON (or the one generated from Swagger) and set:
+Import the [provided collection](docs/postman/pickup-sports-api.postman_collection.json) (or the one generated from Swagger) and set:
 - baseUrl: http://localhost:8081
 - username/password
 - gameId, userId as created.
+
+## Guides
+
+- [How to RSVP](docs/guides/how-to-rsvp.md)
+- [Hold & Pay](docs/guides/hold-and-pay.md)
 
 ## Testing
 
