@@ -1,10 +1,33 @@
 import React, { useEffect, useState } from 'react'
+import { getFlags, getGames, joinGame, FeatureFlags } from './api'
 import { getFlags, getGames, FeatureFlags } from './api'
+import AdminPanel from './AdminPanel'
 
 export default function App() {
   const [flags, setFlags] = useState<FeatureFlags | null>(null)
   const [games, setGames] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const handleJoin = async (id: number) => {
+    try {
+      await joinGame(id)
+      alert('Joined game')
+    } catch (e: any) {
+      if (e.message === 'captcha_required') {
+        const token = window.prompt('CAPTCHA required. Enter token:')
+        if (token) {
+          try {
+            await joinGame(id, token)
+            alert('Joined game')
+          } catch (err: any) {
+            alert(err.message || 'Join failed')
+          }
+        }
+      } else {
+        alert(e.message || 'Join failed')
+      }
+    }
+  }
 
   useEffect(() => {
     ;(async () => {
@@ -35,11 +58,13 @@ export default function App() {
         <ul>
           {games.content.map((g: any) => (
             <li key={g.id}>
-              <strong>{g.sport}</strong> at {g.location} • {g.time}
+              <strong>{g.sport}</strong> at {g.location} • {g.time}{' '}
+              <button onClick={() => handleJoin(g.id)}>Join</button>
             </li>
           ))}
         </ul>
       )}
+      <AdminPanel />
     </div>
   )
 }

@@ -1,0 +1,11 @@
+groups:
+  - name: rsvp-alerts
+    rules:
+      - alert: UnusualRsvpSpike
+        expr: increase(rsvp_events_total[1m]) > 50
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unusual RSVP spike detected"
+          description: "More than 50 RSVPs per minute"

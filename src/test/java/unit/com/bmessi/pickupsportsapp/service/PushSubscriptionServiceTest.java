@@ -1,9 +1,10 @@
-package com.bmessi.pickupsportsapp.service;
+package unit.com.bmessi.pickupsportsapp.service;
 
 import com.bmessi.pickupsportsapp.entity.PushSubscription;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.PushSubscriptionRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
+import com.bmessi.pickupsportsapp.service.PushSubscriptionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;

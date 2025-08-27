@@ -24,13 +24,33 @@ Seeded users:
 
 - `jane@example.com` / `password`
 - `john@example.com` / `password`
+3. Verify:
+   - Health: http://localhost:8081/actuator/health
+   - Swagger: http://localhost:8081/swagger-ui/index.html
+- SockJS info: http://localhost:8081/ws/info
+- Mail UI: http://localhost:8026
+
+4. Chat test page:
+- http://localhost:8081/chat-test.html
+- Paste a fresh JWT from POST /auth/login
+- Use a real Game ID (from POST /games response)
+- Connect, then Send
+
+## Observability
+
+Grafana dashboards for RSVP and notification metrics are published under [`docs/ops`](docs/ops). Import `rsvp-metrics.json` into Grafana to visualize joins, holds, promotions, and error rates.
 
 ## Postman collection
 
-Import the provided JSON (or the one generated from Swagger) and set:
+Import the [provided collection](docs/postman/pickup-sports-api.postman_collection.json) (or the one generated from Swagger) and set:
 - baseUrl: http://localhost:8081
 - username/password
 - gameId, userId as created.
+
+## Guides
+
+- [How to RSVP](docs/guides/how-to-rsvp.md)
+- [Hold & Pay](docs/guides/hold-and-pay.md)
 
 ## Testing
 
