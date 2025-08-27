@@ -4,13 +4,12 @@ import com.bmessi.pickupsportsapp.dto.api.HoldConfirmRequest;
 import com.bmessi.pickupsportsapp.dto.api.HoldResponse;
 import com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse;
 import com.bmessi.pickupsportsapp.service.game.HoldService;
+import com.bmessi.pickupsportsapp.service.game.RsvpIdempotencyService;
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
-import com.bmessi.pickupsportsapp.websocket.GameRoomEvent;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -38,7 +37,7 @@ public class RsvpHoldController {
     private final JdbcTemplate jdbc;
     private final NotificationService notificationService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
-    private final com.bmessi.pickupsportsapp.service.idempotency.IdempotencyService idempotencyService;
+    private final RsvpIdempotencyService rsvpIdempotencyService;
 
     @RateLimiter(name = "rsvp")
     @Operation(summary = "Create a temporary hold for a game slot", security = @SecurityRequirement(name = "bearerAuth"))
@@ -56,11 +55,12 @@ public class RsvpHoldController {
                                   Principal principal,
                                   @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
         String username = principal.getName();
-
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            var cached = idempotencyService.get("hold", username, id, idempotencyKey);
+            var cached = rsvpIdempotencyService.getHold(username, id, idempotencyKey);
             if (cached.isPresent()) {
-                return ResponseEntity.status(cached.get().status()).headers(noStore()).body(cached.get().body());
+                return ResponseEntity.status(cached.get().status())
+                        .headers(noStore())
+                        .body(cached.get().body());
             }
         }
 
@@ -71,19 +71,30 @@ public class RsvpHoldController {
 
         var res = holdService.createHold(id, userId, ttlSeconds);
         if (!res.created()) {
-            ResponseEntity<?> resp = switch (res.reason()) {
+            return switch (res.reason()) {
                 case "not_found" -> ResponseEntity.status(404).headers(noStore()).build();
-                case "cutoff"    -> ResponseEntity.status(409).headers(noStore())
-                        .body(Map.of("error", "rsvp_closed", "message", "RSVP cutoff has passed"));
-                case "full"      -> ResponseEntity.status(409).headers(noStore())
-                        .body(Map.of("error", "game_full", "message", "No slots available"));
-                default          -> ResponseEntity.status(500).headers(noStore())
-                        .body(Map.of("error", "internal", "message", "Failed to create hold"));
+                case "cutoff" -> {
+                    var body = Map.of("error", "rsvp_closed", "message", "RSVP cutoff has passed");
+                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                        rsvpIdempotencyService.putHold(username, id, idempotencyKey, 409, body);
+                    }
+                    yield ResponseEntity.status(409).headers(noStore()).body(body);
+                }
+                case "full" -> {
+                    var body = Map.of("error", "game_full", "message", "No slots available");
+                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                        rsvpIdempotencyService.putHold(username, id, idempotencyKey, 409, body);
+                    }
+                    yield ResponseEntity.status(409).headers(noStore()).body(body);
+                }
+                default -> {
+                    var body = Map.of("error", "internal", "message", "Failed to create hold");
+                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                        rsvpIdempotencyService.putHold(username, id, idempotencyKey, 500, body);
+                    }
+                    yield ResponseEntity.status(500).headers(noStore()).body(body);
+                }
             };
-            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                idempotencyService.put("hold", username, id, idempotencyKey, resp.getStatusCodeValue(), resp.getBody());
-            }
-            return resp;
         }
 
         // Live event: capacity update (one slot reserved)
@@ -93,35 +104,19 @@ public class RsvpHoldController {
 
         var body = new HoldResponse(res.holdId(), res.expiresAt());
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            idempotencyService.put("hold", username, id, idempotencyKey, 201, body);
+            rsvpIdempotencyService.putHold(username, id, idempotencyKey, 201, body);
         }
-        return ResponseEntity.status(201).headers(noStore())
-                .body(body);
+        return ResponseEntity.status(201).headers(noStore()).body(body);
     }
 
     @RateLimiter(name = "rsvp")
     @Operation(summary = "Confirm a previously created hold", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Joined",
-                    content = @Content(schema = @Schema(implementation = RsvpResultResponse.class),
-                            examples = @ExampleObject(value = "{\n  \"joined\": true,\n  \"waitlisted\": false,\n  \"message\": \"ok\"\n}"))
-            ),
+            @ApiResponse(responseCode = "200", description = "Joined", content = @Content(schema = @Schema(implementation = RsvpResultResponse.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Game/hold not found"),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Game full",
-                    content = @Content(schema = @Schema(implementation = Map.class),
-                            examples = @ExampleObject(value = "{\n  \"error\": \"game_full\",\n  \"message\": \"No slots available\"\n}"))
-            ),
-            @ApiResponse(
-                    responseCode = "410",
-                    description = "Hold expired",
-                    content = @Content(schema = @Schema(implementation = Map.class),
-                            examples = @ExampleObject(value = "{\n  \"error\": \"hold_expired\",\n  \"message\": \"Hold expired\"\n}"))
-            )
+            @ApiResponse(responseCode = "409", description = "Game full"),
+            @ApiResponse(responseCode = "410", description = "Hold expired")
     })
     @PostMapping("/{id}/confirm")
     @PreAuthorize("isAuthenticated()")
@@ -131,11 +126,12 @@ public class RsvpHoldController {
                                      Principal principal,
                                      @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
         String username = principal.getName();
-
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            var cached = idempotencyService.get("confirm", username, id, idempotencyKey);
+            var cached = rsvpIdempotencyService.getConfirm(username, id, request.holdId(), idempotencyKey);
             if (cached.isPresent()) {
-                return ResponseEntity.status(cached.get().status()).headers(noStore()).body(cached.get().body());
+                return ResponseEntity.status(cached.get().status())
+                        .headers(noStore())
+                        .body(cached.get().body());
             }
         }
 
@@ -146,24 +142,35 @@ public class RsvpHoldController {
 
         var res = holdService.confirmHold(id, request.holdId(), userId);
         if (!res.joined()) {
-            ResponseEntity<?> resp = switch (res.reason()) {
+            return switch (res.reason()) {
                 case "not_found", "invalid_hold" -> ResponseEntity.status(404).headers(noStore()).build();
-                case "expired" -> ResponseEntity.status(410).headers(noStore())
-                        .body(Map.of("error", "hold_expired", "message", "Hold expired"));
-                case "full" -> ResponseEntity.status(409).headers(noStore())
-                        .body(Map.of("error", "game_full", "message", "No slots available"));
-                default -> ResponseEntity.status(500).headers(noStore())
-                        .body(Map.of("error", "internal", "message", "Failed to confirm hold"));
+                case "expired" -> {
+                    var body = Map.of("error", "hold_expired", "message", "Hold expired");
+                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                        rsvpIdempotencyService.putConfirm(username, id, request.holdId(), idempotencyKey, 410, body);
+                    }
+                    yield ResponseEntity.status(410).headers(noStore()).body(body);
+                }
+                case "full" -> {
+                    var body = Map.of("error", "game_full", "message", "No slots available");
+                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                        rsvpIdempotencyService.putConfirm(username, id, request.holdId(), idempotencyKey, 409, body);
+                    }
+                    yield ResponseEntity.status(409).headers(noStore()).body(body);
+                }
+                default -> {
+                    var body = Map.of("error", "internal", "message", "Failed to confirm hold");
+                    if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                        rsvpIdempotencyService.putConfirm(username, id, request.holdId(), idempotencyKey, 500, body);
+                    }
+                    yield ResponseEntity.status(500).headers(noStore()).body(body);
+                }
             };
-            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-                idempotencyService.put("confirm", username, id, idempotencyKey, resp.getStatusCodeValue(), resp.getBody());
-            }
-            return resp;
         }
 
         // Live event: participant joined + capacity update
         try {
-            emit(id, new GameRoomEvent.ParticipantJoined(username, userId));
+            emit(id, "participant_joined", Map.of("user", username, "userId", userId));
             emitCapacityUpdate(id, "hold_confirmed");
         } catch (Exception ignore) {}
 
@@ -176,10 +183,9 @@ public class RsvpHoldController {
 
         var body = new RsvpResultResponse(true, false, "ok");
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            idempotencyService.put("confirm", username, id, idempotencyKey, 200, body);
+            rsvpIdempotencyService.putConfirm(username, id, request.holdId(), idempotencyKey, 200, body);
         }
-        return ResponseEntity.ok().headers(noStore())
-                .body(body);
+        return ResponseEntity.ok().headers(noStore()).body(body);
     }
 
     private Long findUserId(String username) {
@@ -195,14 +201,18 @@ public class RsvpHoldController {
         if (capacity == null) return;
         Integer participants = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
         Integer holds = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM game_holds WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
+                "SELECT COUNT(*) FROM game_hold WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
         int remaining = capacity - (participants == null ? 0 : participants) - (holds == null ? 0 : holds);
-        emit(gameId, new GameRoomEvent.CapacityUpdate(Math.max(0, remaining), hint));
+        var data = new java.util.HashMap<String, Object>();
+        data.put("remainingSlots", Math.max(0, remaining));
+        if (hint != null) data.put("hint", hint);
+        emit(gameId, "capacity_update", data);
     }
 
-    private void emit(Long gameId, GameRoomEvent event) {
+    private void emit(Long gameId, String type, Map<String, Object> data) {
         try {
-            broker.convertAndSend("/topic/games/" + gameId, event);
+            broker.convertAndSend("/topic/games/" + gameId,
+                    Map.of("type", type, "data", data, "timestamp", System.currentTimeMillis()));
         } catch (Exception ignore) {}
     }
 }
