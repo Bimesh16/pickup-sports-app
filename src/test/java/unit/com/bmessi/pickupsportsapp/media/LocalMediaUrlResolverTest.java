@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.media;
+package unit.com.bmessi.pickupsportsapp.media;
 
+import com.bmessi.pickupsportsapp.media.LocalMediaUrlResolver;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

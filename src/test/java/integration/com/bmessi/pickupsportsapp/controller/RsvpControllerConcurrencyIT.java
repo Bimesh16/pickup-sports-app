@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.controller;
+package integration.com.bmessi.pickupsportsapp.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
