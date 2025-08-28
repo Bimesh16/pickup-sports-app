@@ -362,7 +362,7 @@ public class GameController {
         Game game = Game.builder()
                 .sport(canonicalSport)
                 .location(request.location())
-                .time(request.time().toInstant())
+                .time(request.time())
                 .skillLevel(canonicalSkill)
                 .latitude(request.latitude())
                 .longitude(request.longitude())
@@ -1051,7 +1051,7 @@ public class GameController {
         return Game.builder()
                 .sport(canonicalSport)
                 .location(request.location())
-                .time(request.time().toInstant())
+                .time(request.time())
                 .skillLevel(request.skillLevel())
                 .latitude(request.latitude())
                 .longitude(request.longitude())
@@ -1084,7 +1084,7 @@ public class GameController {
         }
 
         if (request.time() != null) {
-            game.setTime(request.time().toInstant());
+            game.setTime(request.time());
         }
 
         if (request.skillLevel() != null) {

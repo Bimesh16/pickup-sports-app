@@ -26,6 +26,15 @@ public class PaymentService {
     }
 
     /**
+     * Creates a new payment intent for venue booking and persists the identifier.
+     */
+    public String createIntentForVenueBooking(Long bookingId, Long venueId, Long userId) {
+        String intentId = "pi_" + UUID.randomUUID();
+        jdbc.update("UPDATE venue_bookings SET payment_intent_id = ? WHERE id = ?", intentId, bookingId);
+        return intentId;
+    }
+
+    /**
      * Confirms a payment intent and moves the user into the game participants.
      */
     public void confirmPayment(String paymentIntentId) {

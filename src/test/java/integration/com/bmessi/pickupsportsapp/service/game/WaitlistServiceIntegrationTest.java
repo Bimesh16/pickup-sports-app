@@ -14,7 +14,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,7 +54,7 @@ class WaitlistServiceIntegrationTest {
         User owner = userRepository.save(User.builder().username("owner@ex.com").password("pw").build());
         User u1 = userRepository.save(User.builder().username("a@ex.com").password("pw").build());
         User u2 = userRepository.save(User.builder().username("b@ex.com").password("pw").build());
-        Game game = gameRepository.save(Game.builder().sport("Soccer").location("Park").time(Instant.now()).user(owner).build());
+        Game game = gameRepository.save(Game.builder().sport("Soccer").location("Park").time(OffsetDateTime.now(ZoneOffset.UTC)).user(owner).build());
 
         assertEquals(0, waitlistService.participantCount(game.getId()));
         assertTrue(waitlistService.addToWaitlist(game.getId(), u1.getId()));

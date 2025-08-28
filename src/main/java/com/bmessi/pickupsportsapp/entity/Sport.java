@@ -1,45 +1,62 @@
 package com.bmessi.pickupsportsapp.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
+/**
+ * Sport entity representing different sports available in the system.
+ */
 @Entity
-@Table(name = "sport", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_sport_name", columnNames = "name")
-})
-@Getter
-@Setter
+@Table(name = "sports")
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Sport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false) // stored lowercased
+    @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
 
-    @Column(name = "display_name", nullable = false)
+    @Column(name = "display_name", nullable = false, length = 100)
     private String displayName;
 
-    @Builder.Default
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
+    @Column(name = "description", length = 500)
+    private String description;
 
-    @PrePersist
-    public void prePersist() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
-        if (name != null) {
-            name = name.trim().toLowerCase();
-        }
-        if (displayName != null) {
-            displayName = displayName.trim();
-        }
-    }
+    @Column(name = "category", length = 50)
+    private String category; // e.g., "Team Sports", "Individual Sports", "Racket Sports"
+
+    @Column(name = "min_players")
+    private Integer minPlayers;
+
+    @Column(name = "max_players")
+    private Integer maxPlayers;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
+
+    @Column(name = "icon_url", length = 255)
+    private String iconUrl;
+
+    @Column(name = "rules_summary", length = 1000)
+    private String rulesSummary;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 }

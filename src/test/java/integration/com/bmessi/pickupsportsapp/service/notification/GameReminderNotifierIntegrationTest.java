@@ -18,7 +18,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ class GameReminderNotifierIntegrationTest {
     void sendsReminders() {
         User owner = userRepository.save(User.builder().username("owner@ex.com").password("pw").build());
         User p1 = userRepository.save(User.builder().username("p1@ex.com").password("pw").build());
-        Instant time = Instant.now().plus(24, ChronoUnit.HOURS).plusSeconds(60);
+        OffsetDateTime time = OffsetDateTime.now(ZoneOffset.UTC).plus(24, ChronoUnit.HOURS).plusSeconds(60);
         Game game = gameRepository.save(Game.builder().sport("Basketball").location("Gym").time(time).user(owner).build());
         jdbc.update("INSERT INTO game_participants (game_id, user_id) VALUES (?, ?)", game.getId(), p1.getId());
 

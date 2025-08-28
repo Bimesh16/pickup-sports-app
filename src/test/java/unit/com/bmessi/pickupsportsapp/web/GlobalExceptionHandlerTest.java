@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(controllers = GlobalExceptionHandlerTest.TestErrorController.class)
-@Import(com.bmessi.pickupsportsapp.advice.GlobalExceptionHandler.class)
+@Import(com.bmessi.pickupsportsapp.exception.GlobalExceptionHandler.class)
 @Quarantined
 class GlobalExceptionHandlerTest {
 

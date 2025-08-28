@@ -47,6 +47,8 @@ export async function login(username: string, password: string, captchaToken?: s
     throw new Error(data.message || 'Too many requests')
   }
   if (!res.ok) throw new Error('Login failed')
+  return res.json()
+}
 // Session management
 export interface Session {
   id: number
@@ -129,6 +131,7 @@ export async function generateInviteToken(gameId: number): Promise<string> {
   if (!res.ok) throw new Error('Failed to generate token')
   const data = await res.json()
   return data.token
+}
 export async function getGame(id: number): Promise<any> {
   const res = await fetch(`/games/${id}`)
   if (!res.ok) throw new Error('Failed to load game')

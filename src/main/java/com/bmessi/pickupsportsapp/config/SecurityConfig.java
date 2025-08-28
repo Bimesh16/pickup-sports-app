@@ -4,7 +4,7 @@ import com.bmessi.pickupsportsapp.security.JwtAuthorizationFilter;
 import com.bmessi.pickupsportsapp.security.JwtTokenService;
 import com.bmessi.pickupsportsapp.repository.RevokedTokenRepository;
 import com.bmessi.pickupsportsapp.service.auth.AuthService;
-import com.bmessi.pickupsportsapp.advice.GlobalExceptionHandler;
+import com.bmessi.pickupsportsapp.exception.GlobalExceptionHandler;
 import com.bmessi.pickupsportsapp.security.RestAuthenticationEntryPoint;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -49,8 +49,7 @@ public class SecurityConfig {
                                         AuthenticationManager authenticationManager,
                                         AuthService authService,
                                         @Value("${security.login.rate-limit:20}") int loginRateLimitPerMinute,
-                                        @Value("${springdoc.api-docs.enabled:false}") boolean apiDocsEnabled,
-                                        GlobalExceptionHandler exceptionHandler) throws Exception {
+                                        @Value("${springdoc.api-docs.enabled:false}") boolean apiDocsEnabled) throws Exception {
 
         var jwtAuthz = new JwtAuthorizationFilter(userDetailsService, jwtTokenService, revokedTokenRepository, AUTH_HEADER_NAME, AUTH_HEADER_PREFIX);
 
@@ -81,7 +80,7 @@ public class SecurityConfig {
             // validate JWT before username/password auth
             .addFilterBefore(jwtAuthz, UsernamePasswordAuthenticationFilter.class)
             // send JSON 401 body on auth failures
-            .exceptionHandling(ex -> ex.authenticationEntryPoint(new RestAuthenticationEntryPoint(exceptionHandler)));
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(new RestAuthenticationEntryPoint()));
 
         return http.build();
     }

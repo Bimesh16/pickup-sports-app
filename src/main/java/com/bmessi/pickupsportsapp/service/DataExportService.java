@@ -69,7 +69,7 @@ public class DataExportService {
                 "user", Map.of(
                         "id", u.getId(),
                         "username", u.getUsername(),
-                        "preferredSport", safe(u.getPreferredSport()),
+                        "preferredSport", u.getPreferredSport() == null ? null : u.getPreferredSport().getDisplayName(),
                         "location", safe(u.getLocation()),
                         "bio", safe(u.getBio()),
                         "avatarUrl", safe(u.getAvatarUrl()),

@@ -56,8 +56,8 @@ services:
       # Login rate limit (per IP per minute)
       SECURITY_LOGIN_RATE_LIMIT: ${SECURITY_LOGIN_RATE_LIMIT:-20}
 
-      # Activate dev profile to expose Prometheus/metrics and dev settings
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      # Activate default profile (no specific profile)
+      # SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
     ports:
       - "8081:8080"
 

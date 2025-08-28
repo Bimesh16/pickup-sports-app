@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { getFlags, getGames, joinGame, FeatureFlags } from './api'
-import { getFlags, getGames, FeatureFlags } from './api'
 import AdminPanel from './AdminPanel'
 
 export default function App() {

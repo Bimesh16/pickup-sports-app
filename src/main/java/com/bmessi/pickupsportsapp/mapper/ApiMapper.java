@@ -8,6 +8,7 @@ import com.bmessi.pickupsportsapp.dto.UserDTO;
 import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.notification.Notification;
 import com.bmessi.pickupsportsapp.entity.User;
+import com.bmessi.pickupsportsapp.entity.Sport;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -39,6 +40,10 @@ public interface ApiMapper {
 
     default Instant map(OffsetDateTime value) {
         return value == null ? null : value.toInstant();
+    }
+
+    default String map(Sport sport) {
+        return sport == null ? null : sport.getDisplayName();
     }
 
     // Notification mapping

@@ -1,6 +1,4 @@
-spring:
-  profiles:
-    active: staging
+# Staging profile configuration
 
 management:
   endpoints:
@@ -9,7 +7,7 @@ management:
         include: "health,info,metrics,prometheus"
   endpoint:
     health:
-      show-details: when_authorized
+      show-details: when-authorized
 
 springdoc:
   swagger-ui:
@@ -17,9 +15,27 @@ springdoc:
   api-docs:
     enabled: true
 
+# Staging-safe platform defaults
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate   # avoid create/drop in staging
+  websocket:
+    enabled: true          # ensure WS stack is on in staging
+
 chat:
   redis:
     enabled: true
+
+# JWT for staging (override via env SECURITY_JWT_SECRET)
+security:
+  jwt:
+    secret: ${SECURITY_JWT_SECRET:bLzOR2h96wI6A3WyOoK_AsZaZqYawJmm5FWLEDCmDikMMMdmEdWLTEhFBC05bWi1}
+    issuer: pickup-sports-app
+    audience: pickup-sports-clients
+    expiration-minutes: 120
+    header: Authorization
+    prefix: "Bearer "
 
 # CORS staging example (adjust for your staging frontend)
 app:

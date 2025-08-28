@@ -59,7 +59,17 @@ class RsvpCacheEvictTest {
         @Bean GameRepository gameRepository() { return Mockito.mock(GameRepository.class); }
         @Bean UserRepository userRepository() { return Mockito.mock(UserRepository.class); }
         @Bean com.bmessi.pickupsportsapp.service.game.GameService gameService() { return Mockito.mock(com.bmessi.pickupsportsapp.service.game.GameService.class); }
-        @Bean com.bmessi.pickupsportsapp.service.AiRecommendationResilientService xaiRecommendationService() { return Mockito.mock(com.bmessi.pickupsportsapp.service.AiRecommendationResilientService.class); }
+        
+        // Create a real instance instead of mocking to avoid generic type issues
+        @Bean com.bmessi.pickupsportsapp.service.AiRecommendationResilientService xaiRecommendationService() { 
+            return new com.bmessi.pickupsportsapp.service.AiRecommendationResilientService(
+                java.util.Optional.empty(), // No XAI service in tests
+                Mockito.mock(GameRepository.class),
+                Mockito.mock(ApiMapper.class),
+                Mockito.mock(java.util.concurrent.Executor.class),
+                Mockito.mock(io.micrometer.core.instrument.MeterRegistry.class)
+            );
+        }
     }
 
     @jakarta.annotation.Resource GameRepository gameRepository;
@@ -94,7 +104,7 @@ class RsvpCacheEvictTest {
         cacheExplore.put("k1", "v1");
         cacheSports.put("k2", "v2");
 
-        CreateGameRequest req = new CreateGameRequest("Soccer", "Park", OffsetDateTime.now().plusHours(1), null, null, null);
+        CreateGameRequest req = new CreateGameRequest("Soccer", "Park", OffsetDateTime.now().plusHours(1), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         Principal principal = () -> "alice";
         Mockito.when(gameRepository.save(any(Game.class))).thenAnswer(inv -> {
             Game g = inv.getArgument(0);

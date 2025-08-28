@@ -140,7 +140,7 @@ public class SearchController {
     private static long lastModifiedEpochMilli(Game g) {
         if (g.getUpdatedAt() != null) return g.getUpdatedAt().toInstant().toEpochMilli();
         if (g.getCreatedAt() != null) return g.getCreatedAt().toInstant().toEpochMilli();
-        if (g.getTime() != null) return g.getTime().toEpochMilli();
+        if (g.getTime() != null) return g.getTime().toInstant().toEpochMilli();
         return System.currentTimeMillis();
     }
 
