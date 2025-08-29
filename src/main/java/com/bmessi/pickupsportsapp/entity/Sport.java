@@ -6,7 +6,7 @@ import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.Venue;
 
 @Entity
-@Table(name = "sports")
+@Table(name = "sport")
 public class Sport {
     
     @Id
@@ -59,7 +59,7 @@ public class Sport {
     @Column(name = "rules", length = 2000)
     private String rules;
     
-    @Column(name = "popularity_score", precision = 3, scale = 2)
+    @Column(name = "popularity_score")
     private Double popularityScore; // 0.00 to 10.00
     
     @Column(name = "difficulty_level", length = 20)
@@ -99,7 +99,7 @@ public class Sport {
     @OneToMany(mappedBy = "sport", cascade = CascadeType.ALL)
     private List<Game> games;
     
-    @OneToMany(mappedBy = "sport", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "supportedSports", fetch = FetchType.LAZY)
     private List<Venue> venues;
     
     // Enums
