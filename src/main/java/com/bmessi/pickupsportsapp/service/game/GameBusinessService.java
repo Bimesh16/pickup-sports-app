@@ -6,6 +6,8 @@ import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import com.bmessi.pickupsportsapp.service.notification.EnhancedNotificationService;
 import com.bmessi.pickupsportsapp.websocket.GameRoomEvent;
+import com.bmessi.pickupsportsapp.realtime.service.RealTimeEventService;
+import com.bmessi.pickupsportsapp.realtime.event.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Enhanced business logic service for game management.
@@ -35,6 +38,7 @@ public class GameBusinessService {
     private final EnhancedNotificationService enhancedNotificationService;
     private final SimpMessagingTemplate messagingTemplate;
     private final WaitlistService waitlistService;
+    private final RealTimeEventService realTimeEventService;
 
     /**
      * Handles the complete business logic for a user joining a game.
@@ -306,25 +310,157 @@ public class GameBusinessService {
     }
 
     /**
-     * Sends real-time WebSocket updates for game events.
+     * Sends real-time WebSocket updates for game events using the enhanced event system.
+     * 
+     * @param game The game that was updated
+     * @param eventType The type of event that occurred
+     * @param username The user who triggered the event
      */
     private void sendGameUpdateEvent(Game game, String eventType, String username) {
         try {
-            GameRoomEvent event = GameRoomEvent.builder()
-                .gameId(game.getId())
-                .type(eventType)
-                .username(username)
-                .timestamp(OffsetDateTime.now())
-                .participantCount(game.getParticipants().size())
-                .capacity(game.getCapacity())
-                .status(game.getStatus().toString())
-                .build();
-                
-            messagingTemplate.convertAndSend("/topic/games/" + game.getId(), event);
-            log.debug("Sent real-time update for game {}: {}", game.getId(), eventType);
+            RealTimeEvent event = createRealTimeEvent(game, eventType, username);
+            if (event != null) {
+                realTimeEventService.publishEvent(event);
+                log.debug("Published real-time event {} for game {}: {}", 
+                         event.getEventId(), game.getId(), eventType);
+            }
+            
+            // Also send activity feed event for certain events
+            if (shouldCreateActivityFeedEvent(eventType)) {
+                ActivityFeedEvent activityEvent = new ActivityFeedEvent(
+                    username,
+                    convertEventTypeToAction(eventType),
+                    "GAME",
+                    game.getId(),
+                    createActivityDescription(game, eventType, username)
+                );
+                realTimeEventService.publishEvent(activityEvent);
+            }
+            
         } catch (Exception e) {
             log.warn("Failed to send real-time update for game {}: {}", game.getId(), e.getMessage());
+            
+            // Fallback to old system for reliability
+            try {
+                GameRoomEvent fallbackEvent = new GameRoomEvent.Generic(eventType, Map.of(
+                    "gameId", game.getId(),
+                    "username", username,
+                    "participantCount", game.getParticipants().size(),
+                    "capacity", game.getCapacity(),
+                    "status", game.getStatus().toString()
+                ));
+                messagingTemplate.convertAndSend("/topic/games/" + game.getId(), fallbackEvent);
+                log.debug("Sent fallback real-time update for game {}", game.getId());
+            } catch (Exception fallbackError) {
+                log.error("Both real-time and fallback updates failed for game {}: {}", 
+                         game.getId(), fallbackError.getMessage());
+            }
         }
+    }
+
+    /**
+     * Creates the appropriate real-time event based on the event type.
+     */
+    private RealTimeEvent createRealTimeEvent(Game game, String eventType, String username) {
+        int participantCount = game.getParticipants().size();
+        Integer capacity = game.getCapacity();
+        boolean gameNowFull = capacity != null && participantCount >= capacity;
+        
+        return switch (eventType) {
+            case "participant_joined" -> new GameParticipantJoinedEvent(
+                game.getId(), 
+                username, 
+                getUserIdByUsername(username),
+                participantCount,
+                capacity,
+                gameNowFull
+            );
+            
+            case "participant_left" -> new GameParticipantLeftEvent(
+                game.getId(),
+                username,
+                getUserIdByUsername(username),
+                participantCount,
+                capacity,
+                !gameNowFull, // gameReopened
+                null // No promoted user in this context
+            );
+            
+            case "waitlist_promoted" -> new WaitlistPromotedEvent(
+                game.getId(),
+                username,
+                getUserIdByUsername(username),
+                participantCount,
+                capacity,
+                waitlistService.waitlistCount(game.getId())
+            );
+            
+            case "game_cancelled" -> new GameCancelledEvent(
+                game.getId(),
+                username,
+                "Game cancelled by organizer",
+                game.getSport(),
+                game.getLocation(),
+                game.getTime() != null ? game.getTime().toString() : "TBD"
+            );
+            
+            case "status_changed" -> new GameStatusChangedEvent(
+                game.getId(),
+                "UNKNOWN", // We don't track old status in this context
+                game.getStatus().toString(),
+                "Automatic status update",
+                username
+            );
+            
+            default -> {
+                log.warn("Unknown event type: {}", eventType);
+                yield null;
+            }
+        };
+    }
+
+    /**
+     * Check if we should create an activity feed event for this event type.
+     */
+    private boolean shouldCreateActivityFeedEvent(String eventType) {
+        return Set.of("participant_joined", "game_cancelled", "waitlist_promoted").contains(eventType);
+    }
+
+    /**
+     * Convert event type to activity action.
+     */
+    private String convertEventTypeToAction(String eventType) {
+        return switch (eventType) {
+            case "participant_joined" -> "JOINED_GAME";
+            case "game_cancelled" -> "CANCELLED_GAME";
+            case "waitlist_promoted" -> "PROMOTED_FROM_WAITLIST";
+            default -> eventType.toUpperCase();
+        };
+    }
+
+    /**
+     * Create activity description for feed.
+     */
+    private String createActivityDescription(Game game, String eventType, String username) {
+        return switch (eventType) {
+            case "participant_joined" -> String.format("%s joined %s game at %s", 
+                                                      username, game.getSport(), game.getLocation());
+            case "game_cancelled" -> String.format("%s cancelled %s game at %s", 
+                                                   username, game.getSport(), game.getLocation());
+            case "waitlist_promoted" -> String.format("%s was promoted from waitlist for %s game", 
+                                                      username, game.getSport());
+            default -> String.format("%s performed action %s on game %s", 
+                                     username, eventType, game.getId());
+        };
+    }
+
+    /**
+     * Helper method to get user ID by username.
+     * In a real implementation, this would query the user repository.
+     */
+    private Long getUserIdByUsername(String username) {
+        // For now, return null - this would be implemented with proper user lookup
+        return null;
     }
 
     /**
