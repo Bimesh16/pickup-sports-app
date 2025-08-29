@@ -6,7 +6,7 @@ import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.Venue;
 
 @Entity
-@Table(name = "sports")
+@Table(name = "sport")
 public class Sport {
     
     @Id
