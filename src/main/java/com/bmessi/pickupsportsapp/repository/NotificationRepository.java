@@ -36,22 +36,22 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("""
         UPDATE Notification n
            SET n.read = true,
-               n.readAt = CURRENT_TIMESTAMP
+               n.readAt = :readTime
          WHERE n.user.id = :userId
            AND n.read = false
     """)
-    int markAllAsRead(Long userId);
+    int markAllAsRead(Long userId, Instant readTime);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
         UPDATE Notification n
            SET n.read = true,
-               n.readAt = CURRENT_TIMESTAMP
+               n.readAt = :readTime
          WHERE n.user.id = :userId
            AND n.id IN :ids
            AND n.read = false
     """)
-    int markAsRead(Long userId, Collection<Long> ids);
+    int markAsRead(Long userId, Collection<Long> ids, Instant readTime);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM Notification n WHERE n.user.id = :userId AND n.read = true")
