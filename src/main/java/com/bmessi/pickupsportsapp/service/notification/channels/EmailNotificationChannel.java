@@ -231,7 +231,7 @@ public class EmailNotificationChannel implements NotificationChannel {
     private String getUserEmail(EnhancedNotification notification) {
         // This would depend on your User entity structure
         // For now, assuming email is stored in the User entity
-        return notification.getUser().getUsername() + "@example.com"; // Placeholder since User entity doesn't have email
+        return notification.getUser().getEmail();
     }
 
     /**

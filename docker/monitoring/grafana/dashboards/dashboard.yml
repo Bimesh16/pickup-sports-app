@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: 'pickup-sports-dashboards'
+    orgId: 1
+    folder: 'Pickup Sports'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards

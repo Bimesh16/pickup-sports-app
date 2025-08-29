@@ -2,13 +2,11 @@ package com.bmessi.pickupsportsapp.entity;
 
 import jakarta.persistence.*;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.Venue;
 
 @Entity
-@Table(name = "sports")
+@Table(name = "sport")
 public class Sport {
     
     @Id
@@ -102,7 +100,7 @@ public class Sport {
     private List<Game> games;
     
     @ManyToMany(mappedBy = "supportedSports", fetch = FetchType.LAZY)
-    private Set<Venue> venues = new HashSet<>();
+    private List<Venue> venues;
     
     // Enums
     public enum SportCategory {
@@ -354,11 +352,11 @@ public class Sport {
         this.games = games;
     }
     
-    public Set<Venue> getVenues() {
+    public List<Venue> getVenues() {
         return venues;
     }
     
-    public void setVenues(Set<Venue> venues) {
+    public void setVenues(List<Venue> venues) {
         this.venues = venues;
     }
 }

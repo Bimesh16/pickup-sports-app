@@ -245,14 +245,13 @@ public class RealTimeActivityFeedService {
      */
     private void storeActivityItem(ActivityFeedEvent event) {
         try {
-            ActivityFeedEvent.ActivityFeedPayload payload = (ActivityFeedEvent.ActivityFeedPayload) event.getPayload();
             ActivityItem item = new ActivityItem(
                 event.getEventId(),
-                payload.getActorUsername(),
-                payload.getAction(),
-                payload.getEntityType(),
-                payload.getEntityId(),
-                payload.getDescription(),
+                ((ActivityFeedEvent.ActivityFeedPayload) event.getPayload()).actorUsername,
+                ((ActivityFeedEvent.ActivityFeedPayload) event.getPayload()).action,
+                ((ActivityFeedEvent.ActivityFeedPayload) event.getPayload()).entityType,
+                ((ActivityFeedEvent.ActivityFeedPayload) event.getPayload()).entityId,
+                ((ActivityFeedEvent.ActivityFeedPayload) event.getPayload()).description,
                 event.getTimestamp()
             );
             
@@ -304,15 +303,15 @@ public class RealTimeActivityFeedService {
                 (ActivityFeedEvent.ActivityFeedPayload) event.getPayload();
             
             // Create notifications for specific actions
-            switch (payload.getAction()) {
+            switch (payload.action) {
                 case "JOINED_GAME" -> {
                     // Notify game creator
                     createActivityNotification(
                         "game_creator", // Would be actual creator username
                         "New Player Joined",
-                        payload.getActorUsername() + " joined your game",
+                        payload.actorUsername + " joined your game",
                         "GAME_ACTIVITY",
-                        "/games/" + payload.getEntityId()
+                        "/games/" + payload.entityId
                     );
                 }
                 case "CANCELLED_GAME" -> {
@@ -322,7 +321,7 @@ public class RealTimeActivityFeedService {
                         "Game Cancelled",
                         "A game you're participating in was cancelled",
                         "GAME_CANCELLATION",
-                        "/games/" + payload.getEntityId()
+                        "/games/" + payload.entityId
                     );
                 }
                 // Add more notification cases as needed

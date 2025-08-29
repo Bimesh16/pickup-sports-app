@@ -57,17 +57,17 @@ public class RealTimeEventMetricsService {
         this.meterRegistry = meterRegistry;
         
         // Initialize gauges
-        this.activeSubscriptionsGauge = Gauge.builder("realtime.subscriptions.active", activeSubscriptions, AtomicLong::doubleValue)
+        this.activeSubscriptionsGauge = Gauge.builder("realtime.subscriptions.active")
                                            .description("Number of active real-time subscriptions")
-                                           .register(meterRegistry);
+                                           .register(meterRegistry, activeSubscriptions);
         
-        this.publishedEventsGauge = Gauge.builder("realtime.events.published.total", totalPublishedEvents, AtomicLong::doubleValue)
+        this.publishedEventsGauge = Gauge.builder("realtime.events.published.total")
                                        .description("Total number of published events")
-                                       .register(meterRegistry);
+                                       .register(meterRegistry, totalPublishedEvents);
         
-        this.deliveredEventsGauge = Gauge.builder("realtime.events.delivered.total", totalDeliveredEvents, AtomicLong::doubleValue)
+        this.deliveredEventsGauge = Gauge.builder("realtime.events.delivered.total")
                                        .description("Total number of delivered events")
-                                       .register(meterRegistry);
+                                       .register(meterRegistry, totalDeliveredEvents);
         
         // Initialize distribution summaries
         this.eventSizeDistribution = DistributionSummary.builder("realtime.event.size")

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Slf4j
@@ -132,7 +133,7 @@ public class NotificationService {
     @CacheEvict(cacheNames = "notifications-first-page", allEntries = true)
     public int markAllAsReadForUser(String username) {
         User user = requireUserByUsername(username);
-        return notificationRepository.markAllAsRead(user.getId());
+        return notificationRepository.markAllAsRead(user.getId(), Instant.now());
     }
 
     @Timed(value = "notifications.read.bulk", description = "Time to mark a set of notifications read")
@@ -141,7 +142,7 @@ public class NotificationService {
     public int markAsReadForUser(java.util.Collection<Long> ids, String username) {
         if (ids == null || ids.isEmpty()) return 0;
         User user = requireUserByUsername(username);
-        return notificationRepository.markAsRead(user.getId(), ids);
+        return notificationRepository.markAsRead(user.getId(), ids, Instant.now());
     }
 
     @Timed(value = "notifications.unread.count", description = "Time to count unread notifications")

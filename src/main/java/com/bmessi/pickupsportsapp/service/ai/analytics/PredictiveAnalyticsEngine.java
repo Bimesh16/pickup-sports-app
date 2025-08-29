@@ -17,7 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-@Service
+// Temporarily disabled - missing entities
+// @Service
 public class PredictiveAnalyticsEngine {
     
     @Autowired

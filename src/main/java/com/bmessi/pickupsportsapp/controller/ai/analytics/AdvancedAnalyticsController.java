@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestController
-@RequestMapping("/api/v1/ai/analytics")
-@CrossOrigin(origins = "*")
+// Temporarily disabled - missing services
+// @RestController
+// @RequestMapping("/api/v1/ai/analytics")
+// @CrossOrigin(origins = "*")
 public class AdvancedAnalyticsController {
     
     @Autowired

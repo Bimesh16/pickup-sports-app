@@ -378,28 +378,4 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
      */
     @Query("SELECT g FROM Game g WHERE g.status = 'PUBLISHED' AND g.waitlistEnabled = true AND g.capacity IS NOT NULL")
     List<Game> findGamesNeedingCapacityManagement();
-    
-    /**
-     * Find upcoming games for a user (where user is a participant).
-     */
-    @Query("SELECT g FROM Game g JOIN g.participants p WHERE p.id = :userId AND g.time > CURRENT_TIMESTAMP AND g.status IN ('PUBLISHED', 'FULL') ORDER BY g.time ASC")
-    List<Game> findUpcomingGamesByUserId(@Param("userId") Long userId);
-    
-    /**
-     * Find recent completed games for a user.
-     */
-    @Query("SELECT g FROM Game g JOIN g.participants p WHERE p.id = :userId AND g.status = 'COMPLETED' ORDER BY g.time DESC")
-    List<Game> findRecentCompletedGamesByUserId(@Param("userId") Long userId);
-    
-    /**
-     * Find games created by a user.
-     */
-    @Query("SELECT g FROM Game g WHERE g.user.id = :userId ORDER BY g.createdAt DESC")
-    List<Game> findGamesByCreatorUserId(@Param("userId") Long userId);
-    
-    /**
-     * Find active games that have coordinates.
-     */
-    @Query("SELECT g FROM Game g WHERE g.status IN ('PUBLISHED', 'FULL') AND g.latitude IS NOT NULL AND g.longitude IS NOT NULL")
-    List<Game> findActiveGamesWithCoordinates();
 }

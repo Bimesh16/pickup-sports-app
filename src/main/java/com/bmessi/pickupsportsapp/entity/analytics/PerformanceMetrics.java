@@ -14,8 +14,9 @@ import java.time.OffsetDateTime;
 /**
  * Performance metrics entity for tracking application performance and system health.
  */
-@Entity
-@Table(name = "performance_metrics")
+// Temporarily disabled - missing migration
+// @Entity
+// @Table(name = "performance_metrics")
 @Data
 @Builder
 @NoArgsConstructor
