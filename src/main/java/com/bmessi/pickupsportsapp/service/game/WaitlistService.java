@@ -1,5 +1,7 @@
 package com.bmessi.pickupsportsapp.service.game;
 
+import com.bmessi.pickupsportsapp.entity.User;
+import com.bmessi.pickupsportsapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ public class WaitlistService {
 
     private final JdbcTemplate jdbc;
     private final ApplicationEventPublisher events;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public int participantCount(Long gameId) {
@@ -92,5 +95,62 @@ public class WaitlistService {
             }
         }
         return userIds;
+    }
+
+    /**
+     * Gets the next user ID from the waitlist (without removing them).
+     */
+    @Transactional(readOnly = true)
+    public Long getNextFromWaitlist(Long gameId) {
+        try {
+            List<Long> results = jdbc.queryForList(
+                "SELECT user_id FROM game_waitlist WHERE game_id = ? ORDER BY created_at ASC LIMIT 1", 
+                Long.class, 
+                gameId
+            );
+            return results.isEmpty() ? null : results.get(0);
+        } catch (DataAccessException e) {
+            log.error("Failed to get next user from waitlist for game {}", gameId, e);
+            return null;
+        }
+    }
+
+    /**
+     * Promotes a specific user from waitlist to participant.
+     */
+    @Transactional
+    public User promoteFromWaitlist(Long gameId, Long userId) {
+        try {
+            // Remove from waitlist
+            int removed = jdbc.update("DELETE FROM game_waitlist WHERE game_id = ? AND user_id = ?", gameId, userId);
+            if (removed == 0) {
+                return null; // User wasn't on waitlist
+            }
+
+            // Add to participants
+            jdbc.update(
+                "INSERT INTO game_participants (game_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING", 
+                gameId, userId
+            );
+
+            // Return the user object
+            return userRepository.findById(userId).orElse(null);
+        } catch (DataAccessException e) {
+            log.error("Failed to promote user {} from waitlist for game {}", userId, gameId, e);
+            throw new WaitlistServiceException("Unable to promote from waitlist", e);
+        }
+    }
+
+    /**
+     * Clears the entire waitlist for a game.
+     */
+    @Transactional
+    public int clearWaitlist(Long gameId) {
+        try {
+            return jdbc.update("DELETE FROM game_waitlist WHERE game_id = ?", gameId);
+        } catch (DataAccessException e) {
+            log.error("Failed to clear waitlist for game {}", gameId, e);
+            throw new WaitlistServiceException("Unable to clear waitlist", e);
+        }
     }
 }

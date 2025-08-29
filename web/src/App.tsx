@@ -11,8 +11,10 @@ import {
 import React, { useEffect, useState } from 'react'
 import { getFlags, getGames, joinGame, FeatureFlags } from './api'
 import AdminPanel from './AdminPanel'
+import { AuthProvider, useAuth } from './auth/AuthContext'
+import { LoginForm } from './auth/LoginForm'
 
-export default function App() {
+function AppContent() {
   const [flags, setFlags] = useState<FeatureFlags | null>(null)
   const [games, setGames] = useState<GamesPage | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -104,9 +106,27 @@ export default function App() {
     setToken(null)
   }
 
+  const { isAuthenticated, isLoading, user, logout } = useAuth()
+
+  if (isLoading) {
+    return <div style={{ textAlign: 'center', padding: '2rem' }}>Loading...</div>
+  }
+
+  if (!isAuthenticated) {
+    return <LoginForm />
+  }
+
   return (
     <div style={{ maxWidth: 720, margin: '2rem auto', fontFamily: 'system-ui, Arial' }}>
-      <h1>Pickup Sports</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h1>Pickup Sports</h1>
+        <div>
+          Welcome, {user?.username}!{' '}
+          <button onClick={logout} style={{ marginLeft: '0.5rem' }}>
+            Logout
+          </button>
+        </div>
+      </div>
       {error && <div style={{ color: 'crimson' }}>Error: {error}</div>}
       {flags && (
         <div style={{ padding: '0.5rem 0' }}>
@@ -184,3 +204,10 @@ export default function App() {
   )
 }
 
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  )
+}

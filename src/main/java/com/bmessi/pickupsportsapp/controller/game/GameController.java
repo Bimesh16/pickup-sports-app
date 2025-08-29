@@ -85,6 +85,7 @@ public class GameController {
     private final com.bmessi.pickupsportsapp.service.IdempotencyService idempotencyService;
     private final com.bmessi.pickupsportsapp.service.gameaccess.GameAccessService gameAccessService;
     private final java.util.Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> redisRateLimiter;
+    private final com.bmessi.pickupsportsapp.service.game.GameValidationService gameValidationService;
 
     // Configuration properties
     @Value("${app.games.default-recommendation-sport:Soccer}")
@@ -370,6 +371,10 @@ public class GameController {
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
                 .build();
+        
+        // Validate the game using comprehensive business rules
+        gameValidationService.validateGame(game, false);
+        
         Game saved = gameRepository.save(game);
 
         savedSearchMatchService.handleNewGame(saved);
@@ -440,8 +445,18 @@ public class GameController {
             validateGameTime(request.time());
         }
 
+        // Store original game state for validation
+        Game originalGame = gameRepository.findById(id).orElse(null);
+        
         applyUpdates(game, request);
         game.setUpdatedAt(OffsetDateTime.now());
+        
+        // Validate the updated game and check update restrictions
+        gameValidationService.validateGame(game, true);
+        if (originalGame != null) {
+            gameValidationService.validateGameUpdateRestrictions(originalGame, game);
+        }
+        
         Game updated = gameRepository.save(game);
 
         notifyParticipantsOfUpdate(game, currentUser, "updated");
@@ -744,6 +759,9 @@ public class GameController {
         boolean alreadyParticipating = gameRepository.existsParticipant(game.getId(), user.getId());
         Game saved = game;
         if (!alreadyParticipating) {
+            // Validate that user can join this game
+            gameValidationService.validateUserCanJoinGame(game, user);
+            
             game.addParticipant(user);
             saved = gameRepository.save(game);
 
