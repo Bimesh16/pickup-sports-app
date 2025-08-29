@@ -148,6 +148,14 @@ public class Game {
     @JoinColumn(name = "venue_id")
     private Venue venue;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "game_template_id")
+    private GameTemplate gameTemplate;
+
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<Team> teams = new HashSet<>();
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     @Builder.Default
