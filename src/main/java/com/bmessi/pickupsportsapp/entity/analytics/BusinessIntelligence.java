@@ -14,9 +14,8 @@ import java.time.OffsetDateTime;
 /**
  * Business intelligence entity for tracking business metrics and KPIs.
  */
-// Temporarily disabled due to precision/scale issues
-// @Entity
-// @Table(name = "business_intelligence")
+@Entity
+@Table(name = "business_intelligence")
 @Data
 @Builder
 @NoArgsConstructor

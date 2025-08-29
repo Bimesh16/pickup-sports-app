@@ -14,9 +14,8 @@ import java.time.OffsetDateTime;
 /**
  * Weather condition entity for tracking weather data and its impact on games.
  */
-// Temporarily disabled due to precision/scale issues
-// @Entity
-// @Table(name = "weather_conditions")
+@Entity
+@Table(name = "weather_conditions")
 @Data
 @Builder
 @NoArgsConstructor

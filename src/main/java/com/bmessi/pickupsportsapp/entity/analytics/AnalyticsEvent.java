@@ -91,9 +91,8 @@ import java.util.Map;
  * @version 2.0.0
  * @since 1.0.0
  */
-// Temporarily disabled due to precision/scale issues
-// @Entity
-// @Table(name = "analytics_events")
+@Entity
+@Table(name = "analytics_events")
 @Data
 @Builder
 @NoArgsConstructor

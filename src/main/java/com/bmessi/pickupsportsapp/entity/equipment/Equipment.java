@@ -15,9 +15,8 @@ import java.time.OffsetDateTime;
 /**
  * Equipment entity for managing sports equipment and gear.
  */
-// Temporarily disabled due to precision/scale issues
-// @Entity
-// @Table(name = "equipment")
+@Entity
+@Table(name = "equipment")
 @Data
 @Builder
 @NoArgsConstructor
