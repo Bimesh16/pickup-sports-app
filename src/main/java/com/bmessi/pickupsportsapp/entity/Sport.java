@@ -59,7 +59,7 @@ public class Sport {
     @Column(name = "rules", length = 2000)
     private String rules;
     
-    @Column(name = "popularity_score", precision = 3, scale = 2)
+    @Column(name = "popularity_score")
     private Double popularityScore; // 0.00 to 10.00
     
     @Column(name = "difficulty_level", length = 20)
