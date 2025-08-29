@@ -18,165 +18,8 @@
         <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
     </springProfile>
     
-    <springProfile name="prod">
-        <!-- Production logging configuration -->
-        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>logs/pickup-sports-app.log</file>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>logs/pickup-sports-app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                    <maxFileSize>100MB</maxFileSize>
-                </timeBasedFileNamingAndTriggeringPolicy>
-                <maxHistory>30</maxHistory>
-                <totalSizeCap>3GB</totalSizeCap>
-            </rollingPolicy>
-            
-            <!-- JSON structured logging for production -->
-            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-                <providers>
-                    <timestamp/>
-                    <logLevel/>
-                    <loggerName/>
-                    <message/>
-                    <mdc/>
-                    <stackTrace/>
-                    <logstashMarkers/>
-                    <arguments/>
-                    <context/>
-                </providers>
-            </encoder>
-        </appender>
-        
-        <!-- Error log file -->
-        <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>logs/error.log</file>
-            <filter class="ch.qos.logback.classic.filter.LevelFilter">
-                <level>ERROR</level>
-                <onMatch>ACCEPT</onMatch>
-                <onMismatch>DENY</onMismatch>
-            </filter>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>logs/error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-                <maxFileSize>100MB</maxFileSize>
-                <maxHistory>30</maxHistory>
-                <totalSizeCap>1GB</totalSizeCap>
-            </rollingPolicy>
-            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-                <providers>
-                    <timestamp/>
-                    <logLevel/>
-                    <loggerName/>
-                    <message/>
-                    <mdc/>
-                    <stackTrace/>
-                    <logstashMarkers/>
-                    <arguments/>
-                    <context/>
-                </providers>
-            </encoder>
-        </appender>
-        
-        <!-- Security log file -->
-        <appender name="SECURITY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>logs/security.log</file>
-            <filter class="ch.qos.logback.classic.filter.LevelFilter">
-                <level>WARN</level>
-                <onMatch>ACCEPT</onMatch>
-                <onMismatch>DENY</onMismatch>
-            </filter>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>logs/security.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-                <maxFileSize>100MB</maxFileSize>
-                <maxHistory>90</maxHistory>
-                <totalSizeCap>2GB</totalSizeCap>
-            </rollingPolicy>
-            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-                <providers>
-                    <timestamp/>
-                    <logLevel/>
-                    <loggerName/>
-                    <message/>
-                    <mdc/>
-                    <stackTrace/>
-                    <logstashMarkers/>
-                    <arguments/>
-                    <context/>
-                </providers>
-            </encoder>
-        </appender>
-        
-        <!-- Performance log file -->
-        <appender name="PERFORMANCE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>logs/performance.log</file>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>logs/performance.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-                <maxFileSize>100MB</maxFileSize>
-                <maxHistory>30</maxHistory>
-                <totalSizeCap>1GB</totalSizeCap>
-            </rollingPolicy>
-            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-                <providers>
-                    <timestamp/>
-                    <logLevel/>
-                    <loggerName/>
-                    <message/>
-                    <mdc/>
-                    <stackTrace/>
-                    <logstashMarkers/>
-                    <arguments/>
-                    <context/>
-                </providers>
-            </encoder>
-        </appender>
-        
-        <!-- Console appender for production (limited) -->
-        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-                <providers>
-                    <timestamp/>
-                    <logLevel/>
-                    <loggerName/>
-                    <message/>
-                    <mdc/>
-                </providers>
-            </encoder>
-        </appender>
-        
-        <!-- Root logger for production -->
-        <root level="INFO">
-            <appender-ref ref="FILE"/>
-            <appender-ref ref="ERROR_FILE"/>
-            <appender-ref ref="CONSOLE"/>
-        </root>
-        
-        <!-- Application-specific logging -->
-        <logger name="com.bmessi.pickupsportsapp" level="INFO" additivity="false">
-            <appender-ref ref="FILE"/>
-            <appender-ref ref="CONSOLE"/>
-        </logger>
-        
-        <!-- Security logging -->
-        <logger name="com.bmessi.pickupsportsapp.security" level="WARN" additivity="false">
-            <appender-ref ref="SECURITY_FILE"/>
-            <appender-ref ref="FILE"/>
-        </logger>
-        
-        <!-- Performance logging -->
-        <logger name="com.bmessi.pickupsportsapp.service.monitoring" level="INFO" additivity="false">
-            <appender-ref ref="PERFORMANCE_FILE"/>
-            <appender-ref ref="FILE"/>
-        </logger>
-        
-        <!-- Framework logging -->
-        <logger name="org.springframework.security" level="WARN"/>
-        <logger name="org.hibernate.SQL" level="WARN"/>
-        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="WARN"/>
-        <logger name="org.springframework.web" level="WARN"/>
-        <logger name="org.springframework.boot" level="WARN"/>
-    </springProfile>
-    
     <!-- Default profile (fallback) -->
-    <springProfile name="default">
+    <springProfile name="!prod">
         <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
         <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
         
@@ -187,83 +30,57 @@
         <logger name="com.bmessi.pickupsportsapp" level="INFO"/>
     </springProfile>
     
-    <!-- Common configuration for all profiles -->
-    
-    <!-- MDC configuration for request tracking -->
-    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
-        <resetJUL>true</resetJUL>
-    </contextListener>
-    
-    <!-- Async appender for better performance -->
-    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="FILE"/>
-        <queueSize>512</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-    </appender>
-    
-    <!-- Async appender for error logs -->
-    <appender name="ASYNC_ERROR_FILE" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="ERROR_FILE"/>
-        <queueSize>256</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-    </appender>
-    
-    <!-- Async appender for security logs -->
-    <appender name="ASYNC_SECURITY_FILE" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="SECURITY_FILE"/>
-        <queueSize>256</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-    </appender>
-    
-    <!-- Async appender for performance logs -->
-    <appender name="ASYNC_PERFORMANCE_FILE" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="PERFORMANCE_FILE"/>
-        <queueSize>512</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-    </appender>
-    
-    <!-- Log pattern for development -->
-    <property name="DEV_LOG_PATTERN" 
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
-    
-    <!-- Log pattern for production -->
-    <property name="PROD_LOG_PATTERN" 
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
-    
-    <!-- Environment variables -->
-    <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="pickup-sports-app"/>
-    <springProperty scope="context" name="applicationVersion" source="info.app.version" defaultValue="2.0.0"/>
+    <!-- Production profile -->
+    <springProfile name="prod">
+        <!-- Console appender for production -->
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+        
+        <!-- File appender for production -->
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/pickup-sports-app.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>logs/pickup-sports-app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>100MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+                <maxHistory>30</maxHistory>
+                <totalSizeCap>3GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+        
+        <!-- Root logger for production -->
+        <root level="INFO">
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        
+        <!-- Application-specific logging -->
+        <logger name="com.bmessi.pickupsportsapp" level="INFO"/>
+        
+        <!-- Framework logging -->
+        <logger name="org.springframework.security" level="WARN"/>
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <logger name="org.springframework.web" level="WARN"/>
+        <logger name="org.springframework.boot" level="WARN"/>
+    </springProfile>
     
     <!-- Custom loggers for specific components -->
     <logger name="com.bmessi.pickupsportsapp.controller" level="INFO"/>
     <logger name="com.bmessi.pickupsportsapp.service" level="INFO"/>
     <logger name="com.bmessi.pickupsportsapp.repository" level="INFO"/>
     <logger name="com.bmessi.pickupsportsapp.security" level="INFO"/>
-    <logger name="com.bmessi.pickupsportsapp.service.ai" level="INFO"/>
-    <logger name="com.bmessi.pickupsportsapp.service.monitoring" level="INFO"/>
     
     <!-- Third-party library logging -->
     <logger name="org.apache.http" level="WARN"/>
-    <logger name="org.apache.http.wire" level="WARN"/>
-    <logger name="org.apache.http.headers" level="WARN"/>
     <logger name="com.zaxxer.hikari" level="WARN"/>
     <logger name="org.springframework.data.redis" level="WARN"/>
     <logger name="io.netty" level="WARN"/>
-    
-    <!-- Performance monitoring -->
-    <logger name="com.bmessi.pickupsportsapp.service.monitoring.PerformanceMonitoringService" level="INFO"/>
-    <logger name="com.bmessi.pickupsportsapp.service.monitoring" level="INFO"/>
-    
-    <!-- AI and ML services -->
-    <logger name="com.bmessi.pickupsportsapp.service.ai" level="INFO"/>
-    <logger name="com.bmessi.pickupsportsapp.service.ai.AdvancedAiRecommendationEngine" level="INFO"/>
-    
-    <!-- Real-time services -->
-    <logger name="com.bmessi.pickupsportsapp.service.realtime" level="INFO"/>
-    <logger name="com.bmessi.pickupsportsapp.service.mobile" level="INFO"/>
-    
-    <!-- Compliance and security -->
-    <logger name="com.bmessi.pickupsportsapp.service.compliance" level="INFO"/>
-    <logger name="com.bmessi.pickupsportsapp.security" level="INFO"/>
     
 </configuration>
