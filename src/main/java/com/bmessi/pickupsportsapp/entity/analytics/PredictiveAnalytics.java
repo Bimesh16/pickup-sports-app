@@ -14,9 +14,8 @@ import java.time.OffsetDateTime;
 /**
  * Predictive analytics entity for machine learning predictions and forecasting.
  */
-// Temporarily disabled due to precision/scale issues
-// @Entity
-// @Table(name = "predictive_analytics")
+@Entity
+@Table(name = "predictive_analytics")
 @Data
 @Builder
 @NoArgsConstructor
