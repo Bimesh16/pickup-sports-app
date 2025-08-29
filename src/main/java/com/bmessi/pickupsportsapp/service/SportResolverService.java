@@ -23,13 +23,32 @@ public class SportResolverService {
         String normalizedKey = normalizeKey(incoming);
         String display = toDisplayName(normalizedKey);
 
-        Sport sport = sportRepository.findByName(normalizedKey)
-                .orElseGet(() -> sportRepository.save(
-                        Sport.builder()
-                                .name(normalizedKey)
-                                .displayName(display)
-                                .build()
-                ));
+        Sport sport = sportRepository.findByNameIgnoreCase(normalizedKey);
+        if (sport == null) {
+            sport = new Sport();
+            sport.setName(normalizedKey);
+            sport.setDisplayName(display);
+            sport.setIsActive(true);
+            sport.setCategory(Sport.SportCategory.BALL_SPORTS);
+            sport.setTeamSizeMin(1);
+            sport.setTeamSizeMax(1);
+            sport.setTotalPlayersMin(1);
+            sport.setTotalPlayersMax(1);
+            sport.setDurationMinutesMin(30);
+            sport.setDurationMinutesMax(90);
+            sport.setSkillLevels("[\"BEGINNER\", \"INTERMEDIATE\"]");
+            sport.setEquipmentRequired("[]");
+            sport.setEquipmentProvided("[]");
+            sport.setVenueTypes("[\"OUTDOOR_FIELD\"]");
+            sport.setRules("Basic rules apply");
+            sport.setPopularityScore(5.0);
+            sport.setDifficultyLevel(Sport.DifficultyLevel.BEGINNER);
+            sport.setIsTeamSport(false);
+            sport.setIsIndoor(false);
+            sport.setIsOutdoor(true);
+            sport.setIsWeatherDependent(false);
+            sport = sportRepository.save(sport);
+        }
         return sport.getDisplayName();
     }
 

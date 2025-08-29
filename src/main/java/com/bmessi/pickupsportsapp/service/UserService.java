@@ -38,8 +38,7 @@ public class UserService {
         
         // Convert preferredSport string to Sport entity
         if (request.preferredSport() != null && !request.preferredSport().trim().isEmpty()) {
-            Sport sport = sportRepository.findByName(request.preferredSport().toLowerCase())
-                    .orElse(null);
+            Sport sport = sportRepository.findByNameIgnoreCase(request.preferredSport().toLowerCase());
             user.setPreferredSport(sport);
         }
         

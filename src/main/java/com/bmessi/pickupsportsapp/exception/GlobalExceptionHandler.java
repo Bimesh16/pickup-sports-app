@@ -356,6 +356,30 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle username taken exceptions.
+     */
+    @ExceptionHandler(UsernameTakenException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameTaken(
+            UsernameTakenException ex, WebRequest request) {
+
+        String errorId = generateErrorId();
+        log.warn("Username taken - ID: {}, Details: {}", errorId, ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .errorId(errorId)
+            .timestamp(OffsetDateTime.now())
+            .status(HttpStatus.CONFLICT.value())
+            .error("Username Already Taken")
+            .message(ex.getMessage())
+            .path(getRequestPath(request))
+            .build();
+
+        trackError("USERNAME_TAKEN", errorId, request);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
      * Handle resource not found exceptions.
      */
     @ExceptionHandler(ResourceNotFoundException.class)

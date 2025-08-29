@@ -45,11 +45,10 @@ class VenueServiceTest {
 
     @BeforeEach
     void setUp() {
-        sport = Sport.builder()
-                .id(1L)
-                .name("soccer")
-                .displayName("Soccer")
-                .build();
+        sport = new Sport();
+        sport.setId(1L);
+        sport.setName("soccer");
+        sport.setDisplayName("Soccer");
 
         createVenueRequest = new CreateVenueRequest(
                 "Central Park Soccer Field",

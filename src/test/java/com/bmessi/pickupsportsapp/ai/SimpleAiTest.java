@@ -27,12 +27,11 @@ public class SimpleAiTest {
     @BeforeEach
     void setUp() {
         // Create test sport
-        testSport = Sport.builder()
-                .id(1L)
-                .name("soccer")
-                .displayName("Soccer")
-                .isActive(true)
-                .build();
+        testSport = new Sport();
+        testSport.setId(1L);
+        testSport.setName("soccer");
+        testSport.setDisplayName("Soccer");
+        testSport.setIsActive(true);
         
         // Create test user
         testUser = User.builder()
