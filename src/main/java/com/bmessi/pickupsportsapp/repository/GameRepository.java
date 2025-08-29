@@ -378,4 +378,50 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
      */
     @Query("SELECT g FROM Game g WHERE g.status = 'PUBLISHED' AND g.waitlistEnabled = true AND g.capacity IS NOT NULL")
     List<Game> findGamesNeedingCapacityManagement();
+
+    // Additional methods for bulk operations and analytics
+
+    /**
+     * Count games by user and status within date range.
+     */
+    @Query("SELECT COUNT(g) FROM Game g WHERE g.user.id = :userId AND g.status = :status AND g.createdAt BETWEEN :startDate AND :endDate")
+    long countByUserIdAndStatusAndCreatedAtBetween(@Param("userId") Long userId, @Param("status") Game.GameStatus status, 
+                                                   @Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
+
+    /**
+     * Count games by user within date range.
+     */
+    @Query("SELECT COUNT(g) FROM Game g WHERE g.user.id = :userId AND g.createdAt BETWEEN :startDate AND :endDate")
+    long countByUserIdAndCreatedAtBetween(@Param("userId") Long userId, @Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
+
+    /**
+     * Sum total cost for completed games by user within date range.
+     */
+    @Query("SELECT COALESCE(SUM(g.totalCost), 0) FROM Game g WHERE g.user.id = :userId AND g.status = :status AND g.createdAt BETWEEN :startDate AND :endDate")
+    java.math.BigDecimal sumTotalCostByUserIdAndStatusAndCreatedAtBetween(@Param("userId") Long userId, @Param("status") Game.GameStatus status, 
+                                                                          @Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
+
+    /**
+     * Sum participants for user's games within date range.
+     */
+    @Query("SELECT COALESCE(SUM(SIZE(g.participants)), 0) FROM Game g WHERE g.user.id = :userId AND g.createdAt BETWEEN :startDate AND :endDate")
+    long sumParticipantsByUserIdAndCreatedAtBetween(@Param("userId") Long userId, @Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
+
+    /**
+     * Find games by user and status within time range.
+     */
+    @Query("SELECT g FROM Game g WHERE g.user.id = :userId AND g.status = :status AND g.time BETWEEN :startTime AND :endTime")
+    List<Game> findByUserIdAndStatusAndTimeBetween(@Param("userId") Long userId, @Param("status") Game.GameStatus status, 
+                                                   @Param("startTime") OffsetDateTime startTime, @Param("endTime") OffsetDateTime endTime);
+
+    /**
+     * Find venue conflicts for bulk game creation.
+     */
+    @Query("SELECT g FROM Game g WHERE g.venue.id = :venueId AND g.status IN ('PUBLISHED', 'FULL') AND " +
+           "((g.time <= :startTime AND g.time + INTERVAL g.durationMinutes MINUTE > :startTime) OR " +
+           "(g.time < :endTime AND g.time + INTERVAL g.durationMinutes MINUTE >= :endTime) OR " +
+           "(g.time >= :startTime AND g.time < :endTime))")
+    List<Game> findByVenueIdAndTimeOverlap(@Param("venueId") Long venueId, 
+                                           @Param("startTime") OffsetDateTime startTime, 
+                                           @Param("endTime") OffsetDateTime endTime);
 }

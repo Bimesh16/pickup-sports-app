@@ -46,6 +46,7 @@ public class TeamFormationService {
     private final GameRepository gameRepository;
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final com.bmessi.pickupsportsapp.repository.UserRepository userRepository;
 
     // Team color options for visual identification
     private static final List<String> TEAM_COLORS = Arrays.asList(
@@ -240,14 +241,27 @@ public class TeamFormationService {
     // Private helper methods
 
     private List<User> getGameParticipants(Long gameId) {
-        // This would get participants from your existing GameParticipation or similar entity
-        // Placeholder implementation - replace with your actual participant lookup
-        return Collections.emptyList(); // TODO: Implement based on your participation entity
+        // Get participants who have joined the game but aren't assigned to teams yet
+        // This checks for existing participants in the Game entity's participants set
+        Game game = gameRepository.findById(gameId).orElse(null);
+        if (game == null || game.getParticipants() == null) {
+            return Collections.emptyList();
+        }
+        
+        // Filter out users who are already assigned to teams
+        Set<Long> assignedUserIds = teamMemberRepository.findByTeam_GameId(gameId)
+                .stream()
+                .map(tm -> tm.getUser().getId())
+                .collect(java.util.stream.Collectors.toSet());
+        
+        return game.getParticipants().stream()
+                .filter(user -> !assignedUserIds.contains(user.getId()))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     private User getUserById(Long userId) {
-        // Placeholder - inject UserRepository and implement
-        return null; // TODO: Implement user lookup
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
     }
 
     private void clearExistingTeams(Long gameId) {
