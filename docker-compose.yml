@@ -59,7 +59,7 @@ services:
       # Activate default profile (no specific profile)
       # SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
     ports:
-      - "8081:8080"
+      - "8080:8080"
 
 volumes:
   db_data:
