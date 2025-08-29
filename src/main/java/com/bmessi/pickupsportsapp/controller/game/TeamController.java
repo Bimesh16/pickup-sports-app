@@ -5,7 +5,6 @@ import com.bmessi.pickupsportsapp.entity.game.TeamMember;
 import com.bmessi.pickupsportsapp.service.game.TeamFormationService;
 import com.bmessi.pickupsportsapp.repository.TeamRepository;
 import com.bmessi.pickupsportsapp.repository.TeamMemberRepository;
-import com.bmessi.pickupsportsapp.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,8 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -96,9 +96,9 @@ public class TeamController {
             @Parameter(description = "Team ID")
             @PathVariable Long id,
             @Valid @RequestBody AddPlayerRequest request,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            Principal principal) {
         log.info("Adding player {} to team {} by user {}", 
-                 request.userId, id, userDetails.getUsername());
+                 request.userId, id, principal.getName());
         
         // Verify user has permission (game owner or admin)
         // TODO: Add authorization check
@@ -123,9 +123,9 @@ public class TeamController {
             @PathVariable Long id,
             @Parameter(description = "User ID to remove")
             @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            Principal principal) {
         log.info("Removing player {} from team {} by user {}", 
-                 userId, id, userDetails.getUsername());
+                 userId, id, principal.getName());
         
         // TODO: Add authorization check and implementation
         return ResponseEntity.noContent().build();
@@ -142,9 +142,9 @@ public class TeamController {
             @PathVariable Long id,
             @Parameter(description = "User ID to make captain")
             @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            Principal principal) {
         log.info("Assigning captain {} to team {} by user {}", 
-                 userId, id, userDetails.getUsername());
+                 userId, id, principal.getName());
         
         // TODO: Implement captain assignment logic
         Team team = teamRepository.findById(id)
@@ -162,8 +162,8 @@ public class TeamController {
     public ResponseEntity<TeamDetailsResponse> shuffleTeam(
             @Parameter(description = "Team ID")
             @PathVariable Long id,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        log.info("Shuffling team {} by user {}", id, userDetails.getUsername());
+            Principal principal) {
+        log.info("Shuffling team {} by user {}", id, principal.getName());
         
         Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Team not found: " + id));

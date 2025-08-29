@@ -321,14 +321,14 @@ public class BulkGameService {
     }
 
     private BigDecimal calculateVenueCost(Venue venue, Integer durationMinutes) {
-        if (venue.getHourlyRate() == null) {
+        if (venue.getBasePricePerHour() == null) {
             return BigDecimal.valueOf(100.00); // Default cost
         }
         
         BigDecimal hours = BigDecimal.valueOf(durationMinutes)
                 .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
         
-        return venue.getHourlyRate().multiply(hours);
+        return venue.getBasePricePerHour().multiply(hours);
     }
 
     private BigDecimal calculateCostPerPlayer(BigDecimal venueCost, GameTemplate template) {

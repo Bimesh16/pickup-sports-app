@@ -127,7 +127,7 @@ public class GameTemplateService {
                 .orElseThrow(() -> new IllegalArgumentException("Venue not found: " + request.getVenueId()));
 
         // Calculate pricing
-        BigDecimal totalCost = request.getVenueCost() != null ? request.getVenueCost() : venue.getHourlyRate();
+        BigDecimal totalCost = request.getVenueCost() != null ? request.getVenueCost() : venue.getBasePricePerHour();
         BigDecimal costPerPlayer = calculateCostPerPlayer(totalCost, template);
 
         // Create game using template

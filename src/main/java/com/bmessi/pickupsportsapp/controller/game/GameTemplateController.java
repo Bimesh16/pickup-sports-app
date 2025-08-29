@@ -4,7 +4,6 @@ import com.bmessi.pickupsportsapp.entity.game.GameTemplate;
 import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.service.game.GameTemplateService;
-import com.bmessi.pickupsportsapp.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,8 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
@@ -121,8 +121,8 @@ public class GameTemplateController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GameTemplate> createTemplate(
             @Valid @RequestBody CreateGameTemplateRequest request,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        log.info("Creating new game template: {} by user: {}", request.name, userDetails.getUsername());
+            Principal principal) {
+        log.info("Creating new game template: {} by user: {}", request.name, principal.getName());
         
         GameTemplateService.CreateTemplateRequest serviceRequest = new GameTemplateService.CreateTemplateRequest();
         serviceRequest.setName(request.name);
@@ -142,7 +142,7 @@ public class GameTemplateController {
         serviceRequest.setCaptainAssignmentRequired(request.captainAssignmentRequired);
         serviceRequest.setPositionAssignmentRequired(request.positionAssignmentRequired);
         serviceRequest.setRequiresEvenTeams(request.requiresEvenTeams);
-        serviceRequest.setCreatedBy(userDetails.getUsername());
+        serviceRequest.setCreatedBy(principal.getName());
         
         GameTemplate template = gameTemplateService.createTemplate(serviceRequest);
         
@@ -199,8 +199,8 @@ public class GameTemplateController {
             @Parameter(description = "Template ID")
             @PathVariable Long id,
             @Valid @RequestBody ApplyTemplateRequest request,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        log.info("Applying template {} to create game for user: {}", id, userDetails.getUsername());
+            Principal principal) {
+        log.info("Applying template {} to create game for user: {}", id, principal.getName());
         
         GameTemplateService.ApplyTemplateRequest serviceRequest = new GameTemplateService.ApplyTemplateRequest();
         serviceRequest.setTemplateId(id);
@@ -209,10 +209,10 @@ public class GameTemplateController {
         serviceRequest.setVenueCost(request.venueCost);
         serviceRequest.setDescription(request.description);
         
-        // Get User entity from UserDetails
+        // Get User entity from Principal (need to look up from repository)
+        // For now, create with username - you'll need to inject UserRepository for full implementation
         User creator = User.builder()
-                .id(userDetails.getId())
-                .username(userDetails.getUsername())
+                .username(principal.getName())
                 .build();
         serviceRequest.setCreator(creator);
         

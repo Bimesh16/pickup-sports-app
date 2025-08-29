@@ -372,7 +372,7 @@ public class PaymentSplittingService {
             }
             
             // Fall back to venue hourly rate * duration
-            BigDecimal hourlyRate = game.getVenue().getHourlyRate();
+            BigDecimal hourlyRate = game.getVenue().getBasePricePerHour();
             if (hourlyRate != null && game.getDurationMinutes() != null) {
                 BigDecimal hours = BigDecimal.valueOf(game.getDurationMinutes()).divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
                 return hourlyRate.multiply(hours);
