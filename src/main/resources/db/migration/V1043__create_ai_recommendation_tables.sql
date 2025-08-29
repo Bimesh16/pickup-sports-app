@@ -2,6 +2,8 @@
 -- Version: V1043
 -- Description: Creates tables for AI-powered recommendations including player, game, and venue recommendations
 
+SET search_path TO public;
+
 -- Player recommendations table
 CREATE TABLE player_recommendations (
     id BIGSERIAL PRIMARY KEY,

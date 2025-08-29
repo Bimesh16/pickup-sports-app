@@ -26,7 +26,7 @@ public class SimpleAiTest {
 
     @BeforeEach
     void setUp() {
-        // Create test sport
+        // Create test sport (use constructor; Sport does not expose a builder)
         testSport = new Sport();
         testSport.setId(1L);
         testSport.setName("soccer");

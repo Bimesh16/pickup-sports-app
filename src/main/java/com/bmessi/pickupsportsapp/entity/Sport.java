@@ -2,6 +2,8 @@ package com.bmessi.pickupsportsapp.entity;
 
 import jakarta.persistence.*;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.Venue;
 
@@ -59,7 +61,7 @@ public class Sport {
     @Column(name = "rules", length = 2000)
     private String rules;
     
-    @Column(name = "popularity_score", precision = 3, scale = 2)
+    @Column(name = "popularity_score")
     private Double popularityScore; // 0.00 to 10.00
     
     @Column(name = "difficulty_level", length = 20)
@@ -99,8 +101,8 @@ public class Sport {
     @OneToMany(mappedBy = "sport", cascade = CascadeType.ALL)
     private List<Game> games;
     
-    @OneToMany(mappedBy = "sport", cascade = CascadeType.ALL)
-    private List<Venue> venues;
+    @ManyToMany(mappedBy = "supportedSports", fetch = FetchType.LAZY)
+    private Set<Venue> venues = new HashSet<>();
     
     // Enums
     public enum SportCategory {
@@ -352,11 +354,11 @@ public class Sport {
         this.games = games;
     }
     
-    public List<Venue> getVenues() {
+    public Set<Venue> getVenues() {
         return venues;
     }
     
-    public void setVenues(List<Venue> venues) {
+    public void setVenues(Set<Venue> venues) {
         this.venues = venues;
     }
 }

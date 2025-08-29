@@ -2,6 +2,8 @@
 -- Version: V1044
 -- Description: Creates tables for tournaments, equipment, weather conditions, and user ratings
 
+SET search_path TO public;
+
 -- Sports table
 CREATE TABLE sports (
     id BIGSERIAL PRIMARY KEY,

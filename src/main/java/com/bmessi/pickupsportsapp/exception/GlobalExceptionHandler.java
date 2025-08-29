@@ -116,6 +116,35 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle game validation errors with detailed validation messages.
+     */
+    @ExceptionHandler(GameValidationException.class)
+    public ResponseEntity<ErrorResponse> handleGameValidation(
+            GameValidationException ex, WebRequest request) {
+        
+        String errorId = generateErrorId();
+        log.warn("Game validation error occurred - ID: {}, Details: {}", errorId, ex.getMessage());
+        
+        Map<String, Object> validationDetails = new HashMap<>();
+        validationDetails.put("validationErrors", ex.getValidationErrors());
+        validationDetails.put("errorCount", ex.getValidationErrors().size());
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .errorId(errorId)
+            .timestamp(OffsetDateTime.now())
+            .status(HttpStatus.BAD_REQUEST.value())
+            .error("Game Validation Failed")
+            .message("The game data does not meet business requirements")
+            .path(getRequestPath(request))
+            .details(validationDetails)
+            .build();
+        
+        trackError("GAME_VALIDATION", errorId, request);
+        
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    /**
      * Handle authentication errors.
      */
     @ExceptionHandler(AuthenticationException.class)

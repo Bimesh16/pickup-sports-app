@@ -47,7 +47,7 @@ services:
       CHAT_REDIS_ENABLED: ${CHAT_REDIS_ENABLED:-false}
 
       # JWT secret (REQUIRED; default only for local dev; override in prod)
-      SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET:-dev-insecure-secret-change-me}
+      SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET:-dev-insecure-secret-change-me-in-production-use-a-very-long-secret-key}
 
       # Swagger in dev
       SPRINGDOC_SWAGGER_UI_ENABLED: ${SPRINGDOC_SWAGGER_UI_ENABLED:-true}
@@ -59,7 +59,7 @@ services:
       # Activate default profile (no specific profile)
       # SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
     ports:
-      - "8081:8080"
+      - "8080:8080"
 
 volumes:
   db_data:

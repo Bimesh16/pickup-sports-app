@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.dao.DataAccessException;
@@ -343,4 +344,62 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
         String getSkillLevel();
         Long getCount();
     }
+
+    // New methods for game maintenance and business logic
+
+    /**
+     * Find active games that might need status updates (completed, etc.)
+     */
+    @Query("SELECT g FROM Game g WHERE g.status IN ('PUBLISHED', 'FULL') AND g.time <= :cutoffTime")
+    List<Game> findActiveGamesNeedingStatusUpdate(@Param("cutoffTime") OffsetDateTime cutoffTime);
+
+    /**
+     * Update old completed games to archived status
+     */
+    @Modifying
+    @Query("UPDATE Game g SET g.status = 'ARCHIVED', g.updatedAt = CURRENT_TIMESTAMP WHERE g.status = 'COMPLETED' AND g.updatedAt <= :cutoffDate")
+    int updateOldCompletedGamesToArchived(@Param("cutoffDate") OffsetDateTime cutoffDate);
+
+    /**
+     * Delete old draft games that were never published
+     */
+    @Modifying
+    @Query("DELETE FROM Game g WHERE g.status = 'DRAFT' AND g.createdAt <= :cutoffDate")
+    int deleteOldDraftGames(@Param("cutoffDate") OffsetDateTime cutoffDate);
+
+    /**
+     * Find games that need reminder notifications (starting soon)
+     */
+    @Query("SELECT g FROM Game g WHERE g.status IN ('PUBLISHED', 'FULL') AND g.time BETWEEN :startTime AND :endTime")
+    List<Game> findGamesNeedingReminders(@Param("startTime") OffsetDateTime startTime, @Param("endTime") OffsetDateTime endTime);
+
+    /**
+     * Find games that might need capacity management (waitlist promotion, etc.)
+     */
+    @Query("SELECT g FROM Game g WHERE g.status = 'PUBLISHED' AND g.waitlistEnabled = true AND g.capacity IS NOT NULL")
+    List<Game> findGamesNeedingCapacityManagement();
+    
+    /**
+     * Find upcoming games for a user (where user is a participant).
+     */
+    @Query("SELECT g FROM Game g JOIN g.participants p WHERE p.id = :userId AND g.time > CURRENT_TIMESTAMP AND g.status IN ('PUBLISHED', 'FULL') ORDER BY g.time ASC")
+    List<Game> findUpcomingGamesByUserId(@Param("userId") Long userId);
+    
+    /**
+     * Find recent completed games for a user.
+     */
+    @Query("SELECT g FROM Game g JOIN g.participants p WHERE p.id = :userId AND g.status = 'COMPLETED' ORDER BY g.time DESC")
+    List<Game> findRecentCompletedGamesByUserId(@Param("userId") Long userId);
+    
+    /**
+     * Find games created by a user.
+     */
+    @Query("SELECT g FROM Game g WHERE g.user.id = :userId ORDER BY g.createdAt DESC")
+    List<Game> findGamesByCreatorUserId(@Param("userId") Long userId);
+    
+    /**
+     * Find active games that have coordinates.
+     */
+    @Query("SELECT g FROM Game g WHERE g.status IN ('PUBLISHED', 'FULL') AND g.latitude IS NOT NULL AND g.longitude IS NOT NULL")
+    List<Game> findActiveGamesWithCoordinates();
 }

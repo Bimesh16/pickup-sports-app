@@ -3,6 +3,9 @@ package com.bmessi.pickupsportsapp.controller;
 import com.bmessi.pickupsportsapp.entity.UserStats;
 import com.bmessi.pickupsportsapp.service.UserStatsService;
 import com.bmessi.pickupsportsapp.service.AchievementService;
+import com.bmessi.pickupsportsapp.service.dashboard.UserDashboardService;
+import com.bmessi.pickupsportsapp.service.dashboard.GameHistoryAnalyticsService;
+import com.bmessi.pickupsportsapp.service.dashboard.PerformanceTrackingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,9 @@ public class UserAnalyticsController {
     
     private final UserStatsService userStatsService;
     private final AchievementService achievementService;
+    private final UserDashboardService dashboardService;
+    private final GameHistoryAnalyticsService historyAnalyticsService;
+    private final PerformanceTrackingService performanceTrackingService;
     
     /**
      * Get user statistics

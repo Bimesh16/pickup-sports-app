@@ -3,6 +3,8 @@
 -- Author: Pickup Sports App Team
 -- Date: 2024-01-01
 
+SET search_path TO public;
+
 -- =====================================================
 -- USER STATS TABLE
 -- =====================================================

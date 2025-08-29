@@ -158,4 +158,10 @@ public interface VenueRepository extends JpaRepository<Venue, Long> {
             @Param("sportIds") Set<Long> sportIds,
             @Param("sportCount") Long sportCount
     );
+    
+    /**
+     * Find active venues that have coordinates.
+     */
+    @Query("SELECT v FROM Venue v WHERE v.status = 'ACTIVE' AND v.latitude IS NOT NULL AND v.longitude IS NOT NULL")
+    List<Venue> findActiveVenuesWithCoordinates();
 }
