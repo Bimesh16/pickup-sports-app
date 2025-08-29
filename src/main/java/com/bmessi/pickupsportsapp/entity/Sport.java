@@ -99,7 +99,7 @@ public class Sport {
     @OneToMany(mappedBy = "sport", cascade = CascadeType.ALL)
     private List<Game> games;
     
-    @OneToMany(mappedBy = "sport", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "supportedSports", fetch = FetchType.LAZY)
     private List<Venue> venues;
     
     // Enums
