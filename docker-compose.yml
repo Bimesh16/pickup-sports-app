@@ -31,13 +31,11 @@ services:
       - db
       - mailhog
       - redis
-    env_file:
-      - .env.local
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/soccer_app}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-none}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-yourpassword}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-create-drop}
 
       # Mail (acts as health source and for welcome emails)
       SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-mailhog}
@@ -48,8 +46,8 @@ services:
       SPRING_DATA_REDIS_PORT: ${SPRING_DATA_REDIS_PORT:-6379}
       CHAT_REDIS_ENABLED: ${CHAT_REDIS_ENABLED:-false}
 
-      # JWT secret (REQUIRED; no default for safety)
-      SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET}
+      # JWT secret (REQUIRED; default only for local dev; override in prod)
+      SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET:-dev-insecure-secret-change-me}
 
       # Swagger in dev
       SPRINGDOC_SWAGGER_UI_ENABLED: ${SPRINGDOC_SWAGGER_UI_ENABLED:-true}
@@ -58,8 +56,8 @@ services:
       # Login rate limit (per IP per minute)
       SECURITY_LOGIN_RATE_LIMIT: ${SECURITY_LOGIN_RATE_LIMIT:-20}
 
-      # Activate dev profile to expose Prometheus/metrics and dev settings
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      # Activate default profile (no specific profile)
+      # SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
     ports:
       - "8081:8080"
 

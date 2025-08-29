@@ -19,7 +19,8 @@ import java.io.IOException;
 @Order(Ordered.HIGHEST_PRECEDENCE + 20)
 public class SecurityHeadersFilter extends OncePerRequestFilter {
 
-    private static final String CSP =
+    // Strict CSP for API and most endpoints
+    private static final String CSP_STRICT =
             "default-src 'none'; " +
                     "img-src 'self' data:; " +
                     "script-src 'none'; " +
@@ -27,6 +28,17 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
                     "font-src 'self' data:; " +
                     "connect-src 'self'; " +
                     "frame-ancestors 'none'; " +
+                    "base-uri 'self'";
+
+    // Relaxed CSP for Swagger UI pages (needs scripts and some inline code/styles)
+    private static final String CSP_SWAGGER =
+            "default-src 'self'; " +
+                    "img-src 'self' data:; " +
+                    "script-src 'self' 'unsafe-inline'; " +
+                    "style-src 'self' 'unsafe-inline'; " +
+                    "font-src 'self' data:; " +
+                    "connect-src 'self'; " +
+                    "frame-ancestors 'self'; " +
                     "base-uri 'self'";
 
     private static final String PERMISSIONS_POLICY =
@@ -40,13 +52,22 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+        boolean isSwagger = path != null && (
+                path.equals("/swagger-ui.html")
+                        || path.startsWith("/swagger-ui")
+                        || path.startsWith("/v3/api-docs")
+        );
+
         // Don’t overwrite if already set upstream
         setIfAbsent(response, "X-Content-Type-Options", "nosniff");
         setIfAbsent(response, "X-Frame-Options", "DENY");
         setIfAbsent(response, "Referrer-Policy", "no-referrer");
         setIfAbsent(response, "X-XSS-Protection", "0");
         setIfAbsent(response, "Permissions-Policy", PERMISSIONS_POLICY);
-        setIfAbsent(response, "Content-Security-Policy", CSP);
+
+        // Use a Swagger-friendly CSP for docs, strict elsewhere
+        setIfAbsent(response, "Content-Security-Policy", isSwagger ? CSP_SWAGGER : CSP_STRICT);
 
         // Only set HSTS when the connection is secure (avoid dev/http issues)
         if (request.isSecure()) {

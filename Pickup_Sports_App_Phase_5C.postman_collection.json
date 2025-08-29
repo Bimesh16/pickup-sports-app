@@ -1,0 +1,433 @@
+{
+	"info": {
+		"_postman_id": "pickup-sports-app-phase-5c",
+		"name": "Pickup Sports App - Phase 5C",
+		"description": "Comprehensive API testing collection for Pickup Sports App including new User Analytics and Social Features (Phase 5C)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "pickup-sports-app"
+	},
+	"item": [
+		{
+			"name": "Health & Status",
+			"item": [
+				{
+					"name": "Main Application",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						},
+						"description": "Test if the main application is running"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						},
+						"description": "Check overall application health status"
+					},
+					"response": []
+				},
+				{
+					"name": "Readiness Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health/readiness",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actuator",
+								"health",
+								"readiness"
+							]
+						},
+						"description": "Check application readiness status"
+					},
+					"response": []
+				},
+				{
+					"name": "Liveness Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health/liveness",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actuator",
+								"health",
+								"liveness"
+							]
+						},
+						"description": "Check application liveness status"
+					},
+					"response": []
+				}
+			],
+			"description": "Basic health and status endpoints to verify application is running"
+		},
+		{
+			"name": "API Documentation",
+			"item": [
+				{
+					"name": "Swagger UI",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/swagger-ui/index.html",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"swagger-ui",
+								"index.html"
+							]
+						},
+						"description": "Access Swagger UI for API documentation"
+					},
+					"response": []
+				},
+				{
+					"name": "OpenAPI JSON",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v3/api-docs",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v3",
+								"api-docs"
+							]
+						},
+						"description": "Get OpenAPI specification in JSON format"
+					},
+					"response": []
+				}
+			],
+			"description": "API documentation and specification endpoints"
+		},
+		{
+			"name": "Phase 5C - User Analytics & Social Features",
+			"item": [
+				{
+					"name": "Get User Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{username}}/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{username}}",
+								"stats"
+							]
+						},
+						"description": "Get comprehensive statistics for a specific user including games played, ratings, achievements, etc."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Game History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{username}}/game-history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{username}}",
+								"game-history"
+							]
+						},
+						"description": "Get detailed game participation history for a specific user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Achievements",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{username}}/achievements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{username}}",
+								"achievements"
+							]
+						},
+						"description": "Get all achievements earned by a specific user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Social Connections",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{username}}/social-connections",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{username}}",
+								"social-connections"
+							]
+						},
+						"description": "Get social connections and player interactions for a specific user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Preferences",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{username}}/preferences",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{username}}",
+								"social-connections"
+							]
+						},
+						"description": "Get user preferences including sports, venues, time preferences"
+					},
+					"response": []
+				}
+			],
+			"description": "New Phase 5C endpoints for User Analytics and Social Features"
+		},
+		{
+			"name": "Authentication Tests (Unauthenticated)",
+			"item": [
+				{
+					"name": "Test User Stats - No Auth",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/test/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"test",
+								"stats"
+							]
+						},
+						"description": "Test that protected endpoints return 401 when no authentication is provided"
+					},
+					"response": []
+				},
+				{
+					"name": "Test User Achievements - No Auth",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/test/achievements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"test",
+								"achievements"
+							]
+						},
+						"description": "Test that protected endpoints return 401 when no authentication is provided"
+					},
+					"response": []
+				}
+			],
+			"description": "Test that security is working correctly by accessing protected endpoints without authentication"
+		},
+		{
+			"name": "Database & Infrastructure",
+			"item": [
+				{
+					"name": "Database Connection Test",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health/db",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actuator",
+								"health",
+								"db"
+							]
+						},
+						"description": "Check database connection health (if available)"
+					},
+					"response": []
+				}
+			],
+			"description": "Database and infrastructure health checks"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request script to set up common variables",
+					"console.log('Testing Pickup Sports App - Phase 5C');",
+					"console.log('Base URL:', pm.environment.get('base_url'));",
+					"console.log('Username:', pm.environment.get('username'));"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Test script to validate responses",
+					"pm.test('Response time is less than 5000ms', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"pm.test('Status code is valid', function () {",
+					"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204, 401, 403, 404]);",
+					"});",
+					"",
+					"// Log response for debugging",
+					"console.log('Response Status:', pm.response.status);",
+					"console.log('Response Time:', pm.response.responseTime + 'ms');",
+					"",
+					"// Test specific endpoints",
+					"if (pm.request.url.path.includes('/actuator/health')) {",
+					"    pm.test('Health endpoint returns valid JSON', function () {",
+					"        pm.response.to.have.jsonBody();",
+					"    });",
+					"}",
+					"",
+					"if (pm.request.url.path.includes('/api/v1/users/')) {",
+					"    pm.test('User analytics endpoint returns valid JSON', function () {",
+					"        pm.response.to.have.jsonBody();",
+					"    });",
+					"    ",
+					"    if (pm.response.code === 401) {",
+					"        pm.test('Unauthenticated access returns 401', function () {",
+					"            pm.expect(pm.response.code).to.equal(401);",
+					"        });",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string",
+			"description": "Base URL for the Pickup Sports App"
+		},
+		{
+			"key": "username",
+			"value": "testuser",
+			"type": "string",
+			"description": "Test username for user analytics endpoints"
+		},
+		{
+			"key": "auth_token",
+			"value": "your_jwt_token_here",
+			"type": "string",
+			"description": "JWT authentication token (to be set when available)"
+		}
+	]
+}

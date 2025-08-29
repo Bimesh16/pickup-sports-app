@@ -1,15 +1,17 @@
-package com.bmessi.pickupsportsapp.service;
+package unit.com.bmessi.pickupsportsapp.service;
 
 import com.bmessi.pickupsportsapp.entity.MfaRecoveryCode;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.MfaRecoveryCodeRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
+import com.bmessi.pickupsportsapp.service.MfaRecoveryService;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import support.Quarantined;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -20,13 +22,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@Quarantined
 class MfaRecoveryServiceTest {
 
     @Mock MfaRecoveryCodeRepository repo;
     @Mock UserRepository users;
     @Mock MeterRegistry meter;
 
-    @InjectMocks MfaRecoveryService svc;
+    @InjectMocks
+    MfaRecoveryService svc;
 
     private User user;
 

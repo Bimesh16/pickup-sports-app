@@ -1,0 +1,1096 @@
+{
+	"info": {
+		"_postman_id": "pickup-sports-app-complete",
+		"name": "Pickup Sports App - Complete API Collection",
+		"description": "Comprehensive API testing collection for ALL endpoints in the Pickup Sports App",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "pickup-sports-app"
+	},
+	"item": [
+		{
+			"name": "🏠 Root & Health",
+			"item": [
+				{
+					"name": "Root Endpoint",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": ["{{base_url}}"],
+							"path": [""]
+						},
+						"description": "Main application status"
+					}
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "health"]
+						},
+						"description": "Spring Boot Actuator health"
+					}
+				},
+				{
+					"name": "Custom Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						},
+						"description": "Custom health endpoint"
+					}
+				},
+				{
+					"name": "Detailed Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health/detailed",
+							"host": ["{{base_url}}"],
+							"path": ["health", "detailed"]
+						},
+						"description": "Detailed system health"
+					}
+				}
+			]
+		},
+		{
+			"name": "🔐 Authentication & Security",
+			"item": [
+				{
+					"name": "User Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Authenticate user and get JWT tokens"
+					}
+				},
+				{
+					"name": "User Registration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{new_username}}\",\n  \"password\": \"{{new_password}}\",\n  \"email\": \"{{new_email}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/register",
+							"host": ["{{base_url}}"],
+							"path": ["users", "register"]
+						},
+						"description": "Register new user"
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/refresh",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "refresh"]
+						},
+						"description": "Refresh JWT access token"
+					}
+				},
+				{
+					"name": "Password Reset Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{email}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/forgot-password",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "forgot-password"]
+						},
+						"description": "Request password reset"
+					}
+				},
+				{
+					"name": "MFA Challenge",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"{{mfa_code}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/mfa/challenge",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "mfa", "challenge"]
+						},
+						"description": "Submit MFA challenge code"
+					}
+				}
+			]
+		},
+		{
+			"name": "👤 User Management",
+			"item": [
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/{{username}}",
+							"host": ["{{base_url}}"],
+							"path": ["users", "{{username}}"]
+						},
+						"description": "Get user profile by username"
+					}
+				},
+				{
+					"name": "Update User Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"{{first_name}}\",\n  \"lastName\": \"{{last_name}}\",\n  \"bio\": \"{{bio}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{{username}}",
+							"host": ["{{base_url}}"],
+							"path": ["users", "{{username}}"]
+						},
+						"description": "Update user profile"
+					}
+				},
+				{
+					"name": "Get User Avatar",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/{{username}}/avatar",
+							"host": ["{{base_url}}"],
+							"path": ["users", "{{username}}", "avatar"]
+						},
+						"description": "Get user profile avatar"
+					}
+				},
+				{
+					"name": "Upload User Avatar",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{{username}}/avatar",
+							"host": ["{{base_url}}"],
+							"path": ["users", "{{username}}", "avatar"]
+						},
+						"description": "Upload user profile avatar"
+					}
+				}
+			]
+		},
+		{
+			"name": "🎮 Games",
+			"item": [
+				{
+					"name": "Create Game",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sport\": \"{{sport}}\",\n  \"location\": \"{{location}}\",\n  \"time\": \"{{game_time}}\",\n  \"maxPlayers\": {{max_players}},\n  \"skillLevel\": \"{{skill_level}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/games",
+							"host": ["{{base_url}}"],
+							"path": ["games"]
+						},
+						"description": "Create a new game"
+					}
+				},
+				{
+					"name": "Get Game by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/games/{{game_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["games", "{{game_id}}"]
+						},
+						"description": "Get game details by ID"
+					}
+				},
+				{
+					"name": "Update Game",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sport\": \"{{sport}}\",\n  \"location\": \"{{location}}\",\n  \"time\": \"{{game_time}}\",\n  \"maxPlayers\": {{max_players}}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/games/{{game_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["games", "{{game_id}}"]
+						},
+						"description": "Update game details"
+					}
+				},
+				{
+					"name": "Delete Game",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/games/{{game_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["games", "{{game_id}}"]
+						},
+						"description": "Delete a game"
+					}
+				},
+				{
+					"name": "Search Games",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/search/games?sport={{sport}}&location={{location}}&radiusKm={{radius}}",
+							"host": ["{{base_url}}"],
+							"path": ["search", "games"],
+							"query": [
+								{
+									"key": "sport",
+									"value": "{{sport}}"
+								},
+								{
+									"key": "location",
+									"value": "{{location}}"
+								},
+								{
+									"key": "radiusKm",
+									"value": "{{radius}}"
+								}
+							]
+						},
+						"description": "Search for games with filters"
+					}
+				}
+			]
+		},
+		{
+			"name": "📅 RSVP & Participation",
+			"item": [
+				{
+					"name": "Join Game (RSVP)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/games/{{game_id}}/join",
+							"host": ["{{base_url}}"],
+							"path": ["games", "{{game_id}}", "join"]
+						},
+						"description": "Join a game (RSVP)"
+					}
+				},
+				{
+					"name": "Leave Game",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/games/{{game_id}}/leave",
+							"host": ["{{base_url}}"],
+							"path": ["games", "{{game_id}}", "leave"]
+						},
+						"description": "Leave a game"
+					}
+				},
+				{
+					"name": "Hold Game Slot",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/games/{{game_id}}/hold?ttl=120",
+							"host": ["{{base_url}}"],
+							"path": ["games", "{{game_id}}", "hold"],
+							"query": [
+								{
+									"key": "ttl",
+									"value": "120"
+								}
+							]
+						},
+						"description": "Hold a game slot temporarily"
+					}
+				},
+				{
+					"name": "Get RSVP Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/games/{{game_id}}/rsvp-status",
+							"host": ["{{base_url}}"],
+							"path": ["games", "{{game_id}}", "rsvp-status"]
+						},
+						"description": "Get RSVP status for a game"
+					}
+				}
+			]
+		},
+		{
+			"name": "🏟️ Venues",
+			"item": [
+				{
+					"name": "Create Venue",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"{{venue_name}}\",\n  \"address\": \"{{venue_address}}\",\n  \"latitude\": {{latitude}},\n  \"longitude\": {{longitude}},\n  \"sports\": [\"{{sport}}\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/venues",
+							"host": ["{{base_url}}"],
+							"path": ["venues"]
+						},
+						"description": "Create a new venue"
+					}
+				},
+				{
+					"name": "Get Venue by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/venues/{{venue_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["venues", "{{venue_id}}"]
+						},
+						"description": "Get venue details by ID"
+					}
+				},
+				{
+					"name": "Search Venues",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/venues/search?sport={{sport}}&radius={{radius}}",
+							"host": ["{{base_url}}"],
+							"path": ["venues", "search"],
+							"query": [
+								{
+									"key": "sport",
+									"value": "{{sport}}"
+								},
+								{
+									"key": "radius",
+									"value": "{{radius}}"
+								}
+							]
+						},
+						"description": "Search venues by sport and radius"
+					}
+				}
+			]
+		},
+		{
+			"name": "⭐ Ratings & Reviews",
+			"item": [
+				{
+					"name": "Rate User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ratedUserId\": {{rated_user_id}},\n  \"rating\": {{rating}},\n  \"comment\": \"{{comment}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/ratings",
+							"host": ["{{base_url}}"],
+							"path": ["ratings"]
+						},
+						"description": "Rate another user"
+					}
+				},
+				{
+					"name": "Get User Rating Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ratings/users/{{user_id}}/summary",
+							"host": ["{{base_url}}"],
+							"path": ["ratings", "users", "{{user_id}}", "summary"]
+						},
+						"description": "Get user rating summary"
+					}
+				},
+				{
+					"name": "Get Recent Ratings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ratings/users/{{user_id}}/recent",
+							"host": ["{{base_url}}"],
+							"path": ["ratings", "users", "{{user_id}}", "recent"]
+						},
+						"description": "Get recent ratings for a user"
+					}
+				}
+			]
+		},
+		{
+			"name": "🔔 Notifications",
+			"item": [
+				{
+					"name": "Get User Notifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications",
+							"host": ["{{base_url}}"],
+							"path": ["notifications"]
+						},
+						"description": "Get current user's notifications"
+					}
+				},
+				{
+					"name": "Create Notification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{username}}\",\n  \"message\": \"{{message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/notifications",
+							"host": ["{{base_url}}"],
+							"path": ["notifications"]
+						},
+						"description": "Create a notification for a user"
+					}
+				},
+				{
+					"name": "Mark Notification Read",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications/{{notification_id}}/read",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", "{{notification_id}}", "read"]
+						},
+						"description": "Mark notification as read"
+					}
+				}
+			]
+		},
+		{
+			"name": "💬 Chat & Messaging",
+			"item": [
+				{
+					"name": "Get Game Chat History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/games/{{game_id}}/chat",
+							"host": ["{{base_url}}"],
+							"path": ["games", "{{game_id}}", "chat"]
+						},
+						"description": "Get chat history for a game"
+					}
+				},
+				{
+					"name": "Send Chat Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"message\": \"{{message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/games/{{game_id}}/chat",
+							"host": ["{{base_url}}"],
+							"path": ["games", "{{game_id}}", "chat"]
+						},
+						"description": "Send a chat message in a game"
+					}
+				},
+				{
+					"name": "Mute User in Chat",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/games/{{game_id}}/moderation/mute/{{username}}",
+							"host": ["{{base_url}}"],
+							"path": ["games", "{{game_id}}", "moderation", "mute", "{{username}}"]
+						},
+						"description": "Mute a user in game chat (Admin only)"
+					}
+				}
+			]
+		},
+		{
+			"name": "🔍 Search & Discovery",
+			"item": [
+				{
+					"name": "Search Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/search/users?q={{search_query}}",
+							"host": ["{{base_url}}"],
+							"path": ["search", "users"],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{search_query}}"
+								}
+							]
+						},
+						"description": "Search for users"
+					}
+				},
+				{
+					"name": "Get Saved Searches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/saved-searches",
+							"host": ["{{base_url}}"],
+							"path": ["saved-searches"]
+						},
+						"description": "Get user's saved searches"
+					}
+				},
+				{
+					"name": "Create Saved Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sport\": \"{{sport}}\",\n  \"location\": \"{{location}}\",\n  \"radiusKm\": {{radius}}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/saved-searches",
+							"host": ["{{base_url}}"],
+							"path": ["saved-searches"]
+						},
+						"description": "Save a search query"
+					}
+				}
+			]
+		},
+		{
+			"name": "🤖 AI & Recommendations",
+			"item": [
+				{
+					"name": "Get AI Recommendations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ai/recommendations",
+							"host": ["{{base_url}}"],
+							"path": ["ai", "recommendations"]
+						},
+						"description": "Get AI-powered game recommendations"
+					}
+				},
+				{
+					"name": "Get AI Performance Metrics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ai/monitoring/performance",
+							"host": ["{{base_url}}"],
+							"path": ["ai", "monitoring", "performance"]
+						},
+						"description": "Get AI performance monitoring metrics"
+					}
+				}
+			]
+		},
+		{
+			"name": "📊 Analytics & Social Features",
+			"item": [
+				{
+					"name": "Get User Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{username}}/stats",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "{{username}}", "stats"]
+						},
+						"description": "Get comprehensive user statistics"
+					}
+				},
+				{
+					"name": "Get User Achievements",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{username}}/achievements",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "{{username}}", "stats"]
+						},
+						"description": "Get user achievements and badges"
+					}
+				},
+				{
+					"name": "Get User Social Connections",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{username}}/social-connections",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "{{username}}", "stats"]
+						},
+						"description": "Get user social connections"
+					}
+				}
+			]
+		},
+		{
+			"name": "⚙️ System & Admin",
+			"item": [
+				{
+					"name": "Get System Performance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/system/performance",
+							"host": ["{{base_url}}"],
+							"path": ["system", "performance"]
+						},
+						"description": "Get system performance metrics"
+					}
+				},
+				{
+					"name": "Get Load Balancing Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/system/load-balancing",
+							"host": ["{{base_url}}"],
+							"path": ["system", "load-balancing"]
+						},
+						"description": "Get load balancing statistics"
+					}
+				},
+				{
+					"name": "Get Abuse Reports",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/abuse-reports",
+							"host": ["{{base_url}}"],
+							"path": ["abuse-reports"]
+						},
+						"description": "Get abuse reports (Admin only)"
+					}
+				}
+			]
+		},
+		{
+			"name": "📚 API Documentation",
+			"item": [
+				{
+					"name": "Swagger UI",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/swagger-ui/index.html",
+							"host": ["{{base_url}}"],
+							"path": ["swagger-ui", "index.html"]
+						},
+						"description": "Access Swagger UI for API documentation"
+					}
+				},
+				{
+					"name": "OpenAPI JSON",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v3/api-docs",
+							"host": ["{{base_url}}"],
+							"path": ["v3", "api-docs"]
+						},
+						"description": "Get OpenAPI specification in JSON format"
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request script to set up common variables",
+					"console.log('Testing Pickup Sports App - Complete Collection');",
+					"console.log('Base URL:', pm.environment.get('base_url'));",
+					"console.log('Username:', pm.environment.get('username'));"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Test script to validate responses",
+					"pm.test('Response time is less than 5000ms', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"pm.test('Status code is valid', function () {",
+					"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204, 400, 401, 403, 404, 429]);",
+					"});",
+					"",
+					"// Log response for debugging",
+					"console.log('Response Status:', pm.response.status);",
+					"console.log('Response Time:', pm.response.responseTime + 'ms');",
+					"",
+					"// Test specific endpoints",
+					"if (pm.request.url.path.includes('/actuator/health')) {",
+					"    pm.test('Health endpoint returns valid JSON', function () {",
+					"        pm.response.to.have.jsonBody();",
+					"    });",
+					"}",
+					"",
+					"if (pm.request.url.path.includes('/auth/login')) {",
+					"    if (pm.response.code === 200) {",
+					"        pm.test('Login successful - check for tokens', function () {",
+					"            pm.expect(pm.response.json()).to.have.property('accessToken');",
+					"        });",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string",
+			"description": "Base URL for the Pickup Sports App"
+		},
+		{
+			"key": "username",
+			"value": "testuser",
+			"type": "string",
+			"description": "Test username for authenticated endpoints"
+		},
+		{
+			"key": "password",
+			"value": "testpass123",
+			"type": "string",
+			"description": "Test password for authentication"
+		},
+		{
+			"key": "auth_token",
+			"value": "your_jwt_token_here",
+			"type": "string",
+			"description": "JWT authentication token (to be set after login)"
+		},
+		{
+			"key": "refresh_token",
+			"value": "your_refresh_token_here",
+			"type": "string",
+			"description": "JWT refresh token (to be set after login)"
+		}
+	]
+}

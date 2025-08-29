@@ -48,18 +48,6 @@ public class PresenceController {
         messaging.convertAndSend(topic(gameId), PresenceEvent.leave(gameId, user, count));
     }
 
-    /** HTTP snapshot for initial render/reconnect: GET /games/{gameId}/presence */
-    @GetMapping(path = "/games/{gameId}/presence", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> snapshot(@PathVariable Long gameId) {
-        Set<String> users = presence.online(gameId);
-        long count = users.size();
-        Map<String, Object> body = Map.of(
-                "gameId", gameId,
-                "count", count,
-                "users", users
-        );
-        HttpHeaders headers = com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore();
-        headers.add("X-Total-Count", String.valueOf(count));
-        return ResponseEntity.ok().headers(headers).body(body);
-    }
+    // HTTP presence listing is provided by ChatPresenceController under /games/{gameId}/presence.
+    // Removed duplicate to prevent ambiguous mapping.
 }

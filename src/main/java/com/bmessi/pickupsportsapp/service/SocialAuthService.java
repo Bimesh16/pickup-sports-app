@@ -97,7 +97,7 @@ public class SocialAuthService {
             user = User.builder()
                     .username(username)
                     .password(randomPwd)
-                    .roles(java.util.EnumSet.of(Role.USER))
+                    .roles(java.util.EnumSet.of(User.Role.USER))
                     .build();
             users.save(user);
         }

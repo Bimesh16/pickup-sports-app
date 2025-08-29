@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,22 @@ public class DataExportService {
     private final TrustedDeviceRepository trustedDevices;
     private final UserNotificationPrefsRepository prefsRepo;
     private final JdbcTemplate jdbc;
+    private final Map<String, String> pending = new ConcurrentHashMap<>();
+
+    public String requestExport(String username) {
+        String token = UUID.randomUUID().toString();
+        pending.put(token, username);
+        return token;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> confirmExport(String username, String token) {
+        String stored = pending.remove(token);
+        if (stored == null || !stored.equals(username)) {
+            throw new IllegalArgumentException("invalid token");
+        }
+        return exportFor(username);
+    }
 
     @Transactional(readOnly = true)
     public Map<String, Object> exportFor(String username) {
@@ -51,7 +69,7 @@ public class DataExportService {
                 "user", Map.of(
                         "id", u.getId(),
                         "username", u.getUsername(),
-                        "preferredSport", safe(u.getPreferredSport()),
+                        "preferredSport", u.getPreferredSport() == null ? null : u.getPreferredSport().getDisplayName(),
                         "location", safe(u.getLocation()),
                         "bio", safe(u.getBio()),
                         "avatarUrl", safe(u.getAvatarUrl()),

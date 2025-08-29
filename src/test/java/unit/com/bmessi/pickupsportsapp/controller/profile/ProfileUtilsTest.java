@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.controller.profile;
+package unit.com.bmessi.pickupsportsapp.controller.profile;
 
+import com.bmessi.pickupsportsapp.controller.profile.ProfileUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

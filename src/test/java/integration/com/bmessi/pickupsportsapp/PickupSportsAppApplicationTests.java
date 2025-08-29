@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp;
+package integration.com.bmessi.pickupsportsapp;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
@@ -9,28 +9,21 @@ import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        classes = PickupSportsAppApplicationTests.MinimalBootConfig.class
+        classes = PickupSportsAppApplicationTests.TestBootConfig.class
 )
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
+        // Only exclude problematic auto-configurations
         "spring.autoconfigure.exclude=" +
-                // DB
-                "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration," +
-                "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration," +
                 "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration," +
-                // Security
-                "org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration," +
-                "org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration," +
-                "org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration," +
-                // Redis
                 "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration," +
-                "org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration," +
-                // WebSocket
-                "org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration," +
-                "org.springframework.boot.autoconfigure.websocket.servlet.WebSocketMessagingAutoConfiguration," +
-                "org.springframework.boot.autoconfigure.websocket.reactive.WebSocketReactiveAutoConfiguration",
-        "spring.jpa.hibernate.ddl-auto=none",
-        "spring.flyway.enabled=false"
+                "org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration",
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.flyway.enabled=false",
+        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+        "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.datasource.username=sa",
+        "spring.datasource.password="
 })
 class PickupSportsAppApplicationTests {
 
@@ -39,5 +32,5 @@ class PickupSportsAppApplicationTests {
 
     @SpringBootConfiguration
     @EnableAutoConfiguration
-    static class MinimalBootConfig { }
+    static class TestBootConfig { }
 }

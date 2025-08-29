@@ -4,15 +4,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 
 /**
  * Enforces capacity, waitlist, and RSVP cutoff policies for games.
- * Integrate by calling enforceOnRsvp(...) from RSVP flow and handleOnCancel(...) from unRSVP/cancel flow.
+ * Integrate by calling join(...) from RSVP flow and leaveAndPromote(...) from unRSVP/cancel flow.
  */
 @Service
 @RequiredArgsConstructor
@@ -20,40 +22,59 @@ public class CapacityManager {
 
     private final JdbcTemplate jdbc;
     private final WaitlistService waitlist;
-
+    private final MeterRegistry meterRegistry;
+    public record JoinResult(boolean success, boolean waitlisted, String reason, int remainingSlots) {}
     public record Decision(boolean allowed, boolean waitlisted, String reason) {}
+    public record LeaveResult(boolean removed, List<Long> promoted) {}
 
-    @Transactional(readOnly = true)
-    public Decision enforceOnRsvp(Long gameId, Long userId) {
-        GameRow g = fetchGame(gameId).orElse(null);
-        if (g == null) return new Decision(false, false, "not_found");
+    // Lock the game row to prevent race conditions on capacity checks and inserts
+    @Transactional
+    public JoinResult join(Long gameId, Long userId) {
+        GameRow g = fetchGameForUpdate(gameId).orElse(null);
+        if (g == null) {
+            meterRegistry.counter("joins_error", "reason", "not_found").increment();
+            return new JoinResult(false, false, "not_found", 0);
+        }
+
+        int capacity = g.capacity != null ? g.capacity : Integer.MAX_VALUE;
+        int participants = Optional.ofNullable(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId)).orElse(0);
+        int remaining = Math.max(0, capacity - participants);
 
         // Cutoff enforcement
         if (g.rsvpCutoff != null && Instant.now().isAfter(g.rsvpCutoff.toInstant())) {
-            return new Decision(false, false, "cutoff");
+            meterRegistry.counter("joins_error", "reason", "cutoff").increment();
+            return new JoinResult(false, false, "cutoff", remaining);
         }
 
         // Already participating?
-        Integer exists = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ? AND user_id = ?", Integer.class, gameId, userId);
+        Integer exists = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM game_participants WHERE game_id = ? AND user_id = ?",
+                Integer.class, gameId, userId);
         if (exists != null && exists > 0) {
-            return new Decision(true, false, "already_participant");
+            return new JoinResult(true, false, "already_participant", remaining);
         }
 
-        // Capacity check
-        int capacity = g.capacity != null ? g.capacity : Integer.MAX_VALUE;
-        int participants = Optional.ofNullable(jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId)).orElse(0);
-        boolean full = participants >= capacity;
-
-        if (!full) {
-            return new Decision(true, false, "ok");
+        if (remaining > 0) {
+            int added = jdbc.update(
+                    "INSERT INTO game_participants (game_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING",
+                    gameId, userId);
+            remaining -= added;
+            if (added > 0) {
+                meterRegistry.counter("joins_success").increment();
+            }
+            return new JoinResult(true, false, added == 0 ? "already_participant" : "ok", remaining);
         }
 
-        // Waitlist path
         if (!g.waitlistEnabled) {
-            return new Decision(false, false, "full");
+            meterRegistry.counter("joins_error", "reason", "full").increment();
+            return new JoinResult(false, false, "full", remaining);
         }
         boolean added = waitlist.addToWaitlist(gameId, userId);
-        return new Decision(false, added, added ? "waitlisted" : "waitlist_exists");
+        if (added) {
+            meterRegistry.counter("joins_waitlisted").increment();
+        }
+        return new JoinResult(false, added, added ? "waitlisted" : "waitlist_exists", remaining);
     }
 
     /**
@@ -62,11 +83,12 @@ public class CapacityManager {
      */
     @Transactional
     public int handleOnCancel(Long gameId) {
-        GameRow g = fetchGame(gameId).orElse(null);
+        GameRow g = fetchGameForUpdate(gameId).orElse(null);
         if (g == null) return 0;
 
         int capacity = g.capacity != null ? g.capacity : Integer.MAX_VALUE;
-        int participants = Optional.ofNullable(jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId)).orElse(0);
+        int participants = Optional.ofNullable(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId)).orElse(0);
         int slots = Math.max(0, capacity - participants);
         if (slots <= 0) return 0;
 
@@ -74,10 +96,46 @@ public class CapacityManager {
         int added = 0;
         for (Long uid : promote) {
             try {
-                added += jdbc.update("INSERT INTO game_participants (game_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING", gameId, uid);
+                added += jdbc.update(
+                        "INSERT INTO game_participants (game_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING",
+                        gameId, uid);
             } catch (Exception ignore) {}
         }
+        if (!promote.isEmpty()) {
+            meterRegistry.counter("promotions").increment(promote.size());
+        }
         return added;
+    }
+  
+    /**
+     * Remove a participant and promote waitlisted users if capacity becomes available.
+     * Operates within a single transaction while holding a lock on the game row.
+     */
+    @Transactional
+    public LeaveResult leaveAndPromote(Long gameId, Long userId) {
+        GameRow g = fetchGameForUpdate(gameId).orElse(null);
+        if (g == null) return new LeaveResult(false, List.of());
+
+        boolean removed = jdbc.update("DELETE FROM game_participants WHERE game_id = ? AND user_id = ?", gameId, userId) > 0;
+
+        List<Long> promoted = List.of();
+        if (g.capacity != null && g.waitlistEnabled) {
+            int participants = Optional.ofNullable(jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId)).orElse(0);
+            int slots = Math.max(0, g.capacity - participants);
+            if (slots > 0) {
+                promoted = waitlist.promoteUpTo(gameId, slots);
+                for (Long uid : promoted) {
+                    try {
+                        jdbc.update("INSERT INTO game_participants (game_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING", gameId, uid);
+                    } catch (Exception ignore) {}
+                }
+                if (!promoted.isEmpty()) {
+                    meterRegistry.counter("promotions").increment(promoted.size());
+                }
+            }
+        }
+
+        return new LeaveResult(removed, promoted);
     }
 
     private Optional<GameRow> fetchGame(Long gameId) {
@@ -85,6 +143,23 @@ public class CapacityManager {
             return Optional.ofNullable(jdbc.queryForObject("""
                 SELECT capacity, waitlist_enabled, rsvp_cutoff, time
                   FROM game WHERE id = ?
+                """, (rs, rn) -> new GameRow(
+                    (Integer) rs.getObject("capacity"),
+                    rs.getBoolean("waitlist_enabled"),
+                    toOdt(rs.getObject("rsvp_cutoff")),
+                    toOdt(rs.getObject("time"))
+                ), gameId));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<GameRow> fetchGameForUpdate(Long gameId) {
+        try {
+            return Optional.ofNullable(jdbc.queryForObject("""
+                SELECT capacity, waitlist_enabled, rsvp_cutoff, time
+                  FROM game WHERE id = ?
+                  FOR UPDATE
                 """, (rs, rn) -> new GameRow(
                     (Integer) rs.getObject("capacity"),
                     rs.getBoolean("waitlist_enabled"),

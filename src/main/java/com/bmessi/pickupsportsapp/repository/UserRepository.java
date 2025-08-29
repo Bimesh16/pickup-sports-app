@@ -26,13 +26,13 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Query("SELECT u FROM User u WHERE LOWER(u.username) IN :usernames")
     Page<User> findByUsernamesIgnoreCase(@Param("usernames") Set<String> usernames, Pageable pageable);
 
-    Page<User> findByPreferredSportIgnoreCase(String preferredSport, Pageable pageable);
+    Page<User> findByPreferredSport_NameIgnoreCase(String preferredSport, Pageable pageable);
     Page<User> findByLocationContainingIgnoreCase(String locationPart, Pageable pageable);
 
     @Query("""
         SELECT u
           FROM User u
-         WHERE (:preferredSport IS NULL OR LOWER(u.preferredSport) = LOWER(:preferredSport))
+         WHERE (:preferredSport IS NULL OR LOWER(u.preferredSport.name) = LOWER(:preferredSport))
            AND (:location      IS NULL OR LOWER(u.location) LIKE LOWER(CONCAT('%', :location, '%')))
            AND (:usernamePart  IS NULL OR LOWER(u.username) LIKE LOWER(CONCAT('%', :usernamePart, '%')))
     """)
@@ -42,7 +42,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     Slice<User> findByIdLessThanOrderByIdDesc(Long beforeId, Pageable pageable);
 
-    @Query("SELECT DISTINCT u.preferredSport FROM User u WHERE u.preferredSport IS NOT NULL")
+    @Query("SELECT DISTINCT s.name FROM User u JOIN u.preferredSport s WHERE s.name IS NOT NULL")
     Set<String> findDistinctPreferredSports();
 
     @Query("SELECT DISTINCT u.location FROM User u WHERE u.location IS NOT NULL")
@@ -63,7 +63,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             @QueryHint(name = HINT_READ_ONLY, value = "true"),
             @QueryHint(name = HINT_FETCH_SIZE, value = "1000")
     })
-    Stream<User> streamByPreferredSportIgnoreCase(String preferredSport);
+    Stream<User> streamByPreferredSport_NameIgnoreCase(String preferredSport);
+
+    void deleteByUsername(String username);
 
     interface Summary {
         Long getId();

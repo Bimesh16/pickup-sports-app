@@ -1,0 +1,72 @@
+package com.bmessi.pickupsportsapp.entity.ai;
+
+import com.bmessi.pickupsportsapp.entity.User;
+import com.bmessi.pickupsportsapp.entity.Venue;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+
+/**
+ * AI-generated venue recommendation for users.
+ */
+@Entity
+@Table(name = "venue_recommendations")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class VenueRecommendation {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recommended_venue_id", nullable = false)
+    private Venue recommendedVenue;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @Column(name = "recommendation_score", precision = 5, scale = 4, nullable = false)
+    private BigDecimal recommendationScore;
+
+    @Column(name = "reason", length = 500)
+    private String reason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private RecommendationStatus status;
+
+    @Column(name = "ai_model_version", length = 50)
+    private String aiModelVersion;
+
+    @Column(name = "features_used", length = 1000)
+    private String featuresUsed; // JSON string of features used for recommendation
+
+    @Column(name = "clicked_at")
+    private OffsetDateTime clickedAt;
+
+    @Column(name = "booked_venue")
+    private Boolean bookedVenue;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    public enum RecommendationStatus {
+        ACTIVE, CLICKED, BOOKED, EXPIRED
+    }
+}

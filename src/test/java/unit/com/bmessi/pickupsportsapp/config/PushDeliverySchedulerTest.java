@@ -1,5 +1,6 @@
-package com.bmessi.pickupsportsapp.config;
+package unit.com.bmessi.pickupsportsapp.config;
 
+import com.bmessi.pickupsportsapp.config.PushDeliveryScheduler;
 import com.bmessi.pickupsportsapp.entity.PushOutbox;
 import com.bmessi.pickupsportsapp.entity.PushSubscription;
 import com.bmessi.pickupsportsapp.entity.User;
@@ -11,14 +12,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import support.Quarantined;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
+@Quarantined
 class PushDeliverySchedulerTest {
 
-    @Autowired PushDeliveryScheduler scheduler;
+    @Autowired
+    PushDeliveryScheduler scheduler;
     @Autowired PushOutboxRepository outbox;
     @Autowired PushSubscriptionRepository subs;
     @Autowired UserRepository users;

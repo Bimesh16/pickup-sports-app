@@ -1,8 +1,10 @@
 package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
+import com.bmessi.pickupsportsapp.service.payment.PaymentService;
 import com.bmessi.pickupsportsapp.service.game.CapacityManager;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
+import com.bmessi.pickupsportsapp.websocket.GameRoomEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -17,15 +19,346 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
+// Swagger/OpenAPI
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+
+// DTOs for documentation
+import com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse;
+import com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse;
+import com.bmessi.pickupsportsapp.dto.api.ParticipantsResponse;
+import com.bmessi.pickupsportsapp.dto.api.WaitlistResponse;
+import com.bmessi.pickupsportsapp.security.VelocityCheckService;
+import com.bmessi.pickupsportsapp.security.SecurityAuditService;
+import com.bmessi.pickupsportsapp.security.CaptchaService;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.servlet.http.HttpServletRequest;
+import io.swagger.v3.oas.annotations.Parameter;
+
 @RestController
 @RequestMapping("/games")
 @RequiredArgsConstructor
+@Tag(name = "RSVP", description = "Join/Leave games, waitlist and participants")
 public class RsvpController {
 
     private final JdbcTemplate jdbc;
     private final CapacityManager capacityManager;
     private final WaitlistService waitlistService;
     private final NotificationService notificationService;
+    private final PaymentService paymentService;
+    private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
+    private final VelocityCheckService velocityCheckService;
+    private final SecurityAuditService securityAuditService;
+    private final CaptchaService captchaService;
+    private final MeterRegistry meterRegistry;
+    private final com.bmessi.pickupsportsapp.service.idempotency.IdempotencyService idempotencyService;
+
+
+
+    // Friendly "join" alias for RSVP
+    @Operation(
+            summary = "Join a game (RSVP)",
+            description = "Rate limited: 4 requests per 10 seconds",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Joined",
+                    content = @Content(
+                            schema = @Schema(implementation = RsvpResultResponse.class),
+                            examples = @ExampleObject(value = "{\n  \"joined\": true,\n  \"waitlisted\": false,\n  \"message\": \"ok\"\n}"))
+            ),
+            @ApiResponse(
+                    responseCode = "202",
+                    description = "Waitlisted",
+                    content = @Content(
+                            schema = @Schema(implementation = RsvpResultResponse.class),
+                            examples = @ExampleObject(value = "{\n  \"joined\": false,\n  \"waitlisted\": true,\n  \"message\": \"waitlisted\"\n}"))
+            ),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Game not found"),
+            @ApiResponse(responseCode = "409", description = "RSVP not allowed"),
+            @ApiResponse(responseCode = "429", description = "Too many requests"),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Game full or RSVP closed",
+                    content = @Content(
+                            schema = @Schema(implementation = Map.class),
+                            examples = {
+                                    @ExampleObject(name = "game_full", value = "{\n  \"error\": \"game_full\",\n  \"message\": \"No slots available\"\n}"),
+                                    @ExampleObject(name = "rsvp_closed", value = "{\n  \"error\": \"rsvp_closed\",\n  \"message\": \"RSVP cutoff has passed\"\n}")
+                            }
+                    )
+            )
+    })
+    @PostMapping("/{id}/join")
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
+    public ResponseEntity<?> join(@PathVariable Long id,
+                                  Principal principal,
+                                  @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+                                  @RequestHeader(value = "X-Captcha-Token", required = false) String captchaToken,
+                                  @Parameter(hidden = true) HttpServletRequest request) {
+        String username = principal.getName();
+
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isBlank()) ip = request.getRemoteAddr();
+        meterRegistry.counter("rsvp.events", "action", "join").increment();
+
+        String key = "rsvp:join:" + username + ":" + ip;
+        boolean allowed = velocityCheckService.incrementAndCheck(key, 20, 60_000);
+        if (!allowed) {
+            if (captchaToken == null || !captchaService.verify(captchaToken)) {
+                securityAuditService.suspiciousActivity("rsvp_velocity", key);
+                return ResponseEntity.status(429)
+                        .headers(noStore())
+                        .body(Map.of(
+                                "error", "too_many_requests",
+                                "captchaRequired", true,
+                                "message", "Please complete CAPTCHA"
+                        ));
+            }
+        }
+
+        // Early idempotency replay
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            var cached = idempotencyService.get("join", username, id, idempotencyKey);
+            if (cached.isPresent()) {
+                return ResponseEntity.status(cached.get().status())
+                        .headers(noStore())
+                        .body(cached.get().body());
+            }
+        }
+
+        Long userId = findUserId(username);
+        if (userId == null) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "user not found");
+        }
+
+        CapacityManager.JoinResult jr = capacityManager.join(id, userId);
+        switch (jr.reason()) {
+            case "not_found" -> {
+                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Game not found");
+            }
+            case "cutoff" -> {
+                var body = java.util.Map.of("error", "rsvp_closed", "message", "RSVP cutoff has passed");
+                if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                    idempotencyService.put("join", username, id, idempotencyKey, 409, body);
+                }
+                return ResponseEntity.status(409).headers(noStore()).body(body);
+            }
+        }
+        if (jr.success()) {
+            var meta = gameMeta(id);
+            if (meta != null) {
+                notificationService.createGameNotification(meta.owner(), username, meta.sport(), meta.location(), "joined");
+            }
+
+            // Live events
+            try {
+                emit(id, new GameRoomEvent.ParticipantJoined(username, userId));
+                if (meta != null && meta.capacity() != null) {
+                    emit(id, new GameRoomEvent.CapacityUpdate(jr.remainingSlots(), null));
+                }
+                emitCapacityUpdate(id, null);
+            } catch (Exception ignore) {}
+
+            var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(true, false, jr.reason());
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                idempotencyService.put("join", username, id, idempotencyKey, 200, body);
+            }
+            return ResponseEntity.ok().headers(noStore()).body(body);
+        }
+
+        if (jr.waitlisted()) {
+            var meta = gameMeta(id);
+            if (meta != null) {
+                notificationService.createGameNotification(username, "system", meta.sport(), meta.location(), "waitlisted");
+            }
+
+            // Live event: waitlist joined
+            try {
+                emit(id, "waitlist_joined", java.util.Map.of("user", username, "userId", userId));
+                if (meta != null && meta.capacity() != null) {
+                emit(id, new GameRoomEvent.CapacityUpdate(jr.remainingSlots(), null));
+                }
+                emitCapacityUpdate(id, null);
+            } catch (Exception ignore) {}
+
+            var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted");
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                idempotencyService.put("join", username, id, idempotencyKey, 202, body);
+            }
+            return ResponseEntity.status(202).headers(noStore()).body(body);
+        }
+
+        // Already on waitlist: respond consistently with 202
+        if ("waitlist_exists".equals(jr.reason())) {
+            try {
+                emit(id, "waitlist_joined", java.util.Map.of("user", username, "userId", userId));
+            } catch (Exception ignore) {}
+            var body = new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted");
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                idempotencyService.put("join", username, id, idempotencyKey, 202, body);
+            }
+            return ResponseEntity.status(202).headers(noStore()).body(body);
+        }
+
+        // Game full and waitlist disabled: return clear 409
+        if ("full".equals(jr.reason())) {
+            var body = java.util.Map.of("error", "game_full", "message", "No slots available", "remainingSlots", jr.remainingSlots());
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                idempotencyService.put("join", username, id, idempotencyKey, 409, body);
+            }
+            return ResponseEntity.status(409).headers(noStore()).body(body);
+        }
+
+        throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP not allowed: " + jr.reason());
+    }
+
+    // Friendly "leave" alias for unRSVP
+    @Operation(
+            summary = "Leave a game (unRSVP)",
+            description = "Rate limited: 4 requests per 10 seconds",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Left game; may include promotions", content = @Content(schema = @Schema(implementation = UnrsvpResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Game not found"),
+            @ApiResponse(responseCode = "429", description = "Too many requests")
+    })
+    @DeleteMapping("/{id}/leave")
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
+    public ResponseEntity<?> leave(@PathVariable Long id,
+                                   Principal principal,
+                                   @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+                                   @RequestHeader(value = "X-Captcha-Token", required = false) String captchaToken,
+                                   @Parameter(hidden = true) HttpServletRequest request) {
+        String username = principal.getName();
+
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isBlank()) ip = request.getRemoteAddr();
+        meterRegistry.counter("rsvp.events", "action", "leave").increment();
+
+        String key = "rsvp:leave:" + username + ":" + ip;
+        boolean allowed = velocityCheckService.incrementAndCheck(key, 20, 60_000);
+        if (!allowed) {
+            if (captchaToken == null || !captchaService.verify(captchaToken)) {
+                securityAuditService.suspiciousActivity("rsvp_velocity", key);
+                return ResponseEntity.status(429)
+                        .headers(noStore())
+                        .body(Map.of(
+                                "error", "too_many_requests",
+                                "captchaRequired", true,
+                                "message", "Please complete CAPTCHA"
+                        ));
+            }
+        }
+
+        // Early idempotency replay
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            var cached = idempotencyService.get("leave", username, id, idempotencyKey);
+            if (cached.isPresent()) {
+                @SuppressWarnings("unchecked")
+                var body = (com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse) cached.get().body();
+                return ResponseEntity.status(cached.get().status()).headers(noStore()).body(body);
+            }
+        }
+        Long userId = findUserId(username);
+        if (userId == null) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "user not found");
+        }
+        try {
+            paymentService.refundIfPreCutoff(id, userId);
+        } catch (Exception e) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "refund_failed");
+        }
+
+        CapacityManager.LeaveResult result = capacityManager.leaveAndPromote(id, userId);
+        GameMeta meta = gameMeta(id);
+        if (meta != null) {
+            for (Long uid : result.promoted()) {
+                String promotedUsername = jdbc.queryForObject("SELECT username FROM app_user WHERE id = ?", String.class, uid);
+                try {
+                    emit(id, new GameRoomEvent.WaitlistPromoted(promotedUsername, uid));
+                } catch (Exception ignore) {}
+            }
+            if (!result.promoted().isEmpty()) {
+                notificationService.createGameNotification(meta.owner(), "system", meta.sport(), meta.location(), "promotions");
+            }
+        }
+
+        // Live: participant left + capacity update
+        try {
+            emit(id, "participant_left", java.util.Map.of("user", username, "userId", userId));
+            emitCapacityUpdate(id, null);
+        } catch (Exception ignore) {}
+
+        var body = new com.bmessi.pickupsportsapp.dto.api.UnrsvpResponse(result.removed(), result.promoted().size());
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            idempotencyService.put("leave", username, id, idempotencyKey, 200, body);
+        }
+        return ResponseEntity.ok().headers(noStore()).body(body);
+    }
+
+    // Participants endpoint is served by GameController (/games/{id}/participants).
+    // Removed here to avoid ambiguous mapping with the canonical route.
+
+    // List waitlist and the caller's position (if authenticated)
+    @Operation(summary = "List waitlist for a game; includes your queue position when authenticated")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Waitlist", content = @Content(schema = @Schema(implementation = WaitlistResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Game not found", content = @Content)
+    })
+    @GetMapping("/{id}/waitlist")
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.api.WaitlistResponse> waitlist(@PathVariable Long id, Principal principal) {
+        List<com.bmessi.pickupsportsapp.dto.api.WaitlistResponse.Item> items = jdbc.query("""
+                SELECT gw.user_id, u.username, gw.created_at
+                  FROM game_waitlist gw
+                  JOIN app_user u ON u.id = gw.user_id
+                 WHERE gw.game_id = ?
+                 ORDER BY gw.created_at ASC
+                """, ps -> ps.setLong(1, id), (rs, rn) -> new com.bmessi.pickupsportsapp.dto.api.WaitlistResponse.Item(
+                        rs.getLong("user_id"),
+                        rs.getString("username"),
+                        ((java.sql.Timestamp) rs.getObject("created_at")).toInstant().atOffset(java.time.ZoneOffset.UTC)
+                ));
+        Integer total = jdbc.queryForObject("SELECT COUNT(*) FROM game_waitlist WHERE game_id = ?", Integer.class, id);
+
+        Integer myPosition = null;
+        if (principal != null) {
+            Long uid = findUserId(principal.getName());
+            if (uid != null) {
+                java.sql.Timestamp mine = null;
+                try {
+                    mine = jdbc.queryForObject("SELECT created_at FROM game_waitlist WHERE game_id = ? AND user_id = ?", java.sql.Timestamp.class, id, uid);
+                } catch (Exception ignore) {}
+                if (mine != null) {
+                    Integer before = jdbc.queryForObject("""
+                            SELECT COUNT(*) FROM game_waitlist
+                             WHERE game_id = ? AND created_at < ?
+                            """, Integer.class, id, mine);
+                    myPosition = (before == null ? 0 : before) + 1;
+                }
+            }
+        }
+
+        return ResponseEntity.ok().headers(noStore())
+                .body(new com.bmessi.pickupsportsapp.dto.api.WaitlistResponse(
+                        items,
+                        total == null ? 0 : total,
+                        myPosition
+                ));
+    }
 
     @PostMapping("/{id}/rsvp2")
     @PreAuthorize("isAuthenticated()")
@@ -38,33 +371,28 @@ public class RsvpController {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "user not found");
         }
 
-        CapacityManager.Decision d = capacityManager.enforceOnRsvp(id, userId);
-        switch (d.reason()) {
+        CapacityManager.JoinResult jr = capacityManager.join(id, userId);
+        switch (jr.reason()) {
             case "not_found" -> {
                 throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Game not found");
             }
             case "cutoff" -> {
-                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP cutoff has passed");
+                return ResponseEntity.status(409).headers(noStore())
+                        .body(java.util.Map.of("error", "rsvp_closed", "message", "RSVP cutoff has passed"));
             }
         }
 
-        if (d.allowed()) {
-            int added = jdbc.update("""
-                    INSERT INTO game_participants (game_id, user_id)
-                    VALUES (?, ?)
-                    ON CONFLICT DO NOTHING
-                    """, id, userId);
-
+        if (jr.success()) {
             var meta = gameMeta(id);
             if (meta != null) {
                 notificationService.createGameNotification(meta.owner(), username, meta.sport(), meta.location(), "joined");
             }
 
             return ResponseEntity.ok().headers(noStore())
-                    .body(new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(true, false, added == 0 ? "already_participant" : "ok"));
+                    .body(new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(true, false, jr.reason()));
         }
 
-        if (d.waitlisted()) {
+        if (jr.waitlisted()) {
             var meta = gameMeta(id);
             if (meta != null) {
                 notificationService.createGameNotification(username, "system", meta.sport(), meta.location(), "waitlisted");
@@ -73,7 +401,17 @@ public class RsvpController {
                     .body(new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted"));
         }
 
-        throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP not allowed: " + d.reason());
+        if ("waitlist_exists".equals(jr.reason())) {
+            return ResponseEntity.status(202).headers(noStore())
+                    .body(new com.bmessi.pickupsportsapp.dto.api.RsvpResultResponse(false, true, "waitlisted"));
+        }
+
+        if ("full".equals(jr.reason())) {
+            return ResponseEntity.status(409).headers(noStore())
+                    .body(java.util.Map.of("error", "game_full", "message", "No slots available", "remainingSlots", jr.remainingSlots()));
+        }
+
+        throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "RSVP not allowed: " + jr.reason());
     }
 
     @DeleteMapping("/{id}/rsvp2")
@@ -101,8 +439,6 @@ public class RsvpController {
                             VALUES (?, ?)
                             ON CONFLICT DO NOTHING
                             """, id, uid);
-                    String promotedUsername = jdbc.queryForObject("SELECT username FROM app_user WHERE id = ?", String.class, uid);
-                    notificationService.createGameNotification(promotedUsername, "system", meta.sport(), meta.location(), "promoted");
                 }
                 if (!promoted.isEmpty()) {
                     notificationService.createGameNotification(meta.owner(), "system", meta.sport(), meta.location(), "promotions");
@@ -127,6 +463,16 @@ public class RsvpController {
     private int countParticipants(Long gameId) {
         Integer n = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
         return n == null ? 0 : n;
+    }
+
+    private void emitCapacityUpdate(Long gameId, String hint) {
+        Integer capacity = jdbc.queryForObject("SELECT capacity FROM game WHERE id = ?", Integer.class, gameId);
+        if (capacity == null) return;
+        Integer participants = jdbc.queryForObject("SELECT COUNT(*) FROM game_participants WHERE game_id = ?", Integer.class, gameId);
+        Integer holds = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM game_holds WHERE game_id = ? AND expires_at > now()", Integer.class, gameId);
+        int remaining = capacity - (participants == null ? 0 : participants) - (holds == null ? 0 : holds);
+        emit(gameId, new GameRoomEvent.CapacityUpdate(Math.max(0, remaining), hint));
     }
 
     private GameMeta gameMeta(Long gameId) {
@@ -155,5 +501,18 @@ public class RsvpController {
     }
 
     private record GameMeta(String sport, String location, OffsetDateTime time, Long ownerId, String owner, Integer capacity, boolean waitlistEnabled) {}
+
+    private void emit(Long gameId, GameRoomEvent event) {
+        try {
+            broker.convertAndSend("/topic/games/" + gameId, event);
+        } catch (Exception ignore) {
+            // do not fail user flow on WS issues
+        }
+    }
+
+    // Backwards-compatible helper for generic events
+    private void emit(Long gameId, String type, java.util.Map<String, Object> data) {
+        emit(gameId, new GameRoomEvent.Generic(type, data));
+    }
 
 }

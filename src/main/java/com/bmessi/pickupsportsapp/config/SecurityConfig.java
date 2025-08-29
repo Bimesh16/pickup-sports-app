@@ -1,15 +1,15 @@
 package com.bmessi.pickupsportsapp.config;
 
-import com.bmessi.pickupsportsapp.security.JwtAuthenticationFilter;
 import com.bmessi.pickupsportsapp.security.JwtAuthorizationFilter;
 import com.bmessi.pickupsportsapp.security.JwtTokenService;
 import com.bmessi.pickupsportsapp.repository.RevokedTokenRepository;
 import com.bmessi.pickupsportsapp.service.auth.AuthService;
+import com.bmessi.pickupsportsapp.exception.GlobalExceptionHandler;
+import com.bmessi.pickupsportsapp.security.RestAuthenticationEntryPoint;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -20,10 +20,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.bmessi.pickupsportsapp.security.LoginRateLimitFilter;
 import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
@@ -54,11 +52,6 @@ public class SecurityConfig {
                                         @Value("${springdoc.api-docs.enabled:false}") boolean apiDocsEnabled) throws Exception {
 
         var jwtAuthz = new JwtAuthorizationFilter(userDetailsService, jwtTokenService, revokedTokenRepository, AUTH_HEADER_NAME, AUTH_HEADER_PREFIX);
-        var jwtAuthn = new JwtAuthenticationFilter(authenticationManager, authService,
-                "/auth/login", AUTH_HEADER_NAME, AUTH_HEADER_PREFIX);
-
-        // Rate limiter for /auth/login (configurable via security.login.rate-limit)
-        var loginRateLimiter = new LoginRateLimitFilter(loginRateLimitPerMinute);
 
         http
             .csrf(csrf -> csrf.disable())
@@ -71,27 +64,23 @@ public class SecurityConfig {
                 // static and SPA entry
                 auth.requestMatchers("/", "/index.html", "/chat-test.html").permitAll();
                 auth.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll();
-                // API docs and Swagger UI only when enabled
-                if (apiDocsEnabled) {
-                    auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
-                }
+                // Always allow API docs and Swagger UI
+                auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
                 // Actuator endpoints
                 auth.requestMatchers("/actuator/**").permitAll();
                 // error endpoint (allow internal forwards without authentication)
                 auth.requestMatchers("/error").permitAll();
-                // public REST
+                // public REST (login handled by controller)
                 auth.requestMatchers("/auth/**", "/users/register", "/sports", "/games", "/games/**").permitAll();
+                // admin endpoints
+                auth.requestMatchers("/admin/**").hasRole("ADMIN");
                 // everything else
                 auth.anyRequest().authenticated();
             })
-            // throttle login attempts before auth processing
-            .addFilterBefore(loginRateLimiter, UsernamePasswordAuthenticationFilter.class)
-                // place login filter at the UsernamePasswordAuthenticationFilter slot
-                .addFilterAt(jwtAuthn, UsernamePasswordAuthenticationFilter.class)
-                // validate JWT before username/password auth
-                .addFilterBefore(jwtAuthz, UsernamePasswordAuthenticationFilter.class)
-                // send 401 instead of redirecting (no internal forward loop)
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
+            // validate JWT before username/password auth
+            .addFilterBefore(jwtAuthz, UsernamePasswordAuthenticationFilter.class)
+            // send JSON 401 body on auth failures
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(new RestAuthenticationEntryPoint()));
 
         return http.build();
     }

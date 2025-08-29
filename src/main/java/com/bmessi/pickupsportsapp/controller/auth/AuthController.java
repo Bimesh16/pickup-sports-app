@@ -26,6 +26,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.bmessi.pickupsportsapp.security.VelocityCheckService;
+import com.bmessi.pickupsportsapp.security.CaptchaService;
 
 @RestController
 @RequestMapping("/auth")
@@ -54,13 +56,15 @@ public class AuthController {
     private final com.bmessi.pickupsportsapp.service.MfaService mfaService;
     private final com.bmessi.pickupsportsapp.service.MfaChallengeService mfaChallengeService;
     private final com.bmessi.pickupsportsapp.service.TrustedDeviceService trustedDeviceService;
+    private final VelocityCheckService velocityCheckService;
+    private final CaptchaService captchaService;
 
     @Operation(summary = "Authenticate a user and issue tokens")
     @PostMapping("/login")
     @RateLimiter(name = "auth")
     public ResponseEntity<?> login(
             @Valid
-            @RequestBody(description = "Login credentials") LoginRequest request,
+            @org.springframework.web.bind.annotation.RequestBody LoginRequest request,
             @Parameter(hidden = true) jakarta.servlet.http.HttpServletRequest httpRequest) {
         try {
             log.debug("Login attempt for user: {}", request.username());
@@ -80,6 +84,24 @@ public class AuthController {
                                     "message", "Please try again later",
                                     "timestamp", System.currentTimeMillis()
                             ));
+                }
+
+                // In-memory velocity check and CAPTCHA gate
+                String velocityKey = "auth:login:" + uname + ":" + ip;
+                boolean allowed = velocityCheckService.incrementAndCheck(velocityKey, 10, 60_000);
+                if (!allowed) {
+                    String captchaToken = httpRequest.getHeader("X-Captcha-Token");
+                    if (!captchaService.verify(captchaToken)) {
+                        securityAuditService.suspiciousActivity("auth_velocity", velocityKey);
+                        return ResponseEntity.status(429)
+                                .headers(noStore())
+                                .body(Map.of(
+                                        "error", "too_many_requests",
+                                        "captchaRequired", true,
+                                        "message", "Please complete CAPTCHA",
+                                        "timestamp", System.currentTimeMillis()
+                                ));
+                    }
                 }
             } catch (Exception ignore) {}
 
@@ -178,7 +200,7 @@ public class AuthController {
     @RateLimiter(name = "auth")
     public ResponseEntity<?> refresh(
             @Valid
-            @RequestBody(description = "Refresh token and optional nonce") RefreshRequest request,
+            @org.springframework.web.bind.annotation.RequestBody RefreshRequest request,
             @Parameter(description = "Refresh token from cookie")
             @CookieValue(name = "refreshToken", required = false) String refreshCookie,
             @Parameter(hidden = true) jakarta.servlet.http.HttpServletRequest httpRequest) {
@@ -250,7 +272,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout(
             @Valid
-            @RequestBody(description = "Refresh token to revoke") RefreshRequest request) {
+            @org.springframework.web.bind.annotation.RequestBody RefreshRequest request) {
         try {
             log.debug("Logout attempt");
             authService.logout(request.refreshToken());

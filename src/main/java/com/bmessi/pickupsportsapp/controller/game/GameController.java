@@ -10,11 +10,13 @@ import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.mapper.ApiMapper;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
+import com.bmessi.pickupsportsapp.service.game.GameService;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import com.bmessi.pickupsportsapp.service.SportResolverService;
 import com.bmessi.pickupsportsapp.service.AiRecommendationResilientService;
 import com.bmessi.pickupsportsapp.service.chat.ChatService;
+import com.bmessi.pickupsportsapp.service.SavedSearchMatchService;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
@@ -72,12 +74,14 @@ public class GameController {
 
     // Dependencies
     private final GameRepository gameRepository;
+    private final GameService gameService;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final AiRecommendationResilientService xaiRecommendationService;
     private final ApiMapper mapper;
     private final ChatService chatService;
     private final SportResolverService sportResolver;
+    private final SavedSearchMatchService savedSearchMatchService;
     private final com.bmessi.pickupsportsapp.service.IdempotencyService idempotencyService;
     private final com.bmessi.pickupsportsapp.service.gameaccess.GameAccessService gameAccessService;
     private final java.util.Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> redisRateLimiter;
@@ -98,48 +102,8 @@ public class GameController {
     // Chat Endpoints
     // ================================================================================
 
-    /**
-     * Retrieves chat message history for a specific game.
-     */
-    @Operation(
-            summary = "Retrieve chat message history for a specific game",
-            description = "Returns messages older than or equal to the provided 'before' timestamp, in ascending order."
-    )
-    @io.swagger.v3.oas.annotations.responses.ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "Chat messages",
-                    content = @io.swagger.v3.oas.annotations.media.Content(
-                            array = @io.swagger.v3.oas.annotations.media.ArraySchema(
-                                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ChatMessageDTO.class)
-                            ),
-                            examples = {
-                                    @io.swagger.v3.oas.annotations.media.ExampleObject(
-                                            name = "SampleHistory",
-                                            summary = "Example chat history",
-                                            value = "[{\"messageId\":101,\"clientId\":\"c1\",\"sender\":\"alice\",\"content\":\"Hi!\",\"sentAt\":\"2025-08-25T10:00:00Z\"}," +
-                                                    "{\"messageId\":102,\"clientId\":\"c2\",\"sender\":\"bob\",\"content\":\"Welcome\",\"sentAt\":\"2025-08-25T10:01:00Z\"}]"
-                                    )
-                            }
-                    )
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @GetMapping("/{gameId}/chat/history")
-    @PreAuthorize("isAuthenticated()")
-    public List<ChatMessageDTO> getChatHistory(
-            @Parameter(description = "ID of the game") @PathVariable Long gameId,
-            @Parameter(description = "Return messages before this timestamp")
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant before,
-            @Parameter(description = "Maximum number of messages to return")
-            @RequestParam(defaultValue = "50") int limit,
-            @Parameter(hidden = true) Principal principal
-    ) {
-        validateGameAccess(gameId, principal.getName());
-        return chatService.history(gameId, before, limit);
-    }
+    // Chat history endpoints are handled by ChatHistoryController.
+    // Removed duplicate mapping to avoid ambiguous routes.
 
     // ================================================================================
     // Game CRUD Endpoints
@@ -191,10 +155,10 @@ public class GameController {
         validateTimeRange(fromTime, toTime);
         validateGeoParams(lat, lon, radiusKm);
 
-        // Branch: geo-filtered list using PostGIS
+        // Branch: geo-filtered list (use generic lat/lon search; works with or without PostGIS)
         if (lat != null && lon != null && radiusKm != null) {
             validateRadius(radiusKm);
-            Page<Game> page = gameRepository.findByLocationWithinRadius(
+            Page<Game> page = gameRepository.search(
                     nsport,
                     nloc,
                     fromTime,
@@ -229,7 +193,7 @@ public class GameController {
 
         // Default DB-backed paging
         Page<Game> page = hasAnyFilter(nsport, nloc, fromTime, toTime, normalizedSkill)
-                ? gameRepository.search(nsport, nloc, fromTime, toTime, normalizedSkill, effective)
+                ? gameRepository.search(nsport, nloc, fromTime, toTime, normalizedSkill, null, null, null, effective)
                 : gameRepository.findAll(effective);
 
         Page<GameSummaryDTO> body = page.map(mapper::toGameSummaryDTO);
@@ -276,9 +240,11 @@ public class GameController {
             @Parameter(description = "Last known modification time")
             @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSince
     ) {
-        return gameRepository.findWithParticipantsById(id)
-                .map(game -> buildGameResponse(game, ifNoneMatch, ifModifiedSince))
-                .orElseGet(this::gameNotFound);
+        Game game = gameService.getGameWithParticipants(id);
+        if (game == null) {
+            return gameNotFound();
+        }
+        return buildGameResponse(game, ifNoneMatch, ifModifiedSince);
     }
 
     /**
@@ -298,11 +264,10 @@ public class GameController {
     })
     @GetMapping("/{id}/participants")
     public ResponseEntity<List<UserDTO>> getParticipants(@Parameter(description = "Game identifier") @PathVariable Long id) {
-        var opt = gameRepository.findWithParticipantsById(id);
-        if (opt.isEmpty()) {
+        Game game = gameService.getGameWithParticipants(id);
+        if (game == null) {
             return ResponseEntity.notFound().build();
         }
-        Game game = opt.get();
 
         // Map participants to DTOs and sort by username for stable output
         List<UserDTO> users = game.getParticipants().stream()
@@ -330,11 +295,10 @@ public class GameController {
             @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
             @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSince
     ) {
-        var opt = gameRepository.findWithParticipantsById(id);
-        if (opt.isEmpty()) {
+        Game game = gameService.getGameWithParticipants(id);
+        if (game == null) {
             return ResponseEntity.notFound().build();
         }
-        var game = opt.get();
         ResponseEntity<GameDetailsDTO> full = buildGameResponse(game, ifNoneMatch, ifModifiedSince);
         return ResponseEntity.status(full.getStatusCodeValue())
                 .headers(full.getHeaders())
@@ -349,7 +313,7 @@ public class GameController {
     @PreAuthorize("isAuthenticated()")
     @RateLimiter(name = "games")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games", "game-details"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> createGame(
             @Valid
             @org.springframework.web.bind.annotation.RequestBody
@@ -398,7 +362,7 @@ public class GameController {
         Game game = Game.builder()
                 .sport(canonicalSport)
                 .location(request.location())
-                .time(request.time().toInstant())
+                .time(request.time())
                 .skillLevel(canonicalSkill)
                 .latitude(request.latitude())
                 .longitude(request.longitude())
@@ -407,6 +371,8 @@ public class GameController {
                 .updatedAt(OffsetDateTime.now())
                 .build();
         Game saved = gameRepository.save(game);
+
+        savedSearchMatchService.handleNewGame(saved);
 
         // Store idempotency mapping for future replays
         if (idem != null) {
@@ -443,7 +409,7 @@ public class GameController {
     @PreAuthorize("isAuthenticated()")
     @RateLimiter(name = "games")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games", "game-details"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> updateGame(
             @Parameter(description = "Game identifier") @PathVariable Long id,
             @Valid
@@ -492,7 +458,7 @@ public class GameController {
     @PatchMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games", "game-details"}, allEntries = true)
     public ResponseEntity<GameDetailsDTO> patchGame(
             @PathVariable Long id,
             @Valid @RequestBody UpdateGameRequest request,
@@ -512,7 +478,7 @@ public class GameController {
     @PreAuthorize("isAuthenticated()")
     @RateLimiter(name = "games")
     @Transactional
-    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = {"explore-first", "sports-list", "nearby-games", "game-details"}, allEntries = true)
     public ResponseEntity<Void> deleteGame(
             @Parameter(description = "Game identifier") @PathVariable Long id,
             @Parameter(description = "ETag for concurrency control")
@@ -1085,7 +1051,7 @@ public class GameController {
         return Game.builder()
                 .sport(canonicalSport)
                 .location(request.location())
-                .time(request.time().toInstant())
+                .time(request.time())
                 .skillLevel(request.skillLevel())
                 .latitude(request.latitude())
                 .longitude(request.longitude())
@@ -1118,7 +1084,7 @@ public class GameController {
         }
 
         if (request.time() != null) {
-            game.setTime(request.time().toInstant());
+            game.setTime(request.time());
         }
 
         if (request.skillLevel() != null) {

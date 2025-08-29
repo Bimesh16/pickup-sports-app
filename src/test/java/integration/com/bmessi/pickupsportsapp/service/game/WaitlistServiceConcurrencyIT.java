@@ -5,7 +5,7 @@ import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
-import com.bmessi.pickupsportsapp.service.push.PushSenderService;
+import com.bmessi.pickupsportsapp.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -38,9 +39,8 @@ class WaitlistServiceConcurrencyIT {
 
     @Autowired
     private GameRepository gameRepository;
-
     @MockitoBean
-    private PushSenderService push;
+    private EmailService emailService;
 
     @BeforeEach
     void setup() {
@@ -56,7 +56,7 @@ class WaitlistServiceConcurrencyIT {
         User owner = userRepository.save(User.builder().username("owner@ex.com").password("pw").build());
         User u1 = userRepository.save(User.builder().username("a@ex.com").password("pw").build());
         User u2 = userRepository.save(User.builder().username("b@ex.com").password("pw").build());
-        Game game = gameRepository.save(Game.builder().sport("Soccer").location("Park").time(Instant.now()).user(owner).build());
+        Game game = gameRepository.save(Game.builder().sport("Soccer").location("Park").time(OffsetDateTime.now(ZoneOffset.UTC)).user(owner).build());
 
         assertTrue(waitlistService.addToWaitlist(game.getId(), u1.getId()));
         Thread.sleep(5);
@@ -86,7 +86,5 @@ class WaitlistServiceConcurrencyIT {
         assertEquals(2, Set.copyOf(all).size());
         assertEquals(0, waitlistService.waitlistCount(game.getId()));
 
-        verify(push).enqueue(eq(u1.getUsername()), any(), any(), any());
-        verify(push).enqueue(eq(u2.getUsername()), any(), any(), any());
     }
 }

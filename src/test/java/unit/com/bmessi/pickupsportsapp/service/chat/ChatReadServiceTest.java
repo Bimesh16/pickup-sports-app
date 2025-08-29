@@ -1,10 +1,11 @@
-package com.bmessi.pickupsportsapp.service.chat;
+package unit.com.bmessi.pickupsportsapp.service.chat;
 
 import com.bmessi.pickupsportsapp.entity.ChatReadCursor;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.ChatMessageRepository;
 import com.bmessi.pickupsportsapp.repository.ChatReadCursorRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
+import com.bmessi.pickupsportsapp.service.chat.ChatReadService;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,8 @@ class ChatReadServiceTest {
     @Mock UserRepository users;
     @Mock MeterRegistry meterRegistry;
 
-    @InjectMocks ChatReadService service;
+    @InjectMocks
+    ChatReadService service;
 
     private User user;
 

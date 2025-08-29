@@ -1,11 +1,13 @@
-package com.bmessi.pickupsportsapp.controller;
+package unit.com.bmessi.pickupsportsapp.controller;
 
+import com.bmessi.pickupsportsapp.controller.RsvpController;
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import com.bmessi.pickupsportsapp.service.game.CapacityManager;
 import com.bmessi.pickupsportsapp.service.game.WaitlistService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +15,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import support.Quarantined;
+import support.Quarantined;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -20,8 +24,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(RsvpController.class)
 @Import(RsvpControllerWebMvcTest.TestBeans.class)
+@Quarantined
 class RsvpControllerWebMvcTest {
 
     @TestConfiguration
@@ -44,9 +50,8 @@ class RsvpControllerWebMvcTest {
     void rsvp2_success_returnsDto() throws Exception {
         Mockito.when(jdbc.queryForObject(eq("SELECT id FROM app_user WHERE username = ?"), eq(Long.class), any()))
                 .thenReturn(1L);
-        Mockito.when(capacityManager.enforceOnRsvp(eq(42L), eq(1L)))
-                .thenReturn(new CapacityManager.Decision(true, false, "ok"));
-        Mockito.when(jdbc.update(anyString(), any(), any())).thenReturn(1);
+        Mockito.when(capacityManager.join(eq(42L), eq(1L)))
+                .thenReturn(new CapacityManager.JoinResult(true, false, "ok", 0));
 
         mvc.perform(post("/games/{id}/rsvp2", 42L))
                 .andExpect(status().isOk())
@@ -75,5 +80,51 @@ class RsvpControllerWebMvcTest {
                 .andExpect(header().string("Cache-Control", containsString("no-store")))
                 .andExpect(jsonPath("$.removed", is(true)))
                 .andExpect(jsonPath("$.promoted", is(greaterThanOrEqualTo(0))));
+    }
+
+    @Test
+    @WithMockUser(username = "alice@example.com")
+    void rsvp2_waitlisted_returns202() throws Exception {
+        Mockito.when(jdbc.queryForObject(eq("SELECT id FROM app_user WHERE username = ?"), eq(Long.class), any()))
+                .thenReturn(1L);
+        Mockito.when(capacityManager.join(eq(42L), eq(1L)))
+                .thenReturn(new CapacityManager.JoinResult(false, true, "waitlisted", 0));
+
+        mvc.perform(post("/games/{id}/rsvp2", 42L))
+                .andExpect(status().isAccepted())
+                .andExpect(header().string("Cache-Control", containsString("no-store")))
+                .andExpect(jsonPath("$.joined", is(false)))
+                .andExpect(jsonPath("$.waitlisted", is(true)))
+                .andExpect(jsonPath("$.message", is("waitlisted")));
+    }
+
+    @Test
+    @WithMockUser(username = "alice@example.com")
+    void rsvp2_full_returns409() throws Exception {
+        Mockito.when(jdbc.queryForObject(eq("SELECT id FROM app_user WHERE username = ?"), eq(Long.class), any()))
+                .thenReturn(1L);
+        Mockito.when(capacityManager.join(eq(42L), eq(1L)))
+                .thenReturn(new CapacityManager.JoinResult(false, false, "full", 0));
+
+        mvc.perform(post("/games/{id}/rsvp2", 42L))
+                .andExpect(status().isConflict())
+                .andExpect(header().string("Cache-Control", containsString("no-store")))
+                .andExpect(jsonPath("$.error", is("game_full")))
+                .andExpect(jsonPath("$.message", is("No slots available")));
+    }
+
+    @Test
+    @WithMockUser(username = "alice@example.com")
+    void rsvp2_cutoff_returns409() throws Exception {
+        Mockito.when(jdbc.queryForObject(eq("SELECT id FROM app_user WHERE username = ?"), eq(Long.class), any()))
+                .thenReturn(1L);
+        Mockito.when(capacityManager.join(eq(42L), eq(1L)))
+                .thenReturn(new CapacityManager.JoinResult(false, false, "cutoff", 0));
+
+        mvc.perform(post("/games/{id}/rsvp2", 42L))
+                .andExpect(status().isConflict())
+                .andExpect(header().string("Cache-Control", containsString("no-store")))
+                .andExpect(jsonPath("$.error", is("rsvp_closed")))
+                .andExpect(jsonPath("$.message", is("RSVP cutoff has passed")));
     }
 }

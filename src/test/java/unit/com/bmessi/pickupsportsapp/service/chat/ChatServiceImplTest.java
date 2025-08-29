@@ -1,4 +1,4 @@
-package com.bmessi.pickupsportsapp.service.chat;
+package unit.com.bmessi.pickupsportsapp.service.chat;
 
 import com.bmessi.pickupsportsapp.dto.chat.ChatMessageDTO;
 import com.bmessi.pickupsportsapp.entity.chat.ChatMessage;
@@ -6,6 +6,9 @@ import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.repository.ChatMessageRepository;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.security.RedisRateLimiterService;
+import com.bmessi.pickupsportsapp.service.chat.ChatModerationService;
+import com.bmessi.pickupsportsapp.service.chat.ChatServiceImpl;
+import com.bmessi.pickupsportsapp.service.chat.ProfanityFilterService;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import support.Quarantined;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -22,16 +26,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@Quarantined
 class ChatServiceImplTest {
 
     @Mock ChatMessageRepository chatRepo;
     @Mock GameRepository gameRepo;
-    @Mock ChatModerationService moderationService;
-    @Mock ProfanityFilterService profanityFilter;
+    @Mock
+    ChatModerationService moderationService;
+    @Mock
+    ProfanityFilterService profanityFilter;
     @Mock MeterRegistry meterRegistry;
     @Mock RedisRateLimiterService rateLimiter;
 
-    @InjectMocks ChatServiceImpl service;
+    @InjectMocks
+    ChatServiceImpl service;
 
     @BeforeEach
     void setUp() {

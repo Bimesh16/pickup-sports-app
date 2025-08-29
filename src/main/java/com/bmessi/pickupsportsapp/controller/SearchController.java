@@ -28,19 +28,31 @@ public class SearchController {
     private final UserRepository userRepository;
     private final ApiMapper mapper;
 
+    @io.swagger.v3.oas.annotations.Operation(
+            summary = "Search games",
+            description = "Filters by sport, location, skill level, time range, and optional radius from provided coordinates."
+    )
     @GetMapping("/games")
     public org.springframework.http.ResponseEntity<Page<GameSummaryDTO>> searchGames(
+            @io.swagger.v3.oas.annotations.Parameter(description = "Filter by sport")
             @RequestParam(required = false) String sport,
+            @io.swagger.v3.oas.annotations.Parameter(description = "Filter by location substring")
             @RequestParam(required = false) String location,
+            @io.swagger.v3.oas.annotations.Parameter(description = "Filter by skill level")
             @RequestParam(required = false) String skillLevel,
+            @io.swagger.v3.oas.annotations.Parameter(description = "Start of time window")
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fromDate,
+            @io.swagger.v3.oas.annotations.Parameter(description = "End of time window")
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toDate,
+            @io.swagger.v3.oas.annotations.Parameter(description = "Latitude for radius search")
             @RequestParam(required = false) Double lat,
+            @io.swagger.v3.oas.annotations.Parameter(description = "Longitude for radius search")
             @RequestParam(required = false) Double lng,
+            @io.swagger.v3.oas.annotations.Parameter(description = "Radius in kilometers", example = "10.0")
             @RequestParam(required = false, defaultValue = "10.0") Double radiusKm,
-            @PageableDefault(size = 20) Pageable pageable,
+            @PageableDefault(size = 20, sort = "time") Pageable pageable,
             jakarta.servlet.http.HttpServletRequest request,
             @org.springframework.web.bind.annotation.RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSince
     ) {
@@ -49,7 +61,7 @@ public class SearchController {
         String nloc = normalize(location);
         validateTimeRange(fromDate, toDate);
 
-        Page<Game> games = gameRepository.search(nsport, nloc, fromDate, toDate, skillLevel, pageable);
+        Page<Game> games = gameRepository.search(nsport, nloc, fromDate, toDate, skillLevel, lat, lng, radiusKm, pageable);
         Page<GameSummaryDTO> body = games.map(mapper::toGameSummaryDTO);
 
         // Compute Last-Modified from entities (max of updatedAt/createdAt/time)
@@ -128,7 +140,7 @@ public class SearchController {
     private static long lastModifiedEpochMilli(Game g) {
         if (g.getUpdatedAt() != null) return g.getUpdatedAt().toInstant().toEpochMilli();
         if (g.getCreatedAt() != null) return g.getCreatedAt().toInstant().toEpochMilli();
-        if (g.getTime() != null) return g.getTime().toEpochMilli();
+        if (g.getTime() != null) return g.getTime().toInstant().toEpochMilli();
         return System.currentTimeMillis();
     }
 

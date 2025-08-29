@@ -14,6 +14,7 @@ import com.bmessi.pickupsportsapp.service.notification.NotificationService;
 import com.bmessi.pickupsportsapp.service.SportResolverService;
 import com.bmessi.pickupsportsapp.service.chat.ChatService;
 import com.bmessi.pickupsportsapp.service.gameaccess.GameAccessService;
+import com.bmessi.pickupsportsapp.service.SavedSearchMatchService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -46,7 +47,7 @@ class RsvpCacheEvictTest {
     @EnableCaching
     static class TestCacheConfig {
         @Bean CacheManager cacheManager() {
-            return new ConcurrentMapCacheManager("explore-first", "sports-list", "search-filters", "nearby-games");
+            return new ConcurrentMapCacheManager("explore-first", "sports-list", "search-filters", "nearby-games", "game-details");
         }
         @Bean ApiMapper mapper() { return Mockito.mock(ApiMapper.class); }
         @Bean NotificationService notificationService() { return Mockito.mock(NotificationService.class); }
@@ -54,9 +55,21 @@ class RsvpCacheEvictTest {
         @Bean SportResolverService sportResolver() { return Mockito.mock(SportResolverService.class); }
         @Bean com.bmessi.pickupsportsapp.service.IdempotencyService idempotencyService() { return Mockito.mock(com.bmessi.pickupsportsapp.service.IdempotencyService.class); }
         @Bean GameAccessService gameAccessService() { return Mockito.mock(GameAccessService.class); }
+        @Bean SavedSearchMatchService savedSearchMatchService() { return Mockito.mock(SavedSearchMatchService.class); }
         @Bean GameRepository gameRepository() { return Mockito.mock(GameRepository.class); }
         @Bean UserRepository userRepository() { return Mockito.mock(UserRepository.class); }
-        @Bean com.bmessi.pickupsportsapp.service.AiRecommendationResilientService xaiRecommendationService() { return Mockito.mock(com.bmessi.pickupsportsapp.service.AiRecommendationResilientService.class); }
+        @Bean com.bmessi.pickupsportsapp.service.game.GameService gameService() { return Mockito.mock(com.bmessi.pickupsportsapp.service.game.GameService.class); }
+        
+        // Create a real instance instead of mocking to avoid generic type issues
+        @Bean com.bmessi.pickupsportsapp.service.AiRecommendationResilientService xaiRecommendationService() { 
+            return new com.bmessi.pickupsportsapp.service.AiRecommendationResilientService(
+                java.util.Optional.empty(), // No XAI service in tests
+                Mockito.mock(GameRepository.class),
+                Mockito.mock(ApiMapper.class),
+                Mockito.mock(java.util.concurrent.Executor.class),
+                Mockito.mock(io.micrometer.core.instrument.MeterRegistry.class)
+            );
+        }
     }
 
     @jakarta.annotation.Resource GameRepository gameRepository;
@@ -91,7 +104,7 @@ class RsvpCacheEvictTest {
         cacheExplore.put("k1", "v1");
         cacheSports.put("k2", "v2");
 
-        CreateGameRequest req = new CreateGameRequest("Soccer", "Park", OffsetDateTime.now().plusHours(1), null, null, null);
+        CreateGameRequest req = new CreateGameRequest("Soccer", "Park", OffsetDateTime.now().plusHours(1), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         Principal principal = () -> "alice";
         Mockito.when(gameRepository.save(any(Game.class))).thenAnswer(inv -> {
             Game g = inv.getArgument(0);

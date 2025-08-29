@@ -41,11 +41,17 @@ public final class ProfileUtils {
         int q = originalUrl.indexOf('?'); // preserve query if any
         String base = (q >= 0) ? originalUrl.substring(0, q) : originalUrl;
         String query = (q >= 0) ? originalUrl.substring(q) : "";
+
+        // Only treat a '.' as an extension separator if it appears after the last '/'
+        int lastSlash = base.lastIndexOf('/');
         int dot = base.lastIndexOf('.');
-        if (dot <= 0 || dot == base.length() - 1) {
-            // No extension; append _thumb
+        boolean hasExtensionInPath = dot > lastSlash && dot < base.length() - 1;
+
+        if (!hasExtensionInPath) {
+            // No extension in the path segment; append _thumb at the end of the path
             return base + "_thumb" + query;
         }
+        // Insert _thumb before the extension
         return base.substring(0, dot) + "_thumb" + base.substring(dot) + query;
     }
 }
