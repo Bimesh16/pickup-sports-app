@@ -4,6 +4,7 @@ import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.service.notification.NotificationService;
+import com.bmessi.pickupsportsapp.service.notification.EnhancedNotificationService;
 import com.bmessi.pickupsportsapp.websocket.GameRoomEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Enhanced business logic service for game management.
@@ -29,6 +32,7 @@ public class GameBusinessService {
 
     private final GameRepository gameRepository;
     private final NotificationService notificationService;
+    private final EnhancedNotificationService enhancedNotificationService;
     private final SimpMessagingTemplate messagingTemplate;
     private final WaitlistService waitlistService;
 
@@ -55,14 +59,8 @@ public class GameBusinessService {
                 log.info("User {} added to waitlist for game {} at position {}", 
                     user.getUsername(), game.getId(), result.getWaitlistPosition());
                 
-                // Notify user they're on waitlist
-                notificationService.createGameNotification(
-                    user.getUsername(),
-                    user.getUsername(),
-                    game.getSport(),
-                    game.getLocation(),
-                    "waitlisted"
-                );
+                // Send enhanced notification for waitlist
+                sendEnhancedGameNotification(user.getUsername(), "waitlisted", game, user.getUsername());
                 
                 return result;
             } else {
@@ -88,14 +86,8 @@ public class GameBusinessService {
         // Send real-time updates
         sendGameUpdateEvent(savedGame, "participant_joined", user.getUsername());
         
-        // Notify game creator
-        notificationService.createGameNotification(
-            savedGame.getUser().getUsername(),
-            user.getUsername(),
-            savedGame.getSport(),
-            savedGame.getLocation(),
-            "joined"
-        );
+        // Send enhanced notification to game creator
+        sendEnhancedGameNotification(savedGame.getUser().getUsername(), "game_joined", savedGame, user.getUsername());
         
         log.info("User {} successfully joined game {}", user.getUsername(), game.getId());
         
@@ -183,6 +175,53 @@ public class GameBusinessService {
         }
         
         return promotedUser;
+    }
+
+    /**
+     * Send enhanced notification with game context.
+     */
+    private void sendEnhancedGameNotification(String username, String eventType, Game game, String actorUsername) {
+        try {
+            EnhancedNotificationService.NotificationRequest request = new EnhancedNotificationService.NotificationRequest();
+            request.setUsername(username);
+            request.setEventType(eventType);
+            
+            // Create rich context data
+            Map<String, Object> context = new HashMap<>();
+            context.put("recipientUsername", username);
+            context.put("actorUsername", actorUsername != null ? actorUsername : "System");
+            context.put("sport", game.getSport());
+            context.put("location", game.getLocation());
+            context.put("gameTime", game.getTime() != null ? game.getTime().toString() : "TBD");
+            context.put("participantCount", game.getParticipants().size());
+            context.put("capacity", game.getCapacity());
+            context.put("gameId", game.getId());
+            
+            request.setContext(context);
+            
+            // Set priority based on event type
+            switch (eventType) {
+                case "game_cancelled":
+                    request.setPriority(com.bmessi.pickupsportsapp.entity.notification.NotificationTemplate.NotificationPriority.HIGH);
+                    break;
+                case "waitlist_promoted":
+                    request.setPriority(com.bmessi.pickupsportsapp.entity.notification.NotificationTemplate.NotificationPriority.HIGH);
+                    break;
+                default:
+                    request.setPriority(com.bmessi.pickupsportsapp.entity.notification.NotificationTemplate.NotificationPriority.NORMAL);
+            }
+            
+            // Set click URL to game details
+            request.setClickUrl("/games/" + game.getId());
+            
+            // Send enhanced notification
+            enhancedNotificationService.sendNotification(request);
+            
+        } catch (Exception e) {
+            log.warn("Failed to send enhanced notification for {}: {}", eventType, e.getMessage());
+            // Fallback to traditional notification
+            notificationService.createGameNotification(username, actorUsername, game.getSport(), game.getLocation(), eventType);
+        }
     }
 
     /**
