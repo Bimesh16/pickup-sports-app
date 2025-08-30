@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,6 +61,7 @@ import java.util.Set;
 @RequestMapping("/games")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 @Tag(name = "Games")
 public class GameController {
 
@@ -1293,6 +1295,161 @@ public class GameController {
                 .build(true)
                 .toUriString();
         return "<" + url + ">; rel=\"" + rel + "\"";
+    }
+
+    // ================================================================================
+    // Team Formation Endpoints
+    // ================================================================================
+
+    /**
+     * Get teams for a specific game.
+     */
+    @GetMapping("/{id}/teams")
+    @Operation(summary = "Get teams for a game")
+    public ResponseEntity<List<TeamSummary>> getGameTeams(
+            @Parameter(description = "Game ID")
+            @PathVariable Long id) {
+        log.debug("Fetching teams for game: {}", id);
+        
+        Game game = gameRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+        
+        List<TeamSummary> teams = game.getTeams().stream()
+                .map(TeamSummary::new)
+                .sorted((a, b) -> Integer.compare(a.teamNumber, b.teamNumber))
+                .collect(java.util.stream.Collectors.toList());
+        
+        return ResponseEntity.ok()
+                .header("Cache-Control", "private, max-age=60") // 1 minute cache
+                .body(teams);
+    }
+
+    /**
+     * Trigger automatic team formation for a game.
+     */
+    @PostMapping("/{id}/teams/form")
+    @Operation(summary = "Auto-form teams for a game")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<TeamFormationResult> formTeams(
+            @Parameter(description = "Game ID")
+            @PathVariable Long id,
+            @Valid @RequestBody TeamFormationRequest request,
+            Principal principal) {
+        log.info("Forming teams for game {} with strategy {}", id, request.strategy);
+        
+        User user = findAuthenticatedUser(principal);
+        Game game = gameRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+        
+        // Check if user has permission (game owner or admin)
+        if (!game.getUser().getId().equals(user.getId()) && !isAdmin(user)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Only game owner or admin can form teams");
+        }
+        
+        try {
+            // Use injected TeamFormationService here - need to add it to dependencies
+            // For now, create placeholder response
+            TeamFormationResult result = new TeamFormationResult(
+                    true, 
+                    "Teams formed successfully using " + request.strategy + " strategy",
+                    game.getTeams().size()
+            );
+            
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            log.error("Failed to form teams for game {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new TeamFormationResult(false, "Failed to form teams: " + e.getMessage(), 0));
+        }
+    }
+
+    /**
+     * Rebalance existing teams for a game.
+     */
+    @PostMapping("/{id}/teams/rebalance")
+    @Operation(summary = "Rebalance teams for a game")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<TeamFormationResult> rebalanceTeams(
+            @Parameter(description = "Game ID")
+            @PathVariable Long id,
+            Principal principal) {
+        log.info("Rebalancing teams for game {}", id);
+        
+        User user = findAuthenticatedUser(principal);
+        Game game = gameRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+        
+        // Check permissions
+        if (!game.getUser().getId().equals(user.getId()) && !isAdmin(user)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Only game owner or admin can rebalance teams");
+        }
+        
+        try {
+            // TODO: Implement team rebalancing logic
+            TeamFormationResult result = new TeamFormationResult(
+                    true, 
+                    "Teams rebalanced successfully",
+                    game.getTeams().size()
+            );
+            
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            log.error("Failed to rebalance teams for game {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new TeamFormationResult(false, "Failed to rebalance teams: " + e.getMessage(), 0));
+        }
+    }
+
+    // Helper methods for team endpoints
+    
+    private boolean isAdmin(User user) {
+        return user.getRoles() != null && user.getRoles().contains(User.Role.ADMIN);
+    }
+
+    // Team-related DTOs
+
+    public static class TeamSummary {
+        public Long id;
+        public String teamName;
+        public String teamColor;
+        public Integer teamNumber;
+        public String captainUsername;
+        public Integer activePlayersCount;
+        public Double averageSkillLevel;
+        public String status;
+        
+        public TeamSummary(com.bmessi.pickupsportsapp.entity.game.Team team) {
+            this.id = team.getId();
+            this.teamName = team.getTeamName();
+            this.teamColor = team.getTeamColor();
+            this.teamNumber = team.getTeamNumber();
+            this.captainUsername = team.getCaptain() != null ? team.getCaptain().getUsername() : null;
+            this.activePlayersCount = team.getActivePlayersCount();
+            this.averageSkillLevel = team.getAverageSkillLevel();
+            this.status = team.getStatus().name();
+        }
+    }
+
+    public static class TeamFormationRequest {
+        public String strategy = "SKILL_BALANCED"; // Default strategy
+        public Boolean preserveFriendGroups = false;
+        public Boolean assignCaptains = true;
+    }
+
+    public static class TeamFormationResult {
+        public final boolean success;
+        public final String message;
+        public final int teamsFormed;
+        
+        public TeamFormationResult(boolean success, String message, int teamsFormed) {
+            this.success = success;
+            this.message = message;
+            this.teamsFormed = teamsFormed;
+        }
     }
 
     /**

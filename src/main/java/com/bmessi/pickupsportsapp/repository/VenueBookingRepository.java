@@ -29,6 +29,11 @@ public interface VenueBookingRepository extends JpaRepository<VenueBooking, Long
     List<VenueBooking> findByBookedById(Long userId);
 
     /**
+     * Find booking by game ID.
+     */
+    Optional<VenueBooking> findByGameId(Long gameId);
+
+    /**
      * Find bookings by status.
      */
     List<VenueBooking> findByStatus(BookingStatus status);
