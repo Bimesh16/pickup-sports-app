@@ -309,7 +309,7 @@ public class CricketController {
                 .teamId(team.getId())
                 .teamName(team.getTeamName())
                 .teamColor(team.getTeamColor())
-                .captain(team.getCaptain()?.getUsername())
+                .captain(team.getCaptain() != null ? team.getCaptain().getUsername() : null)
                 .playerCount(team.getCurrentPlayerCount())
                 .build())
             .toList();

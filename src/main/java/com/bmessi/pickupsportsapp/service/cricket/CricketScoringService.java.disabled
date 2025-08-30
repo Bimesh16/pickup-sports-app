@@ -262,12 +262,12 @@ public class CricketScoringService {
             .innings(allInnings)
             .playerPerformances(allPerformances)
             .tossInfo(TossInfo.builder()
-                .tossWinningTeam(match.getTossWinningTeam()?.getTeamName())
-                .decision(match.getTossDecision()?.getDescription())
+                .tossWinningTeam(match.getTossWinningTeam() != null ? match.getTossWinningTeam().getTeamName() : null)
+                .decision(match.getTossDecision() != null ? match.getTossDecision().getDescription() : null)
                 .build())
             .matchResult(match.getMatchResult())
-            .winningTeam(match.getWinningTeam()?.getTeamName())
-            .manOfTheMatch(match.getManOfTheMatch()?.getUsername())
+            .winningTeam(match.getWinningTeam() != null ? match.getWinningTeam().getTeamName() : null)
+            .manOfTheMatch(match.getManOfTheMatch() != null ? match.getManOfTheMatch().getUsername() : null)
             .build();
     }
 

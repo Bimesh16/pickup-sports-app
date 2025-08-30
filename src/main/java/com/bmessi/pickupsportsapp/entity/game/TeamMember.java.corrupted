@@ -23,10 +23,6 @@ import java.time.OffsetDateTime;
  *   <li><strong>Position Management:</strong> Player positions and jersey numbers</li>
  *   <li><strong>Payment Tracking:</strong> Individual payment status and amounts</li>
  *   <li><strong>Game Performance:</strong> Check-in status, attendance, and ratings</li>
-import java.time.OffsetDateTime;
-
-/**
- * Entity representing a team member within a team for a specific game.
  * 
  * <p>This entity tracks the assignment of users to teams, including their roles,
  * positions, and participation details. It supports both regular players and
@@ -81,15 +77,6 @@ import java.time.OffsetDateTime;
         @UniqueConstraint(name = "uk_team_jersey", columnNames = {"team_id", "jersey_number"})
     }
 )
-       uniqueConstraints = {
-           @UniqueConstraint(columnNames = {"team_id", "user_id"})
-       },
-       indexes = {
-           @Index(name = "idx_team_members_team", columnList = "team_id"),
-           @Index(name = "idx_team_members_user", columnList = "user_id"),
-           @Index(name = "idx_team_members_position", columnList = "preferred_position"),
-           @Index(name = "idx_team_members_substitute", columnList = "is_substitute")
-       })
 @Data
 @Builder
 @NoArgsConstructor
@@ -318,6 +305,8 @@ public class TeamMember {
         
         // Check if position matches preferred position
         return preferredPosition.equalsIgnoreCase(position);
+    }
+
     /**
      * Member's role within the team.
      */

@@ -69,10 +69,7 @@ import java.util.Set;
 @Table(name = "teams", indexes = {
         @Index(name = "idx_team_game", columnList = "game_id"),
         @Index(name = "idx_team_captain", columnList = "captain_id"),
-        @Index(name = "idx_team_number", columnList = "game_id, team_number")
-        @Index(name = "idx_teams_game_id", columnList = "game_id"),
-        @Index(name = "idx_teams_captain", columnList = "captain_id"),
-        @Index(name = "idx_teams_number", columnList = "team_number"),
+        @Index(name = "idx_team_number", columnList = "game_id, team_number"),
         @Index(name = "idx_teams_balanced", columnList = "is_balanced")
 })
 @Data
@@ -260,6 +257,8 @@ public class Team {
         member.setTeam(null);
         updatePlayerCounts();
         recalculateTeamStats();
+    }
+
     /**
      * Total experience points of all team members.
      */
@@ -374,6 +373,9 @@ public class Team {
     }
 
     private void recalculateTeamStats() {
+        // TODO: Implement team stats recalculation
+    }
+
     public Boolean hasSpaceForPlayers() {
         Game gameTemplate = game; // Assuming game has template reference
         return getCurrentPlayerCount() < gameTemplate.getMinPlayers() / gameTemplate.getTotalTeams();
@@ -455,44 +457,4 @@ public class Team {
         };
     }
 
-    /**
-     * Team formation strategy enumeration.
-     */
-    public enum FormationStrategy {
-        /**
-         * Automatically balance teams based on skill levels.
-         */
-        SKILL_BALANCED("Skill Balanced", "Teams balanced by player skill levels"),
-
-        /**
-         * Randomly assign players to teams.
-         */
-        RANDOM("Random", "Random team assignment for casual play"),
-
-        /**
-         * Manually assign players (by captain or game owner).
-         */
-        MANUAL("Manual", "Manual team assignment by organizer"),
-
-        /**
-         * Keep friend groups together when possible.
-         */
-        FRIEND_GROUPS("Friend Groups", "Preserve friend connections in team formation");
-
-        private final String displayName;
-        private final String description;
-
-        FormationStrategy(String displayName, String description) {
-            this.displayName = displayName;
-            this.description = description;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-    }
 }
