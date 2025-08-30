@@ -50,16 +50,19 @@ public class GeospatialSearchService {
                     """;
             long t0 = System.nanoTime();
             List<com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO> out = jdbcTemplate.query(sql, (rs, rowNum) ->
-                    new com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO(
-                            rs.getLong("id"),
-                            rs.getString("sport"),
-                            rs.getString("location"),
-                            rs.getObject("time", java.time.OffsetDateTime.class),
-                            rs.getString("skill_level"),
-                            (Double) rs.getObject("latitude"),
-                            (Double) rs.getObject("longitude"),
-                            (Double) rs.getObject("distance_km")
-                    ), lon, lat, lon, lat, clampedRadius, effLimit);
+                    com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO.builder()
+                            .id(rs.getLong("id"))
+                            .sport(rs.getString("sport"))
+                            .location(rs.getString("location"))
+                            .time(rs.getObject("time", java.time.OffsetDateTime.class))
+                            .skillLevel(rs.getString("skill_level"))
+                            .latitude((Double) rs.getObject("latitude"))
+                            .longitude((Double) rs.getObject("longitude"))
+                            .creatorName("Unknown") // Will be populated later if needed
+                            .currentPlayers(0) // Will be populated later if needed
+                            .maxPlayers(null) // Will be populated later if needed
+                            .status("ACTIVE") // Default status
+                            .build(), lon, lat, lon, lat, clampedRadius, effLimit);
             long t1 = System.nanoTime();
             try { meterRegistry.timer("games.nearby.query.postgis").record(t1 - t0, java.util.concurrent.TimeUnit.NANOSECONDS); } catch (Exception ignore) {}
             return out;
@@ -99,16 +102,19 @@ public class GeospatialSearchService {
 
         long t0 = System.nanoTime();
         List<com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO> out = jdbcTemplate.query(sql, (rs, rowNum) ->
-                new com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO(
-                        rs.getLong("id"),
-                        rs.getString("sport"),
-                        rs.getString("location"),
-                        rs.getObject("time", java.time.OffsetDateTime.class),
-                        rs.getString("skill_level"),
-                        (Double) rs.getObject("latitude"),
-                        (Double) rs.getObject("longitude"),
-                        (Double) rs.getObject("distance_km")
-                ),
+                com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO.builder()
+                        .id(rs.getLong("id"))
+                        .sport(rs.getString("sport"))
+                        .location(rs.getString("location"))
+                        .time(rs.getObject("time", java.time.OffsetDateTime.class))
+                        .skillLevel(rs.getString("skill_level"))
+                        .latitude((Double) rs.getObject("latitude"))
+                        .longitude((Double) rs.getObject("longitude"))
+                        .creatorName("Unknown") // Will be populated later if needed
+                        .currentPlayers(0) // Will be populated later if needed
+                        .maxPlayers(null) // Will be populated later if needed
+                        .status("ACTIVE") // Default status
+                        .build(),
                 lat, lon, lat,
                 minLat, maxLat, minLon, maxLon,
                 lat, lon, lat,

@@ -129,15 +129,18 @@ public class GameRecommendationService {
      * Map game entity to summary DTO (simplified for now).
      */
     private com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO mapGameToSummaryDTO(com.bmessi.pickupsportsapp.entity.game.Game game) {
-        return new com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO(
-                game.getId(),
-                game.getSport(),
-                game.getLocation(),
-                game.getTime(), // Already OffsetDateTime
-                game.getSkillLevel(),
-                game.getLatitude(),
-                game.getLongitude(),
-                null // distanceKm - not applicable for recommendations
-        );
+        return com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO.builder()
+                .id(game.getId())
+                .sport(game.getSport())
+                .location(game.getLocation())
+                .time(game.getTime()) // Already OffsetDateTime
+                .skillLevel(game.getSkillLevel())
+                .latitude(game.getLatitude())
+                .longitude(game.getLongitude())
+                .creatorName(game.getUser() != null ? game.getUser().getUsername() : "Unknown")
+                .currentPlayers(game.getParticipants() != null ? game.getParticipants().size() : 0)
+                .maxPlayers(game.getMaxPlayers())
+                .status("ACTIVE") // Default status
+                .build();
     }
 }
