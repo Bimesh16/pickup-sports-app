@@ -30,7 +30,7 @@ public class SyntheticMonitorScheduler {
     @Scheduled(fixedDelayString = "${slo.synthetic.fixed-delay-ms:120000}")
     public void pingGamesList() {
         if (!props.isSyntheticEnabled()) return;
-        String url = props.getBaseUrl() + "/games?page=0&size=5";
+        String url = props.getBaseUrl() + "/api/v1/games?page=0&size=5";
         callAndRecord("synthetic.games.list", url);
     }
 
@@ -38,7 +38,7 @@ public class SyntheticMonitorScheduler {
     @Scheduled(fixedDelayString = "${slo.synthetic.nearby.fixed-delay-ms:300000}")
     public void pingNearby() {
         if (!props.isSyntheticEnabled()) return;
-        String url = props.getBaseUrl() + "/games/nearby?lat=37.7749&lon=-122.4194&radiusKm=1&limit=5";
+        String url = props.getBaseUrl() + "/api/v1/games/nearby?lat=37.7749&lon=-122.4194&radiusKm=1&limit=5";
         callAndRecord("synthetic.games.nearby", url);
     }
 

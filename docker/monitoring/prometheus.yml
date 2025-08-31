@@ -22,23 +22,23 @@ scrape_configs:
       username: ''
       password: ''
 
-  # PostgreSQL Database (if using postgres_exporter)
+  # PostgreSQL Database (via exporter)
   - job_name: 'postgres'
     static_configs:
-      - targets: ['db:5432']
+      - targets: ['postgres_exporter:9187']
     metrics_path: '/metrics'
     scrape_interval: 30s
 
   # RabbitMQ Metrics  
   - job_name: 'rabbitmq'
     static_configs:
-      - targets: ['rabbitmq:15692']
+      - targets: ['pickup_rabbitmq:15692']
     metrics_path: '/metrics'
     scrape_interval: 30s
 
-  # Redis Metrics (if using redis_exporter)
+  # Redis Metrics (via exporter)
   - job_name: 'redis'
     static_configs:
-      - targets: ['redis:6379']
+      - targets: ['redis_exporter:9121']
     metrics_path: '/metrics'
     scrape_interval: 30s

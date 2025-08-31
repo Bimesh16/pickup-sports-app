@@ -417,11 +417,21 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
     /**
      * Find venue conflicts for bulk game creation.
      */
-    @Query("SELECT g FROM Game g WHERE g.venue.id = :venueId AND g.status IN ('PUBLISHED', 'FULL') AND " +
-           "((g.time <= :startTime AND g.time + INTERVAL g.durationMinutes MINUTE > :startTime) OR " +
-           "(g.time < :endTime AND g.time + INTERVAL g.durationMinutes MINUTE >= :endTime) OR " +
-           "(g.time >= :startTime AND g.time < :endTime))")
-    List<Game> findByVenueIdAndTimeOverlap(@Param("venueId") Long venueId, 
-                                           @Param("startTime") OffsetDateTime startTime, 
+        @Query(
+            value = """
+                SELECT g.*
+                FROM game g
+                WHERE g.venue_id = :venueId
+                  AND g.status IN ('PUBLISHED', 'FULL')
+                  AND (
+                        (g.time <= :startTime AND (g.time + make_interval(mins => g.duration_minutes)) > :startTime)
+                     OR (g.time < :endTime   AND (g.time + make_interval(mins => g.duration_minutes)) >= :endTime)
+                     OR (g.time >= :startTime AND g.time < :endTime)
+                  )
+                """,
+            nativeQuery = true
+        )
+        List<Game> findByVenueIdAndTimeOverlap(@Param("venueId") Long venueId,
+                                               @Param("startTime") OffsetDateTime startTime,
                                            @Param("endTime") OffsetDateTime endTime);
 }

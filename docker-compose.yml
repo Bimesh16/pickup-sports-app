@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-yourpassword}
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
 
@@ -30,6 +30,7 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-admin123}
       RABBITMQ_DEFAULT_VHOST: /
+    command: ["sh","-c","rabbitmq-plugins enable --offline rabbitmq_prometheus && rabbitmq-server"]
     ports:
       - "5672:5672"   # AMQP port
       - "15672:15672" # Management UI
@@ -40,6 +41,18 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+  redis_exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: pickup_redis_exporter
+    environment:
+      REDIS_ADDR: redis://redis:6379
+
+  postgres_exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    container_name: pickup_postgres_exporter
+    environment:
+      DATA_SOURCE_NAME: postgresql://postgres:yourpassword@db:5432/soccer_app?sslmode=disable
 
   prometheus:
     image: prom/prometheus:latest
@@ -58,6 +71,8 @@ services:
       - prometheus_data:/prometheus
     depends_on:
       - app
+      - postgres_exporter
+      - redis_exporter
 
   grafana:
     image: grafana/grafana:latest
@@ -113,11 +128,23 @@ services:
 
       # Login rate limit (per IP per minute)
       SECURITY_LOGIN_RATE_LIMIT: ${SECURITY_LOGIN_RATE_LIMIT:-20}
+      SPRING_MAIN_ALLOW_BEAN_DEFINITION_OVERRIDING: ${SPRING_MAIN_ALLOW_BEAN_DEFINITION_OVERRIDING:-true}
+
+      # Actuator / Prometheus metrics exposure
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE:-health,info,prometheus}
+      MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED: ${MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED:-true}
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: ${MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED:-true}
+      SPRING_FLYWAY_ENABLED: ${SPRING_FLYWAY_ENABLED:-false}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
 
       # Activate default profile (no specific profile)
       # SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
     ports:
       - "8080:8080"
+    networks:
+      default:
+        aliases:
+          - pickup_app
 
 volumes:
   db_data:
