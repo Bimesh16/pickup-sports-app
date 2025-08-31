@@ -26,6 +26,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.server.ResponseStatusException;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import org.springframework.stereotype.Component;
 
 import com.bmessi.pickupsportsapp.exception.UsernameTakenException;
 import com.bmessi.pickupsportsapp.security.MfaRequiredException;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
+@Component("apiGlobalExceptionHandler")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
 

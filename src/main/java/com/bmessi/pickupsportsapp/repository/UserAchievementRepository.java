@@ -39,31 +39,34 @@ public interface UserAchievementRepository extends JpaRepository<UserAchievement
     List<UserAchievement> findByUserIdAndAchievementType(@Param("userId") Long userId, @Param("type") String type);
     
     /**
-     * Find completed achievements for a user ordered by completion date.
+     * Find completed achievements for a user ordered by earned date.
+     * Use progressPercentage = 100 to determine completion since there's no completedAt field
      */
-    List<UserAchievement> findByUserIdAndIsCompletedTrueOrderByCompletedAtDesc(Long userId);
-    
+    @Query("SELECT ua FROM UserAchievement ua WHERE ua.user.id = :userId AND ua.progressPercentage = 100 ORDER BY ua.earnedAt DESC")
+    List<UserAchievement> findByUserIdAndIsCompletedTrueOrderByCompletedAtDesc(@Param("userId") Long userId);
+
     /**
-     * Get top users by total achievement points.
+     * Get top users by total achievement points for completed achievements.
      */
-    @Query("SELECT u.username, SUM(ua.pointsEarned) FROM UserAchievement ua JOIN ua.user u WHERE ua.isCompleted = true GROUP BY u.id, u.username ORDER BY SUM(ua.pointsEarned) DESC")
+    @Query("SELECT u.username, SUM(ua.pointsEarned) FROM UserAchievement ua JOIN ua.user u WHERE ua.progressPercentage = 100 GROUP BY u.id, u.username ORDER BY SUM(ua.pointsEarned) DESC")
     List<Object[]> findTopUsersByTotalPoints();
-    
+
     /**
-     * Get top users by achievement count.
+     * Get top users by achievement count for completed achievements.
      */
-    @Query("SELECT u.username, COUNT(ua) FROM UserAchievement ua JOIN ua.user u WHERE ua.isCompleted = true GROUP BY u.id, u.username ORDER BY COUNT(ua) DESC")
+    @Query("SELECT u.username, COUNT(ua) FROM UserAchievement ua JOIN ua.user u WHERE ua.progressPercentage = 100 GROUP BY u.id, u.username ORDER BY COUNT(ua) DESC")
     List<Object[]> findTopUsersByAchievementCount();
-    
+
     /**
-     * Find recent achievement earners.
+     * Find recent achievement earners with a since parameter.
      */
-    @Query("SELECT u.username, a.name, ua.completedAt, ua.pointsEarned FROM UserAchievement ua JOIN ua.user u JOIN ua.achievement a WHERE ua.isCompleted = true AND ua.completedAt >= :since ORDER BY ua.completedAt DESC")
+    @Query("SELECT u.username, a.name, ua.earnedAt, ua.pointsEarned FROM UserAchievement ua JOIN ua.user u JOIN ua.achievement a WHERE ua.progressPercentage = 100 AND ua.earnedAt >= :since ORDER BY ua.earnedAt DESC")
     List<Object[]> findRecentAchievementEarners(@Param("since") LocalDateTime since);
-    
+
     /**
-     * Find recent achievement earners (last 7 days).
+     * Find recent achievement earners from the last 7 days.
+     * Uses a parameter for the 7-days-ago date instead of JPQL arithmetic
      */
-    @Query("SELECT u.username, a.name, ua.completedAt, ua.pointsEarned FROM UserAchievement ua JOIN ua.user u JOIN ua.achievement a WHERE ua.isCompleted = true AND ua.completedAt >= CURRENT_TIMESTAMP - 7 ORDER BY ua.completedAt DESC")
-    List<Object[]> findRecentAchievementEarners();
+    @Query("SELECT u.username, a.name, ua.earnedAt, ua.pointsEarned FROM UserAchievement ua JOIN ua.user u JOIN ua.achievement a WHERE ua.progressPercentage = 100 AND ua.earnedAt >= :sevenDaysAgo ORDER BY ua.earnedAt DESC")
+    List<Object[]> findRecentAchievementEarnersLastWeek(@Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
 }
