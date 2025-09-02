@@ -1,0 +1,64 @@
+{
+  "expo": {
+    "name": "Pickup Sports",
+    "slug": "pickup-sports-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#003893"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pickupsports.app",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs location access to find nearby games and venues.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs location access to find nearby games and venues.",
+        "NSCameraUsageDescription": "This app needs camera access to take profile pictures and game photos.",
+        "NSPhotoLibraryUsageDescription": "This app needs photo library access to select profile pictures."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#DC143C"
+      },
+      "package": "com.pickupsports.app",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-location",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app needs access to photo library to select profile pictures.",
+          "cameraPermission": "This app needs camera access to take profile pictures and game photos."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id-here"
+      }
+    }
+  }
+}
