@@ -1,0 +1,65 @@
+# Expo
+.expo/
+dist/
+web-build/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# React Native
+.react-native-files/
+
+# TypeScript
+*.tsbuildinfo
+
+# VS Code
+.vscode/
+
+# Xcode
+*.pbxuser
+*.xcworkspace
+
+# Android
+*.keystore
+!debug.keystore
+
+# macOS
+.DS_Store
+
+# Environment
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Dependencies
+.pnp
+.pnp.js
+
+# Build outputs
+build/
+dist/
+
+# Cache
+.cache/
+
+# Temporary folders
+tmp/
+temp/
