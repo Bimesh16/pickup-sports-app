@@ -26,6 +26,7 @@ import { updateMyProfile } from '@/services/profile';
 import { useUIStore } from '@/stores/uiStore';
 import { Snackbar } from 'react-native-paper';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuthStore } from '@/stores/authStore';
 
 interface User {
   id: string;
@@ -85,6 +86,7 @@ const ProfileScreen: React.FC = () => {
   const [snack, setSnack] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
   const { t } = useLanguage();
   const { highContrast, rtlEnabled } = useUIStore();
+  const { logout } = useAuthStore();
 
   // Fetch real data
   useEffect(() => {
@@ -174,6 +176,17 @@ const ProfileScreen: React.FC = () => {
       setRefreshing(false);
     }
   }, []);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign Out', style: 'destructive', onPress: logout },
+      ]
+    );
+  };
 
   const handleSaveSportProfile = (data: ScoutingReportData) => {
     setSportProfiles(prev => [...prev, data]);
@@ -306,6 +319,9 @@ const ProfileScreen: React.FC = () => {
           <TouchableOpacity style={styles.editButton} onPress={() => setShowEditProfile(true)}>
             <Ionicons name="create-outline" size={16} color="white" />
             <Text style={styles.editButtonText}>Edit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerIcon} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.headerIcon}>
             <Ionicons name="share-outline" size={24} color="white" />
