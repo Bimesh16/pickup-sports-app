@@ -1,127 +1,178 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { colors, typography, spacing } from '../../constants/theme';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-interface ScoutingReportData {
+interface ScoutingReportProps {
   sport: string;
   nickname: string;
-  positions: string[];
+  position: string;
   playStyle: string[];
   superpower: string;
-  formats: string[];
+  format: string;
   availability: string;
   funFact: string;
   skillLevel: string;
-  preferredSide: string;
-  kitNumber: string;
-  form: string;
-  travelRadius: number;
-  openToInvites: boolean;
+  preferredFoot?: string;
+  travelRadius?: number;
+  openToInvites?: boolean;
+  onEdit?: () => void;
 }
 
-interface ScoutingReportProps {
-  data: ScoutingReportData;
-  compact?: boolean;
-}
-
-const SPORT_EMOJIS: { [key: string]: string } = {
-  soccer: '⚽',
-  basketball: '🏀',
-  volleyball: '🏐',
-  tennis: '🎾',
-  pickleball: '🏓',
-  cricket: '🏏',
-  badminton: '🏸',
-  running: '🏃',
+const SPORT_EMOJIS = {
+  'soccer': '⚽',
+  'football': '⚽',
+  'basketball': '🏀',
+  'volleyball': '🏐',
+  'tennis': '🎾',
+  'cricket': '🏏',
+  'badminton': '🏸',
+  'running': '🏃',
+  'default': '⚽'
 };
 
-const ScoutingReport: React.FC<ScoutingReportProps> = ({ data, compact = false }) => {
-  const sportEmoji = SPORT_EMOJIS[data.sport] || '⚽';
-  const sportName = data.sport.charAt(0).toUpperCase() + data.sport.slice(1);
+const ScoutingReport: React.FC<ScoutingReportProps> = ({
+  sport,
+  nickname,
+  position,
+  playStyle,
+  superpower,
+  format,
+  availability,
+  funFact,
+  skillLevel,
+  preferredFoot,
+  travelRadius,
+  openToInvites = true,
+  onEdit
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = React.useRef(new Animated.Value(20)).current;
 
-  if (compact) {
-    return (
-      <View style={styles.compactContainer}>
-        <View style={styles.compactHeader}>
-          <Text style={styles.compactSportEmoji}>{sportEmoji}</Text>
-          <Text style={styles.compactSportName}>{sportName}</Text>
-        </View>
-        <Text style={styles.compactSummary}>
-          {data.nickname} • {data.positions.slice(0, 2).join(', ')}
-          {data.positions.length > 2 && '...'}
-        </Text>
-      </View>
-    );
-  }
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const sportEmoji = SPORT_EMOJIS[sport.toLowerCase() as keyof typeof SPORT_EMOJIS] || SPORT_EMOJIS.default;
+
+  const generateScoutingBlurb = () => {
+    const playStyleText = playStyle.slice(0, 2).join(', ');
+    return `${sportEmoji} ${position} '${nickname}' — ${playStyleText}. Superpower: ${superpower}. ${format} ${availability}. Fun: ${funFact}`;
+  };
+
+  const blurb = generateScoutingBlurb();
 
   return (
-    <View style={styles.container}>
+    <Animated.View 
+      style={[
+        styles.container,
+        { 
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }]
+        }
+      ]}
+    >
       <View style={styles.header}>
-        <View style={styles.sportInfo}>
-          <Text style={styles.sportEmoji}>{sportEmoji}</Text>
-          <Text style={styles.sportText}>{sportName}</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.emoji}>{sportEmoji}</Text>
+          <Text style={styles.title}>Scouting Report</Text>
         </View>
-        <Text style={styles.nickname}>{data.nickname}</Text>
+        {onEdit && (
+          <TouchableOpacity onPress={onEdit} style={styles.editButton}>
+            <Ionicons name="create-outline" size={16} color="#22D3EE" />
+          </TouchableOpacity>
+        )}
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Positions:</Text>
-          <Text style={styles.detailValue}>{data.positions.join(', ')}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Play Style:</Text>
-          <Text style={styles.detailValue}>{data.playStyle.join(', ')}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Superpower:</Text>
-          <Text style={styles.detailValue}>{data.superpower}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Formats:</Text>
-          <Text style={styles.detailValue}>{data.formats.join(', ')}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Availability:</Text>
-          <Text style={styles.detailValue}>{data.availability}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Fun Fact:</Text>
-          <Text style={styles.detailValue}>{data.funFact}</Text>
-        </View>
-
-        <View style={styles.badgeRow}>
-          <View style={styles.skillBadge}>
-            <Text style={styles.badgeText}>⭐ {data.skillLevel}</Text>
-          </View>
-          <View style={styles.distanceBadge}>
-            <Text style={styles.badgeText}>📍 {data.travelRadius}km</Text>
-          </View>
-        </View>
+      <View style={styles.blurbContainer}>
+        <Text style={styles.blurb}>{blurb}</Text>
       </View>
-    </View>
+
+      <TouchableOpacity 
+        style={styles.expandButton}
+        onPress={() => setIsExpanded(!isExpanded)}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.expandText}>
+          {isExpanded ? 'Show Less' : 'Show Details'}
+        </Text>
+        <Ionicons 
+          name={isExpanded ? 'chevron-up' : 'chevron-down'} 
+          size={16} 
+          color="#22D3EE" 
+        />
+      </TouchableOpacity>
+
+      {isExpanded && (
+        <Animated.View style={styles.detailsContainer}>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Skill Level:</Text>
+            <Text style={styles.detailValue}>{skillLevel}</Text>
+          </View>
+          
+          {preferredFoot && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Preferred Foot:</Text>
+              <Text style={styles.detailValue}>{preferredFoot}</Text>
+            </View>
+          )}
+          
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Format:</Text>
+            <Text style={styles.detailValue}>{format}</Text>
+          </View>
+          
+          {travelRadius && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Travel Radius:</Text>
+              <Text style={styles.detailValue}>{travelRadius} km</Text>
+            </View>
+          )}
+          
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Availability:</Text>
+            <Text style={styles.detailValue}>{availability}</Text>
+          </View>
+          
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Open to Invites:</Text>
+            <View style={[
+              styles.statusBadge,
+              { backgroundColor: openToInvites ? '#22C55E20' : '#EF444420' }
+            ]}>
+              <Text style={[
+                styles.statusText,
+                { color: openToInvites ? '#22C55E' : '#EF4444' }
+              ]}>
+                {openToInvites ? 'Yes' : 'No'}
+              </Text>
+            </View>
+          </View>
+        </Animated.View>
+      )}
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  compactContainer: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
+    backgroundColor: '#111827',
+    borderRadius: 16,
+    padding: 20,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: '#30363D',
   },
   header: {
     flexDirection: 'row',
@@ -129,80 +180,78 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  sportInfo: {
+  titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  sportEmoji: {
+  emoji: {
     fontSize: 20,
     marginRight: 8,
   },
-  sportText: {
-    fontSize: typography.fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F8FAFC',
   },
-  compactHeader: {
+  editButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#22D3EE20',
+  },
+  blurbContainer: {
+    backgroundColor: '#0B1220',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  blurb: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#F8FAFC',
+    fontStyle: 'italic',
+  },
+  expandButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    justifyContent: 'center',
+    paddingVertical: 8,
   },
-  compactSportEmoji: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  compactSportName: {
-    fontSize: typography.fontSize.sm,
+  expandText: {
+    fontSize: 14,
+    color: '#22D3EE',
     fontWeight: '600',
-    color: colors.text,
+    marginRight: 4,
   },
-  compactSummary: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-  },
-  nickname: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: 'bold',
-    color: colors.primary,
-  },
-  content: {
-    gap: 8,
+  detailsContainer: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#30363D',
   },
   detailRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
   },
   detailLabel: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: '600',
-    color: colors.text,
-    width: 100,
+    fontSize: 14,
+    color: '#9CA3AF',
+    fontWeight: '500',
   },
   detailValue: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    flex: 1,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 8,
-  },
-  skillBadge: {
-    backgroundColor: '#F59E0B20',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  distanceBadge: {
-    backgroundColor: '#3B82F620',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  badgeText: {
-    fontSize: typography.fontSize.xs,
+    fontSize: 14,
+    color: '#F8FAFC',
     fontWeight: '600',
-    color: colors.text,
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 

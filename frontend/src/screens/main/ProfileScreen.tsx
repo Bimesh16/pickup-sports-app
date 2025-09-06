@@ -17,6 +17,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, typography, spacing, borderRadius, NepalColors } from '@/constants/theme';
+import SportRing from '@/components/profile/SportRing';
+import StatChip from '@/components/profile/StatChip';
+import ProgressRing from '@/components/profile/ProgressRing';
+import SportFilterPills from '@/components/profile/SportFilterPills';
+import ScoutingReport from '@/components/profile/ScoutingReport';
 import Shimmer from '@/components/common/Shimmer';
 import { getMyProfile, getDashboardSummary, getMyGames } from '@/services/profile';
 // import ScoutingReportEditor from '@/components/profile/ScoutingReportEditor';
@@ -98,6 +103,8 @@ const ProfileScreen: React.FC = () => {
   const [upcomingGames, setUpcomingGames] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [snack, setSnack] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
+  const [selectedSport, setSelectedSport] = useState<string | null>('soccer');
+  const [scoutingData, setScoutingData] = useState<any>(null);
   const { t, setLanguage, currentLanguage } = useLanguage();
   const { highContrast, rtlEnabled, toggleHighContrast, toggleRTL } = useUIStore();
   const { logout } = useAuthStore();
@@ -284,6 +291,22 @@ const ProfileScreen: React.FC = () => {
               sportIcon: '🏏'
             }
           ]);
+
+          // Mock scouting data
+          setScoutingData({
+            sport: 'soccer',
+            nickname: 'Threadz',
+            position: 'CM',
+            playStyle: ['press-resistant', 'one-touch passer'],
+            superpower: 'through-balls',
+            format: '7v7 weeknights',
+            availability: 'weeknights',
+            funFact: 'tracks assists',
+            skillLevel: 'INTERMEDIATE',
+            preferredFoot: 'Right',
+            travelRadius: 15,
+            openToInvites: true
+          });
         }
       } finally {
         if (mounted) setLoadingProfile(false);
@@ -544,8 +567,8 @@ const ProfileScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshAll} />}
       >
-        {/* Header with Nepal Flag Colors */}
-        <LinearGradient colors={highContrast ? ['#111', '#111'] : [NepalColors.primary, NepalColors.secondary]} style={styles.header}>
+        {/* Header with Dark Theme */}
+        <LinearGradient colors={['#0B1220', '#101828']} style={styles.header}>
           {/* Top Action Buttons */}
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.headerIcon} onPress={() => setShowSettings(true)}>
@@ -563,26 +586,49 @@ const ProfileScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Profile Section */}
+          {/* Profile Section with Sport Ring */}
           <View style={[styles.profileSection, rtlEnabled && { alignItems: 'stretch' }]}>
             <View style={styles.avatarContainer}>
-              <Image
-                source={{ uri: user.avatar || 'https://via.placeholder.com/80x80/4A5568/FFFFFF?text=' + (user?.name?.charAt(0) || 'U') }}
-                style={styles.avatar}
+              <SportRing 
+                sport={selectedSport || 'soccer'} 
+                size={100} 
+                isActive={true}
+                onPress={() => Alert.alert('Sport Ring', 'Sport ring tapped!')}
               />
-              <View style={styles.onlineStatus} />
+              <View style={styles.avatarOverlay}>
+                <Image
+                  source={{ uri: user.avatar || 'https://via.placeholder.com/80x80/4A5568/FFFFFF?text=' + (user?.name?.charAt(0) || 'U') }}
+                  style={styles.avatar}
+                />
+                <View style={styles.onlineStatus} />
+              </View>
             </View>
             <View style={styles.userInfo}>
               <Text style={[styles.userName, highContrast && { color: '#fff' }]}>{user.name}</Text>
               <Text style={[styles.userUsername, highContrast && { color: 'rgba(255,255,255,0.8)' }]}>@{user.username}</Text>
+              
+              {/* Quick Actions */}
+              <View style={styles.quickActionsRow}>
+                <TouchableOpacity style={styles.quickActionButton} onPress={() => Alert.alert('Invite', 'Invite player')}>
+                  <Ionicons name="person-add-outline" size={16} color="#22D3EE" />
+                  <Text style={styles.quickActionText}>Invite</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.quickActionButton} onPress={handleCreateGame}>
+                  <Ionicons name="add-circle-outline" size={16} color="#A3E635" />
+                  <Text style={styles.quickActionText}>Create Game</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.quickActionButton} onPress={() => Alert.alert('Share', 'Share profile')}>
+                  <Ionicons name="share-outline" size={16} color="#FB7185" />
+                  <Text style={styles.quickActionText}>Share</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
-          {/* Enhanced Stats Card with Animations */}
+          {/* New Stats Layout */}
           <Animated.View 
             style={[
-              styles.statsCard, 
-              highContrast && { backgroundColor: '#0A0A0A' },
+              styles.newStatsCard, 
               { 
                 opacity: fadeAnim,
                 transform: [
@@ -592,103 +638,53 @@ const ProfileScreen: React.FC = () => {
               }
             ]}
           >
-            {/* Main Stats Row */}
-            <View style={styles.statsRow}>
-              <AnimatedStat
-                animValue={statsAnimations.gamesPlayed}
-                label="Games Played"
-                color={highContrast ? '#FFD700' : '#3B82F6'}
-                icon="game-controller-outline"
+            {/* W-D-L Chips Row */}
+            <View style={styles.statsChipsRow}>
+              <StatChip 
+                value={user.stats?.totalGamesWon || 0} 
+                label="Wins" 
+                color="#22C55E" 
+                size="large"
               />
-              <AnimatedStat
-                animValue={statsAnimations.wins}
-                label="Wins"
-                color={highContrast ? '#10B981' : '#10B981'}
-                icon="trophy"
+              <StatChip 
+                value={user.stats?.totalGamesDrawn || 0} 
+                label="Draws" 
+                color="#F59E0B" 
+                size="large"
               />
-              <AnimatedStat
-                animValue={statsAnimations.winRate}
-                label="Win Rate"
-                color={highContrast ? '#FFD700' : '#F59E0B'}
-                icon="trending-up"
-                suffix="%"
+              <StatChip 
+                value={user.stats?.totalGamesLost || 0} 
+                label="Losses" 
+                color="#EF4444" 
+                size="large"
               />
             </View>
 
-            {/* Win/Loss/Draw Pills */}
-            <View style={styles.winLossRow}>
-              <Animated.View 
-                style={[
-                  styles.winLossBadge, 
-                  { backgroundColor: '#3B82F620' },
-                  { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
-                ]}
-              >
-                <Ionicons name="trophy" size={16} color="#3B82F6" />
-                <Animated.Text style={[styles.winLossText, { color: '#3B82F6' }]}>
-                  {user.stats?.totalGamesWon || 0} Wins
-                </Animated.Text>
-              </Animated.View>
-              <Animated.View 
-                style={[
-                  styles.winLossBadge, 
-                  { backgroundColor: '#EF444420' },
-                  { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
-                ]}
-              >
-                <Ionicons name="close" size={16} color="#EF4444" />
-                <Animated.Text style={[styles.winLossText, { color: '#EF4444' }]}>
-                  {user.stats?.totalGamesLost || 0} Losses
-                </Animated.Text>
-              </Animated.View>
-              <Animated.View 
-                style={[
-                  styles.winLossBadge, 
-                  { backgroundColor: '#F59E0B20' },
-                  { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
-                ]}
-              >
-                <Ionicons name="remove" size={16} color="#F59E0B" />
-                <Animated.Text style={[styles.winLossText, { color: '#F59E0B' }]}>
-                  {user.stats?.totalGamesDrawn || 0} Draws
-                </Animated.Text>
-              </Animated.View>
+            {/* Win Rate Progress Ring */}
+            <View style={styles.progressRingContainer}>
+              <ProgressRing 
+                percentage={user.stats?.winRate || 0}
+                size={120}
+                color="#22D3EE"
+                backgroundColor="#30363D"
+              />
             </View>
 
-            {/* Streak Row */}
-            <View style={styles.streakRow}>
-              <Animated.View 
-                style={[
-                  styles.streakItem,
-                  { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }
-                ]}
-              >
+            {/* Streak Badges */}
+            <View style={styles.streakBadgesRow}>
+              <View style={[styles.streakBadge, { backgroundColor: '#F59E0B20', borderColor: '#F59E0B' }]}>
                 <Ionicons name="flame" size={16} color="#F59E0B" />
-                <Text style={styles.streakText}>
-                  {user.stats?.currentStreak || 0} Current Streak
+                <Text style={[styles.streakBadgeText, { color: '#F59E0B' }]}>
+                  {user.stats?.currentStreak || 0} Current
                 </Text>
-              </Animated.View>
-              <Animated.View 
-                style={[
-                  styles.streakItem,
-                  { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }
-                ]}
-              >
+              </View>
+              <View style={[styles.streakBadge, { backgroundColor: '#3B82F620', borderColor: '#3B82F6' }]}>
                 <Ionicons name="trophy" size={16} color="#3B82F6" />
-                <Text style={styles.streakText}>
-                  {user.stats?.longestStreak || 0} Best Streak
+                <Text style={[styles.streakBadgeText, { color: '#3B82F6' }]}>
+                  {user.stats?.longestStreak || 0} Best
                 </Text>
-              </Animated.View>
+              </View>
             </View>
-
-            <Animated.Text 
-              style={[
-                styles.autoTrackingNote,
-                { opacity: fadeAnim }
-              ]}
-            >
-              📊 Stats automatically updated from game results
-            </Animated.Text>
           </Animated.View>
 
           {/* Enhanced Personal Info Chips */}
@@ -730,7 +726,32 @@ const ProfileScreen: React.FC = () => {
               </Animated.View>
             )}
           </Animated.View>
+
+          {/* Sport Filter Pills */}
+          <SportFilterPills
+            selectedSport={selectedSport}
+            onSportSelect={setSelectedSport}
+          />
         </LinearGradient>
+
+        {/* Scouting Report */}
+        {scoutingData && (
+          <ScoutingReport
+            sport={scoutingData.sport}
+            nickname={scoutingData.nickname}
+            position={scoutingData.position}
+            playStyle={scoutingData.playStyle}
+            superpower={scoutingData.superpower}
+            format={scoutingData.format}
+            availability={scoutingData.availability}
+            funFact={scoutingData.funFact}
+            skillLevel={scoutingData.skillLevel}
+            preferredFoot={scoutingData.preferredFoot}
+            travelRadius={scoutingData.travelRadius}
+            openToInvites={scoutingData.openToInvites}
+            onEdit={() => Alert.alert('Edit Scouting Report', 'Edit functionality coming soon!')}
+          />
+        )}
         {/* Enhanced Quick Actions */}
         <Animated.View 
           style={[
@@ -1317,6 +1338,13 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: 'relative',
     marginBottom: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarOverlay: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   avatar: {
     width: 80,
@@ -1909,6 +1937,64 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.md,
     fontWeight: '600',
     color: 'white',
+  },
+  // New component styles
+  quickActionsRow: {
+    flexDirection: 'row',
+    marginTop: 12,
+    gap: 8,
+  },
+  quickActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  quickActionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#F8FAFC',
+    marginLeft: 4,
+  },
+  newStatsCard: {
+    backgroundColor: '#111827',
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 20,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: '#30363D',
+  },
+  statsChipsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  progressRingContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  streakBadgesRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  streakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  streakBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
   },
 });
 
