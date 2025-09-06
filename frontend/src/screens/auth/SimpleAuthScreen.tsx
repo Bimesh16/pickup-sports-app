@@ -149,7 +149,12 @@ const SimpleAuthScreen: React.FC = () => {
               style={styles.gradientPanel}
             >
               <View style={styles.panelContent}>
-                <Text style={styles.welcomeTitle}>Create Account</Text>
+                <Text style={styles.welcomeTitle}>
+                  {isLogin ? 'Sign In with Social Media' : 'Create Account with Social Media'}
+                </Text>
+                <Text style={styles.welcomeSubtitle}>
+                  {isLogin ? 'Quick and secure sign in' : 'Quick and secure account creation'}
+                </Text>
                 
                 {/* Social Login Buttons */}
                 <View style={styles.socialContainer}>
@@ -391,6 +396,12 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     color: 'white',
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     marginBottom: spacing.xl,
   },
