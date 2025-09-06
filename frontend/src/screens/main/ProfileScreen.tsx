@@ -691,28 +691,101 @@ const ProfileScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshAll} />}
       >
-        {/* Quick Actions */}
-        <View style={[styles.quickActionsSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
+        {/* Enhanced Quick Actions */}
+        <Animated.View 
+          style={[
+            styles.quickActionsSection, 
+            highContrast && { backgroundColor: '#0A0A0A' },
+            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
+          ]}
+        >
           <Text style={[styles.sectionTitle, highContrast && { color: '#fff' }]}>Quick Actions</Text>
           <View style={styles.quickActionsGrid}>
-            <TouchableOpacity style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} onPress={handleFindGames}>
-              <Ionicons name="search-outline" size={24} color={highContrast ? '#FFD700' : colors.primary} />
-              <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Find Games</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} onPress={handleCreateGame}>
-              <Ionicons name="add-circle-outline" size={24} color={highContrast ? '#10B981' : '#10B981'} />
-              <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Create Game</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} onPress={handleFindPractice}>
-              <Ionicons name="fitness-outline" size={24} color={highContrast ? '#F59E0B' : '#F59E0B'} />
-              <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Find Practice</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} onPress={() => Alert.alert('Coming Soon', 'Add Sport feature coming soon!')}>
-              <Ionicons name="person-add-outline" size={24} color={highContrast ? '#8B5CF6' : '#8B5CF6'} />
-              <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Add Sport</Text>
-            </TouchableOpacity>
+            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+              <TouchableOpacity 
+                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
+                onPress={handleFindGames}
+                activeOpacity={0.8}
+              >
+                <View style={styles.quickActionIconContainer}>
+                  <Ionicons name="search-outline" size={28} color={highContrast ? '#FFD700' : colors.primary} />
+                </View>
+                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Find Games</Text>
+                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>Discover nearby games</Text>
+              </TouchableOpacity>
+            </Animated.View>
+            
+            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+              <TouchableOpacity 
+                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
+                onPress={handleCreateGame}
+                activeOpacity={0.8}
+              >
+                <View style={styles.quickActionIconContainer}>
+                  <Ionicons name="add-circle-outline" size={28} color={highContrast ? '#10B981' : '#10B981'} />
+                </View>
+                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Create Game</Text>
+                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>Host your own game</Text>
+              </TouchableOpacity>
+            </Animated.View>
+            
+            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+              <TouchableOpacity 
+                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
+                onPress={handleFindPractice}
+                activeOpacity={0.8}
+              >
+                <View style={styles.quickActionIconContainer}>
+                  <Ionicons name="fitness-outline" size={28} color={highContrast ? '#F59E0B' : '#F59E0B'} />
+                </View>
+                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Find Practice</Text>
+                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>Training sessions</Text>
+              </TouchableOpacity>
+            </Animated.View>
+            
+            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+              <TouchableOpacity 
+                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
+                onPress={() => Alert.alert('View Invitations', 'View invitations coming soon!')}
+                activeOpacity={0.8}
+              >
+                <View style={styles.quickActionIconContainer}>
+                  <Ionicons name="mail-outline" size={28} color={highContrast ? '#8B5CF6' : '#8B5CF6'} />
+                </View>
+                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Invitations</Text>
+                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>Pending invites</Text>
+              </TouchableOpacity>
+            </Animated.View>
+            
+            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+              <TouchableOpacity 
+                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
+                onPress={() => Alert.alert('Achievements', 'Achievements coming soon!')}
+                activeOpacity={0.8}
+              >
+                <View style={styles.quickActionIconContainer}>
+                  <Ionicons name="trophy-outline" size={28} color={highContrast ? '#EF4444' : '#EF4444'} />
+                </View>
+                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Achievements</Text>
+                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>Your badges</Text>
+              </TouchableOpacity>
+            </Animated.View>
+            
+            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+              <TouchableOpacity 
+                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
+                onPress={() => Alert.alert('Coming Soon', 'Add Sport feature coming soon!')}
+                activeOpacity={0.8}
+              >
+                <View style={styles.quickActionIconContainer}>
+                  <Ionicons name="add-outline" size={28} color={highContrast ? '#06B6D4' : '#06B6D4'} />
+                </View>
+                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Add Sport</Text>
+                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>New activities</Text>
+              </TouchableOpacity>
+            </Animated.View>
           </View>
-        </View>
+        </Animated.View>
 
         {/* Bio Section */}
         <View style={[styles.bioSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
@@ -1374,13 +1447,30 @@ const styles = StyleSheet.create({
   quickActionButton: {
     width: '48%',
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     alignItems: 'center',
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    ...colors.shadows?.sm,
+    minHeight: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  quickActionIconContainer: {
+    marginBottom: 8,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+  },
+  quickActionSubtext: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 4,
   },
   quickActionText: {
     fontSize: typography.fontSize.sm,
