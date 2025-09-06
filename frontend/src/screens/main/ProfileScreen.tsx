@@ -539,199 +539,198 @@ const ProfileScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, highContrast && { backgroundColor: '#000' }]}>
-      {/* Header with Nepal Flag Colors */}
-      <LinearGradient colors={highContrast ? ['#111', '#111'] : [NepalColors.primary, NepalColors.secondary]} style={styles.header}>
-        {/* Top Action Buttons */}
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.headerIcon} onPress={() => setShowSettings(true)}>
-            <Ionicons name="settings-outline" size={24} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.editButton} onPress={() => setShowEditProfile(true)}>
-            <Ionicons name="create-outline" size={16} color="white" />
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerIcon} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={24} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerIcon} onPress={() => Alert.alert('Share Profile', 'Share profile coming soon!')}>
-            <Ionicons name="share-outline" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Profile Section */}
-        <View style={[styles.profileSection, rtlEnabled && { alignItems: 'stretch' }]}>
-          <View style={styles.avatarContainer}>
-            <Image
-              source={{ uri: user.avatar || 'https://via.placeholder.com/80x80/4A5568/FFFFFF?text=' + (user?.name?.charAt(0) || 'U') }}
-              style={styles.avatar}
-            />
-            <View style={styles.onlineStatus} />
-          </View>
-          <View style={styles.userInfo}>
-            <Text style={[styles.userName, highContrast && { color: '#fff' }]}>{user.name}</Text>
-            <Text style={[styles.userUsername, highContrast && { color: 'rgba(255,255,255,0.8)' }]}>@{user.username}</Text>
-          </View>
-        </View>
-
-        {/* Enhanced Stats Card with Animations */}
-        <Animated.View 
-          style={[
-            styles.statsCard, 
-            highContrast && { backgroundColor: '#0A0A0A' },
-            { 
-              opacity: fadeAnim,
-              transform: [
-                { translateY: slideAnim },
-                { scale: scaleAnim }
-              ]
-            }
-          ]}
-        >
-          {/* Main Stats Row */}
-          <View style={styles.statsRow}>
-            <AnimatedStat
-              animValue={statsAnimations.gamesPlayed}
-              label="Games Played"
-              color={highContrast ? '#FFD700' : '#3B82F6'}
-              icon="game-controller-outline"
-            />
-            <AnimatedStat
-              animValue={statsAnimations.wins}
-              label="Wins"
-              color={highContrast ? '#10B981' : '#10B981'}
-              icon="trophy"
-            />
-            <AnimatedStat
-              animValue={statsAnimations.winRate}
-              label="Win Rate"
-              color={highContrast ? '#FFD700' : '#F59E0B'}
-              icon="trending-up"
-              suffix="%"
-            />
-          </View>
-
-          {/* Win/Loss/Draw Pills */}
-          <View style={styles.winLossRow}>
-            <Animated.View 
-              style={[
-                styles.winLossBadge, 
-                { backgroundColor: '#3B82F620' },
-                { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
-              ]}
-            >
-              <Ionicons name="trophy" size={16} color="#3B82F6" />
-              <Animated.Text style={[styles.winLossText, { color: '#3B82F6' }]}>
-                {user.stats?.totalGamesWon || 0} Wins
-              </Animated.Text>
-            </Animated.View>
-            <Animated.View 
-              style={[
-                styles.winLossBadge, 
-                { backgroundColor: '#EF444420' },
-                { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
-              ]}
-            >
-              <Ionicons name="close" size={16} color="#EF4444" />
-              <Animated.Text style={[styles.winLossText, { color: '#EF4444' }]}>
-                {user.stats?.totalGamesLost || 0} Losses
-              </Animated.Text>
-            </Animated.View>
-            <Animated.View 
-              style={[
-                styles.winLossBadge, 
-                { backgroundColor: '#F59E0B20' },
-                { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
-              ]}
-            >
-              <Ionicons name="remove" size={16} color="#F59E0B" />
-              <Animated.Text style={[styles.winLossText, { color: '#F59E0B' }]}>
-                {user.stats?.totalGamesDrawn || 0} Draws
-              </Animated.Text>
-            </Animated.View>
-          </View>
-
-          {/* Streak Row */}
-          <View style={styles.streakRow}>
-            <Animated.View 
-              style={[
-                styles.streakItem,
-                { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }
-              ]}
-            >
-              <Ionicons name="flame" size={16} color="#F59E0B" />
-              <Text style={styles.streakText}>
-                {user.stats?.currentStreak || 0} Current Streak
-              </Text>
-            </Animated.View>
-            <Animated.View 
-              style={[
-                styles.streakItem,
-                { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }
-              ]}
-            >
-              <Ionicons name="trophy" size={16} color="#3B82F6" />
-              <Text style={styles.streakText}>
-                {user.stats?.longestStreak || 0} Best Streak
-              </Text>
-            </Animated.View>
-          </View>
-
-          <Animated.Text 
-            style={[
-              styles.autoTrackingNote,
-              { opacity: fadeAnim }
-            ]}
-          >
-            📊 Stats automatically updated from game results
-          </Animated.Text>
-        </Animated.View>
-
-        {/* Enhanced Personal Info Chips */}
-        <Animated.View 
-          style={[
-            styles.personalInfoRow,
-            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
-          ]}
-        >
-          {user.birthDate && calculateAge(user.birthDate) && (
-            <Animated.View 
-              style={[
-                styles.infoChip,
-                { transform: [{ scale: scaleAnim }] }
-              ]}
-            >
-              <Ionicons name="calendar-outline" size={16} color="#3B82F6" />
-              <Text style={styles.infoChipText}>{calculateAge(user.birthDate)} years old</Text>
-            </Animated.View>
-          )}
-          <Animated.View 
-            style={[
-              styles.infoChip,
-              { transform: [{ scale: scaleAnim }] }
-            ]}
-          >
-            <Ionicons name="flag-outline" size={16} color="#10B981" />
-            <Text style={styles.infoChipText}>{user.nationality || user.country || 'Nepal'}</Text>
-          </Animated.View>
-          {user.gender && (
-            <Animated.View 
-              style={[
-                styles.infoChip,
-                { transform: [{ scale: scaleAnim }] }
-              ]}
-            >
-              <Ionicons name="person-outline" size={16} color="#F59E0B" />
-              <Text style={styles.infoChipText}>{user.gender}</Text>
-            </Animated.View>
-          )}
-        </Animated.View>
-      </LinearGradient>
-
       <ScrollView
         style={[styles.content, highContrast && { backgroundColor: '#000' }]}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshAll} />}
       >
+        {/* Header with Nepal Flag Colors */}
+        <LinearGradient colors={highContrast ? ['#111', '#111'] : [NepalColors.primary, NepalColors.secondary]} style={styles.header}>
+          {/* Top Action Buttons */}
+          <View style={styles.headerIcons}>
+            <TouchableOpacity style={styles.headerIcon} onPress={() => setShowSettings(true)}>
+              <Ionicons name="settings-outline" size={24} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.editButton} onPress={() => setShowEditProfile(true)}>
+              <Ionicons name="create-outline" size={16} color="white" />
+              <Text style={styles.editButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerIcon} onPress={handleLogout}>
+              <Ionicons name="log-out-outline" size={24} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerIcon} onPress={() => Alert.alert('Share Profile', 'Share profile coming soon!')}>
+              <Ionicons name="share-outline" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Profile Section */}
+          <View style={[styles.profileSection, rtlEnabled && { alignItems: 'stretch' }]}>
+            <View style={styles.avatarContainer}>
+              <Image
+                source={{ uri: user.avatar || 'https://via.placeholder.com/80x80/4A5568/FFFFFF?text=' + (user?.name?.charAt(0) || 'U') }}
+                style={styles.avatar}
+              />
+              <View style={styles.onlineStatus} />
+            </View>
+            <View style={styles.userInfo}>
+              <Text style={[styles.userName, highContrast && { color: '#fff' }]}>{user.name}</Text>
+              <Text style={[styles.userUsername, highContrast && { color: 'rgba(255,255,255,0.8)' }]}>@{user.username}</Text>
+            </View>
+          </View>
+
+          {/* Enhanced Stats Card with Animations */}
+          <Animated.View 
+            style={[
+              styles.statsCard, 
+              highContrast && { backgroundColor: '#0A0A0A' },
+              { 
+                opacity: fadeAnim,
+                transform: [
+                  { translateY: slideAnim },
+                  { scale: scaleAnim }
+                ]
+              }
+            ]}
+          >
+            {/* Main Stats Row */}
+            <View style={styles.statsRow}>
+              <AnimatedStat
+                animValue={statsAnimations.gamesPlayed}
+                label="Games Played"
+                color={highContrast ? '#FFD700' : '#3B82F6'}
+                icon="game-controller-outline"
+              />
+              <AnimatedStat
+                animValue={statsAnimations.wins}
+                label="Wins"
+                color={highContrast ? '#10B981' : '#10B981'}
+                icon="trophy"
+              />
+              <AnimatedStat
+                animValue={statsAnimations.winRate}
+                label="Win Rate"
+                color={highContrast ? '#FFD700' : '#F59E0B'}
+                icon="trending-up"
+                suffix="%"
+              />
+            </View>
+
+            {/* Win/Loss/Draw Pills */}
+            <View style={styles.winLossRow}>
+              <Animated.View 
+                style={[
+                  styles.winLossBadge, 
+                  { backgroundColor: '#3B82F620' },
+                  { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
+                ]}
+              >
+                <Ionicons name="trophy" size={16} color="#3B82F6" />
+                <Animated.Text style={[styles.winLossText, { color: '#3B82F6' }]}>
+                  {user.stats?.totalGamesWon || 0} Wins
+                </Animated.Text>
+              </Animated.View>
+              <Animated.View 
+                style={[
+                  styles.winLossBadge, 
+                  { backgroundColor: '#EF444420' },
+                  { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
+                ]}
+              >
+                <Ionicons name="close" size={16} color="#EF4444" />
+                <Animated.Text style={[styles.winLossText, { color: '#EF4444' }]}>
+                  {user.stats?.totalGamesLost || 0} Losses
+                </Animated.Text>
+              </Animated.View>
+              <Animated.View 
+                style={[
+                  styles.winLossBadge, 
+                  { backgroundColor: '#F59E0B20' },
+                  { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
+                ]}
+              >
+                <Ionicons name="remove" size={16} color="#F59E0B" />
+                <Animated.Text style={[styles.winLossText, { color: '#F59E0B' }]}>
+                  {user.stats?.totalGamesDrawn || 0} Draws
+                </Animated.Text>
+              </Animated.View>
+            </View>
+
+            {/* Streak Row */}
+            <View style={styles.streakRow}>
+              <Animated.View 
+                style={[
+                  styles.streakItem,
+                  { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }
+                ]}
+              >
+                <Ionicons name="flame" size={16} color="#F59E0B" />
+                <Text style={styles.streakText}>
+                  {user.stats?.currentStreak || 0} Current Streak
+                </Text>
+              </Animated.View>
+              <Animated.View 
+                style={[
+                  styles.streakItem,
+                  { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }
+                ]}
+              >
+                <Ionicons name="trophy" size={16} color="#3B82F6" />
+                <Text style={styles.streakText}>
+                  {user.stats?.longestStreak || 0} Best Streak
+                </Text>
+              </Animated.View>
+            </View>
+
+            <Animated.Text 
+              style={[
+                styles.autoTrackingNote,
+                { opacity: fadeAnim }
+              ]}
+            >
+              📊 Stats automatically updated from game results
+            </Animated.Text>
+          </Animated.View>
+
+          {/* Enhanced Personal Info Chips */}
+          <Animated.View 
+            style={[
+              styles.personalInfoRow,
+              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
+            ]}
+          >
+            {user.birthDate && calculateAge(user.birthDate) && (
+              <Animated.View 
+                style={[
+                  styles.infoChip,
+                  { transform: [{ scale: scaleAnim }] }
+                ]}
+              >
+                <Ionicons name="calendar-outline" size={16} color="#3B82F6" />
+                <Text style={styles.infoChipText}>{calculateAge(user.birthDate)} years old</Text>
+              </Animated.View>
+            )}
+            <Animated.View 
+              style={[
+                styles.infoChip,
+                { transform: [{ scale: scaleAnim }] }
+              ]}
+            >
+              <Ionicons name="flag-outline" size={16} color="#10B981" />
+              <Text style={styles.infoChipText}>{user.nationality || user.country || 'Nepal'}</Text>
+            </Animated.View>
+            {user.gender && (
+              <Animated.View 
+                style={[
+                  styles.infoChip,
+                  { transform: [{ scale: scaleAnim }] }
+                ]}
+              >
+                <Ionicons name="person-outline" size={16} color="#F59E0B" />
+                <Text style={styles.infoChipText}>{user.gender}</Text>
+              </Animated.View>
+            )}
+          </Animated.View>
+        </LinearGradient>
         {/* Enhanced Quick Actions */}
         <Animated.View 
           style={[
@@ -1287,7 +1286,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 12,
   },
   headerIcon: {
     width: 40,
@@ -1353,13 +1352,13 @@ const styles = StyleSheet.create({
   statsCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    padding: 12,
+    marginBottom: 12,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   statItem: {
     alignItems: 'center',
