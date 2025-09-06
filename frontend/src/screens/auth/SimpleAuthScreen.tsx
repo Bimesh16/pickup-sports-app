@@ -51,12 +51,14 @@ const SimpleAuthScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [gender, setGender] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const passwordRef = useRef<TextInput>(null);
   const lastNameRef = useRef<TextInput>(null);
+  const genderRef = useRef<TextInput>(null);
   const emailRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
   const dateOfBirthRef = useRef<TextInput>(null);
@@ -113,6 +115,10 @@ const SimpleAuthScreen: React.FC = () => {
       setErrors({ lastName: 'Last name is required' });
       return;
     }
+    if (!gender.trim()) {
+      setErrors({ gender: 'Gender is required' });
+      return;
+    }
     if (!email.trim() && !phoneNumber.trim()) {
       setErrors({ 
         email: 'Please provide either email or phone number',
@@ -151,6 +157,7 @@ const SimpleAuthScreen: React.FC = () => {
         password: password,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+        gender: gender.trim(),
         age: new Date().getFullYear() - new Date(dateOfBirth).getFullYear(),
       });
       Alert.alert('Success', 'Account created successfully!');
@@ -294,7 +301,7 @@ const SimpleAuthScreen: React.FC = () => {
                     </View>
                   </>
                 ) : (
-                  // Sign up form - First Name, Last Name, Email/Phone, Date of Birth, Password
+                  // Sign up form - First Name, Last Name, Gender, Email/Phone, Date of Birth, Password
                   <>
                     <View style={styles.inputContainer}>
                       <View style={styles.inputWrapper}>
@@ -328,11 +335,31 @@ const SimpleAuthScreen: React.FC = () => {
                           autoCapitalize="words"
                           returnKeyType="next"
                           onSubmitEditing={() => {
-                            emailRef.current?.focus();
+                            genderRef.current?.focus();
                           }}
                         />
                       </View>
                       {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
+                    </View>
+                    
+                    <View style={styles.inputContainer}>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                          ref={genderRef}
+                          style={styles.input}
+                          placeholder="Gender (Male/Female/Other)"
+                          placeholderTextColor={colors.textSecondary}
+                          value={gender}
+                          onChangeText={setGender}
+                          autoCapitalize="words"
+                          returnKeyType="next"
+                          onSubmitEditing={() => {
+                            emailRef.current?.focus();
+                          }}
+                        />
+                      </View>
+                      {errors.gender && <Text style={styles.errorText}>{errors.gender}</Text>}
                     </View>
                     
                     <View style={styles.inputContainer}>
