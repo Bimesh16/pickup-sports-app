@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -56,9 +57,9 @@ const SimpleAuthScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [showGenderModal, setShowGenderModal] = useState(false);
   const passwordRef = useRef<TextInput>(null);
   const lastNameRef = useRef<TextInput>(null);
-  const genderRef = useRef<TextInput>(null);
   const emailRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
   const dateOfBirthRef = useRef<TextInput>(null);
@@ -66,6 +67,15 @@ const SimpleAuthScreen: React.FC = () => {
 
   const { login, register } = useAuthStore();
   const { t } = useLanguage();
+
+  const genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
+
+  const handleGenderSelect = (selectedGender: string) => {
+    setGender(selectedGender);
+    setShowGenderModal(false);
+    // Focus on email field after selection
+    emailRef.current?.focus();
+  };
 
   const handleLogin = async () => {
     // Clear previous errors
@@ -335,7 +345,7 @@ const SimpleAuthScreen: React.FC = () => {
                           autoCapitalize="words"
                           returnKeyType="next"
                           onSubmitEditing={() => {
-                            genderRef.current?.focus();
+                            setShowGenderModal(true);
                           }}
                         />
                       </View>
@@ -343,22 +353,16 @@ const SimpleAuthScreen: React.FC = () => {
                     </View>
                     
                     <View style={styles.inputContainer}>
-                      <View style={styles.inputWrapper}>
+                      <TouchableOpacity 
+                        style={[styles.inputWrapper, gender && styles.inputWrapperSelected]}
+                        onPress={() => setShowGenderModal(true)}
+                      >
                         <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
-                        <TextInput
-                          ref={genderRef}
-                          style={styles.input}
-                          placeholder="Gender (Male/Female/Other)"
-                          placeholderTextColor={colors.textSecondary}
-                          value={gender}
-                          onChangeText={setGender}
-                          autoCapitalize="words"
-                          returnKeyType="next"
-                          onSubmitEditing={() => {
-                            emailRef.current?.focus();
-                          }}
-                        />
-                      </View>
+                        <Text style={[styles.input, gender ? styles.inputText : styles.inputPlaceholder]}>
+                          {gender || 'Select Gender'}
+                        </Text>
+                        <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
+                      </TouchableOpacity>
                       {errors.gender && <Text style={styles.errorText}>{errors.gender}</Text>}
                     </View>
                     
@@ -371,9 +375,12 @@ const SimpleAuthScreen: React.FC = () => {
                           placeholder="Email (required if no phone)"
                           placeholderTextColor={colors.textSecondary}
                           value={email}
-                          onChangeText={setEmail}
+                          onChangeText={(text) => {
+                            setEmail(text.toLowerCase().trim());
+                          }}
                           keyboardType="email-address"
                           autoCapitalize="none"
+                          autoCorrect={false}
                           returnKeyType="next"
                           onSubmitEditing={() => {
                             phoneRef.current?.focus();
@@ -392,9 +399,20 @@ const SimpleAuthScreen: React.FC = () => {
                           placeholder="Phone Number (required if no email)"
                           placeholderTextColor={colors.textSecondary}
                           value={phoneNumber}
-                          onChangeText={setPhoneNumber}
+                          onChangeText={(text) => {
+                            // Auto-format phone number as user types
+                            let formatted = text.replace(/\D/g, ''); // Remove non-digits
+                            if (formatted.length >= 3) {
+                              formatted = formatted.substring(0, 3) + '-' + formatted.substring(3);
+                            }
+                            if (formatted.length >= 7) {
+                              formatted = formatted.substring(0, 7) + '-' + formatted.substring(7, 11);
+                            }
+                            setPhoneNumber(formatted);
+                          }}
                           keyboardType="phone-pad"
                           returnKeyType="next"
+                          maxLength={12}
                           onSubmitEditing={() => {
                             dateOfBirthRef.current?.focus();
                           }}
@@ -412,9 +430,20 @@ const SimpleAuthScreen: React.FC = () => {
                           placeholder="Date of Birth (YYYY-MM-DD)"
                           placeholderTextColor={colors.textSecondary}
                           value={dateOfBirth}
-                          onChangeText={setDateOfBirth}
+                          onChangeText={(text) => {
+                            // Auto-format date as user types
+                            let formatted = text.replace(/\D/g, ''); // Remove non-digits
+                            if (formatted.length >= 4) {
+                              formatted = formatted.substring(0, 4) + '-' + formatted.substring(4);
+                            }
+                            if (formatted.length >= 7) {
+                              formatted = formatted.substring(0, 7) + '-' + formatted.substring(7, 9);
+                            }
+                            setDateOfBirth(formatted);
+                          }}
                           keyboardType="numeric"
                           returnKeyType="next"
+                          maxLength={10}
                           onSubmitEditing={() => {
                             registerPasswordRef.current?.focus();
                           }}
@@ -478,6 +507,41 @@ const SimpleAuthScreen: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Gender Selection Modal */}
+      <Modal
+        visible={showGenderModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowGenderModal(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowGenderModal(false)}
+        >
+          <View style={styles.genderModal}>
+            <Text style={styles.genderModalTitle}>Select Gender</Text>
+            {genderOptions.map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={[
+                  styles.genderOption,
+                  gender === option && styles.genderOptionSelected
+                ]}
+                onPress={() => handleGenderSelect(option)}
+              >
+                <Text style={[
+                  styles.genderOptionText,
+                  gender === option && styles.genderOptionSelectedText
+                ]}>
+                  {option}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -640,6 +704,54 @@ const styles = StyleSheet.create({
   switchModeLink: {
     color: colors.primary,
     fontWeight: 'bold',
+  },
+  // Gender modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  genderModal: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    width: '80%',
+    maxWidth: 300,
+  },
+  genderModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  genderOption: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  genderOptionText: {
+    fontSize: 16,
+    color: colors.text,
+    textAlign: 'center',
+  },
+  genderOptionSelected: {
+    backgroundColor: colors.primary + '10',
+  },
+  genderOptionSelectedText: {
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  inputWrapperSelected: {
+    borderColor: colors.primary,
+    borderWidth: 2,
+  },
+  inputText: {
+    color: colors.text,
+  },
+  inputPlaceholder: {
+    color: colors.textSecondary,
   },
 });
 
