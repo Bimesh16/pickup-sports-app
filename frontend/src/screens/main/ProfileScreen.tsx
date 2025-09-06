@@ -27,6 +27,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { Snackbar } from 'react-native-paper';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuthStore } from '@/stores/authStore';
+import { useNavigation } from '@react-navigation/native';
 
 interface User {
   id: string;
@@ -87,6 +88,7 @@ const ProfileScreen: React.FC = () => {
   const { t } = useLanguage();
   const { highContrast, rtlEnabled } = useUIStore();
   const { logout } = useAuthStore();
+  const navigation = useNavigation();
 
   // Fetch real data
   useEffect(() => {
@@ -313,7 +315,7 @@ const ProfileScreen: React.FC = () => {
       <LinearGradient colors={highContrast ? ['#111', '#111'] : [NepalColors.primary, NepalColors.secondary]} style={styles.header}>
         {/* Top Action Buttons */}
         <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.headerIcon} onPress={() => Alert.alert('Settings', 'Settings coming soon!')}>
+          <TouchableOpacity style={styles.headerIcon} onPress={() => navigation.navigate('Settings' as never)}>
             <Ionicons name="settings-outline" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.editButton} onPress={() => setShowEditProfile(true)}>

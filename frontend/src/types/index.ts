@@ -118,6 +118,7 @@ export type MainTabParamList = {
   Explore: undefined;
   Messages: undefined;
   Profile: undefined;
+  Settings: undefined;
 };
 
 export type SettingsStackParamList = {

@@ -13,6 +13,7 @@ import ProfileScreen from '@/screens/main/ProfileScreen';
 import GameDetailsScreen from '@/screens/games/GameDetailsScreen';
 import VenueDetailsScreen from '@/screens/venues/VenueDetailsScreen';
 import SettingsNavigator from '@/navigation/SettingsNavigator';
+import SettingsScreen from '@/screens/main/SettingsScreen';
 import PaymentScreen from '@/screens/payment/PaymentScreen';
 
 export type MainTabParamList = {
@@ -21,6 +22,7 @@ export type MainTabParamList = {
   CreateGame: undefined;
   Messages: undefined;
   Profile: undefined;
+  Settings: undefined;
 };
 
 export type MainStackParamList = {
@@ -51,6 +53,8 @@ const MainTabNavigator: React.FC = () => {
             iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
+          } else if (route.name === 'Settings') {
+            iconName = focused ? 'settings' : 'settings-outline';
           } else {
             iconName = 'ellipse-outline';
           }
@@ -71,6 +75,7 @@ const MainTabNavigator: React.FC = () => {
       <Tab.Screen name="CreateGame" component={CreateGameScreen} />
       <Tab.Screen name="Messages" component={MessagesScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 };
