@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import { storage } from '@/utils/storage';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as auth from '@/services/auth';
@@ -279,7 +280,8 @@ const mockApi = {
 };
 
 export const useAuthStore = create<AuthStore>()(
-  persist(
+  // Temporarily disable persistence for web testing
+  // persist(
     (set, get) => ({
       // State
       user: null,
@@ -292,6 +294,58 @@ export const useAuthStore = create<AuthStore>()(
       login: async (usernameOrEmail: string, password: string) => {
         set({ isLoading: true });
         try {
+          // For web testing - bypass backend and create mock user
+          if (Platform.OS === 'web') {
+            // Simple test credentials
+            if ((usernameOrEmail === 'test' || usernameOrEmail === 'test@test.com') && password === 'password') {
+              const mockUser: User = {
+                id: '1',
+                name: 'Test User',
+                username: 'test',
+                email: 'test@test.com',
+                phoneNumber: '+1234567890',
+                avatar: 'https://via.placeholder.com/80x80/4A5568/FFFFFF?text=TU',
+                location: {
+                  latitude: 27.7172,
+                  longitude: 85.3240,
+                  address: 'Kathmandu, Nepal'
+                },
+                preferences: {
+                  sports: ['football', 'basketball'],
+                  maxDistance: 10,
+                  skillLevel: 'INTERMEDIATE'
+                },
+                stats: {
+                  gamesPlayed: 0,
+                  totalGamesPlayed: 0,
+                  gamesWon: 0,
+                  totalGamesWon: 0,
+                  totalGamesLost: 0,
+                  totalGamesDrawn: 0,
+                  currentStreak: 0,
+                  longestStreak: 0,
+                  winRate: 0,
+                  rating: 0,
+                  reliability: 0
+                },
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              };
+              
+              set({
+                user: mockUser,
+                token: 'mock-token-123',
+                isAuthenticated: true,
+                isLoading: false,
+              });
+              return;
+            } else {
+              set({ isLoading: false });
+              throw { success: false, message: 'Invalid credentials. Use test/password' };
+            }
+          }
+          
+          // Original backend logic for mobile
           const res = await auth.login(usernameOrEmail, password);
           if (!res.success) {
             set({ isLoading: false });
@@ -547,13 +601,13 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: 'auth-storage',
-      storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({
-        user: state.user,
-        token: state.token,
-        isAuthenticated: state.isAuthenticated,
-        biometricEnabled: state.biometricEnabled
-      })
-    }
-  )
+      // storage: createJSONStorage(() => AsyncStorage),
+      // partialize: (state) => ({
+      //   user: state.user,
+      //   token: state.token,
+      //   isAuthenticated: state.isAuthenticated,
+      //   biometricEnabled: state.biometricEnabled
+      // })
+    // }
+  // )
 );
