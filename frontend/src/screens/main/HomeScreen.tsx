@@ -170,7 +170,11 @@ const HomeScreen: React.FC = () => {
         </View>
         <View style={styles.gameDetailItem}>
           <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
-          <Text style={[styles.gameDetailText, highContrast && { color: '#E5E7EB' }]}>{(game.location && game.location.address) || game.location || 'Unknown'}</Text>
+          <Text style={[styles.gameDetailText, highContrast && { color: '#E5E7EB' }]}>
+            {(game.location && game.location.address) || 
+             (game.location && typeof game.location === 'string' ? game.location : '') || 
+             'Unknown'}
+          </Text>
         </View>
         <View style={styles.gameDetailItem}>
           <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
