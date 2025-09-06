@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Animated, Easing, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
+// Location will be imported dynamically to avoid webpack issues
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { TextInput, Button, Card, ActivityIndicator } from 'react-native-paper';
@@ -90,6 +90,10 @@ export default function RegisterScreen() {
 
   const handleUseMyLocation = async () => {
     try {
+      // Dynamic import with fallback to mock
+      const Location = await import('expo-location').catch(() => 
+        import('@/mocks/expo-location')
+      );
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission required', 'Location permission is needed to autofill your city.');
