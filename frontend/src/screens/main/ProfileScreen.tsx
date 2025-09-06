@@ -28,6 +28,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { Snackbar } from 'react-native-paper';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuthStore } from '@/stores/authStore';
+import { storage } from '@/utils/storage';
 
 interface User {
   id: string;
@@ -194,7 +195,7 @@ const ProfileScreen: React.FC = () => {
     }
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',
@@ -203,36 +204,47 @@ const ProfileScreen: React.FC = () => {
         { 
           text: 'Sign Out', 
           style: 'destructive', 
-          onPress: async () => {
-            try {
-              console.log('Starting logout process...');
-              await logout();
-              console.log('Logout completed successfully');
-              
-              // Force navigation to auth screen as a fallback
-              setTimeout(() => {
-                console.log('Checking auth state after logout...');
-                const { isAuthenticated } = useAuthStore.getState();
-                console.log('Current auth state:', { isAuthenticated });
-                if (isAuthenticated) {
-                  console.log('Still authenticated, forcing logout...');
-                  useAuthStore.setState({
-                    user: null,
-                    token: null,
-                    isAuthenticated: false,
-                    biometricEnabled: false,
-                    isLoading: false,
-                  });
-                }
-              }, 1000);
-            } catch (error) {
-              console.error('Logout error:', error);
-              Alert.alert('Error', 'Failed to sign out. Please try again.');
-            }
+          onPress: () => {
+            console.log('User confirmed logout');
+            performLogout();
           }
         },
       ]
     );
+  };
+
+  const performLogout = async () => {
+    try {
+      console.log('Starting logout process...');
+      
+      // Clear auth state immediately
+      useAuthStore.setState({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        biometricEnabled: false,
+        isLoading: false,
+      });
+      
+      // Clear storage
+      await storage.removeItem('access_token');
+      await storage.removeItem('refresh_token');
+      await storage.removeItem('refresh_nonce');
+      await storage.removeItem('biometric_enabled');
+      await storage.removeItem('biometric_token');
+      
+      console.log('Logout completed successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if there's an error, clear the state
+      useAuthStore.setState({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        biometricEnabled: false,
+        isLoading: false,
+      });
+    }
   };
 
   const handleSaveSportProfile = (data: ScoutingReportData) => {
