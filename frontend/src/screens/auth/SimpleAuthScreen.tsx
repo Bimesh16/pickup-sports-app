@@ -150,10 +150,10 @@ const SimpleAuthScreen: React.FC = () => {
             >
               <View style={styles.panelContent}>
                 <Text style={styles.welcomeTitle}>
-                  {isLogin ? 'Sign In with Social Media' : 'Create Account with Social Media'}
+                  {isLogin ? 'Quick Sign In' : 'Create Account with Social Media'}
                 </Text>
                 <Text style={styles.welcomeSubtitle}>
-                  {isLogin ? 'Quick and secure sign in' : 'Quick and secure account creation'}
+                  {isLogin ? 'Use your social media accounts' : 'One-click account creation'}
                 </Text>
                 
                 {/* Social Login Buttons */}
@@ -194,7 +194,10 @@ const SimpleAuthScreen: React.FC = () => {
           {/* Right Panel - Login */}
           <View style={styles.rightPanel}>
             <View style={styles.formContent}>
-              <Text style={styles.formTitle}>{isLogin ? 'Welcome Back!' : 'Create Account'}</Text>
+              <Text style={styles.formTitle}>{isLogin ? 'Welcome Back!' : 'Create Account Manually'}</Text>
+              {!isLogin && (
+                <Text style={styles.formSubtitle}>Fill out the form below with your details</Text>
+              )}
               
               {/* Form Fields */}
               <View style={styles.formContainer}>
@@ -434,6 +437,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  formSubtitle: {
+    fontSize: 16,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.xl,
   },
