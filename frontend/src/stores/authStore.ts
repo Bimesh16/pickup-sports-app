@@ -297,14 +297,14 @@ export const useAuthStore = create<AuthStore>()(
           // For web testing - bypass backend and create mock user
           if (Platform.OS === 'web') {
             // Simple test credentials
-            if ((usernameOrEmail === 'test' || usernameOrEmail === 'test@test.com') && password === 'password') {
+            if ((usernameOrEmail === 'test' || usernameOrEmail === 'test@test.com' || usernameOrEmail === 'demo') && password === 'password') {
               const mockUser: User = {
                 id: '1',
-                name: 'Test User',
-                username: 'test',
-                email: 'test@test.com',
+                name: usernameOrEmail === 'demo' ? 'Demo User' : 'Test User',
+                username: usernameOrEmail,
+                email: usernameOrEmail.includes('@') ? usernameOrEmail : 'test@test.com',
                 phoneNumber: '+1234567890',
-                avatar: 'https://via.placeholder.com/80x80/4A5568/FFFFFF?text=TU',
+                avatar: `https://via.placeholder.com/80x80/4A5568/FFFFFF?text=${usernameOrEmail.charAt(0).toUpperCase()}`,
                 location: {
                   latitude: 27.7172,
                   longitude: 85.3240,
@@ -387,7 +387,7 @@ export const useAuthStore = create<AuthStore>()(
               return;
             } else {
               set({ isLoading: false });
-              throw { success: false, message: 'Invalid credentials. Use test/password or try social login' };
+              throw { success: false, message: 'Invalid credentials. Use demo/password, test/password or try social login' };
             }
           }
           
