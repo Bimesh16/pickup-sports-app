@@ -1,4 +1,5 @@
 import { storage } from '@/utils/storage';
+import { Platform } from 'react-native';
 
 const BASE_URL = __DEV__ ? 'http://localhost:8080' : 'https://api.pickupsports.app';
 const ACCESS_TOKEN_KEY = 'access_token';
@@ -49,11 +50,79 @@ async function request<T>(path: string, init: RequestInit = {}) {
 }
 
 export async function getNearbyGames(lat: number, lon: number, radiusKm = 5) {
+  // Mock data for web development
+  if (Platform.OS === 'web') {
+    return {
+      ok: true,
+      status: 200,
+      data: [
+        {
+          id: 'nearby-1',
+          title: 'Evening Futsal League',
+          sport: 'FUTSAL',
+          dateTime: '2024-01-20T18:00:00Z',
+          location: 'Kathmandu Sports Complex',
+          currentPlayers: 7,
+          maxPlayers: 10,
+          cost: 200,
+          skillLevel: 'INTERMEDIATE',
+          distance: '2.5km'
+        },
+        {
+          id: 'nearby-2',
+          title: 'Morning Basketball',
+          sport: 'BASKETBALL',
+          dateTime: '2024-01-21T08:00:00Z',
+          location: 'Basketball Court',
+          currentPlayers: 8,
+          maxPlayers: 10,
+          cost: 0,
+          skillLevel: 'ADVANCED',
+          distance: '1.2km'
+        }
+      ]
+    };
+  }
+  
   // Use backend spec query param names
   return request(`/games/nearby?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&radiusKm=${encodeURIComponent(radiusKm)}`);
 }
 
 export async function getFeaturedGames() {
+  // Mock data for web development
+  if (Platform.OS === 'web') {
+    return {
+      ok: true,
+      status: 200,
+      data: [
+        {
+          id: 'featured-1',
+          title: 'Weekend Cricket Match',
+          sport: 'CRICKET',
+          dateTime: '2024-01-22T14:00:00Z',
+          location: 'Cricket Ground',
+          currentPlayers: 18,
+          maxPlayers: 22,
+          cost: 500,
+          skillLevel: 'INTERMEDIATE',
+          featured: true
+        },
+        {
+          id: 'featured-2',
+          title: 'Evening Futsal League',
+          sport: 'FUTSAL',
+          dateTime: '2024-01-20T18:00:00Z',
+          location: 'Kathmandu Sports Complex',
+          currentPlayers: 7,
+          maxPlayers: 10,
+          cost: 200,
+          skillLevel: 'INTERMEDIATE',
+          featured: true
+        }
+      ]
+    };
+  }
+  
   // Try featured, fallback to explore, then plain games
   let res = await request('/games/featured');
   if (!res.ok) res = await request('/games/explore');
@@ -62,6 +131,38 @@ export async function getFeaturedGames() {
 }
 
 export async function searchGames(filters: Partial<{ sport: string; skillLevel: string; q: string }>, page = 0) {
+  // Mock data for web development
+  if (Platform.OS === 'web') {
+    return {
+      ok: true,
+      status: 200,
+      data: [
+        {
+          id: 'search-1',
+          title: 'Evening Futsal League',
+          sport: 'FUTSAL',
+          dateTime: '2024-01-20T18:00:00Z',
+          location: 'Kathmandu Sports Complex',
+          currentPlayers: 7,
+          maxPlayers: 10,
+          cost: 200,
+          skillLevel: 'INTERMEDIATE'
+        },
+        {
+          id: 'search-2',
+          title: 'Morning Basketball',
+          sport: 'BASKETBALL',
+          dateTime: '2024-01-21T08:00:00Z',
+          location: 'Basketball Court',
+          currentPlayers: 8,
+          maxPlayers: 10,
+          cost: 0,
+          skillLevel: 'ADVANCED'
+        }
+      ]
+    };
+  }
+  
   const params = new URLSearchParams();
   if (filters.sport) params.set('sport', filters.sport);
   if (filters.skillLevel) params.set('skillLevel', filters.skillLevel);
@@ -74,6 +175,19 @@ export async function searchGames(filters: Partial<{ sport: string; skillLevel: 
 }
 
 export async function joinGame(gameId: string) {
+  // Mock data for web development
+  if (Platform.OS === 'web') {
+    return {
+      ok: true,
+      status: 200,
+      data: {
+        message: 'Successfully joined the game!',
+        gameId: gameId,
+        joinedAt: new Date().toISOString()
+      }
+    };
+  }
+  
   // Support multiple variants; try /join then /rsvp
   let res = await request(`/games/${gameId}/join`, { method: 'POST' });
   if (!res.ok) res = await request(`/games/${gameId}/rsvp`, { method: 'POST' });

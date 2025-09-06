@@ -1,4 +1,5 @@
 import { storage } from '@/utils/storage';
+import { Platform } from 'react-native';
 
 const BASE_URL = __DEV__ ? 'http://localhost:8080' : 'https://api.pickupsports.app';
 const ACCESS_TOKEN_KEY = 'access_token';
@@ -52,10 +53,67 @@ async function request<T>(path: string, init: RequestInit = {}) {
 }
 
 export async function getMyProfile() {
+  // Mock data for web development
+  if (Platform.OS === 'web') {
+    return {
+      ok: true,
+      status: 200,
+      data: {
+        id: 'mock-user-1',
+        username: 'testuser',
+        email: 'test@test.com',
+        firstName: 'Test',
+        lastName: 'User',
+        phone: '+977-1234567890',
+        dateOfBirth: '1990-01-01',
+        gender: 'MALE',
+        bio: 'Test user for web development',
+        profileImage: null,
+        isEmailVerified: true,
+        isPhoneVerified: true,
+        preferences: {
+          language: 'en',
+          notifications: true,
+          theme: 'light'
+        },
+        stats: {
+          gamesPlayed: 15,
+          gamesWon: 8,
+          gamesLost: 7,
+          winRate: 53.3,
+          totalHours: 45.5
+        },
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z'
+      }
+    };
+  }
+  
   return request('/profiles/me', { method: 'GET' });
 }
 
 export async function getDashboardSummary() {
+  // Mock data for web development
+  if (Platform.OS === 'web') {
+    return {
+      ok: true,
+      status: 200,
+      data: {
+        totalGames: 15,
+        upcomingGames: 3,
+        completedGames: 12,
+        winRate: 53.3,
+        totalHours: 45.5,
+        favoriteSport: 'FUTSAL',
+        recentActivity: [
+          { type: 'game_joined', message: 'Joined Evening Futsal League', date: '2024-01-15' },
+          { type: 'game_won', message: 'Won Basketball Match', date: '2024-01-14' },
+          { type: 'achievement', message: 'Completed 10 games milestone', date: '2024-01-13' }
+        ]
+      }
+    };
+  }
+  
   // This may not exist on all backends; return empty object if not ok
   const res = await request('/api/dashboard/summary', { method: 'GET' });
   if (!res.ok) return { ok: false, status: res.status, data: {} };
@@ -63,6 +121,40 @@ export async function getDashboardSummary() {
 }
 
 export async function getMyGames() {
+  // Mock data for web development
+  if (Platform.OS === 'web') {
+    return {
+      ok: true,
+      status: 200,
+      data: [
+        {
+          id: 'game-1',
+          title: 'Evening Futsal League',
+          sport: 'FUTSAL',
+          dateTime: '2024-01-20T18:00:00Z',
+          location: 'Kathmandu Sports Complex',
+          currentPlayers: 7,
+          maxPlayers: 10,
+          cost: 200,
+          skillLevel: 'INTERMEDIATE',
+          status: 'UPCOMING'
+        },
+        {
+          id: 'game-2',
+          title: 'Morning Basketball',
+          sport: 'BASKETBALL',
+          dateTime: '2024-01-18T08:00:00Z',
+          location: 'Basketball Court',
+          currentPlayers: 8,
+          maxPlayers: 10,
+          cost: 0,
+          skillLevel: 'ADVANCED',
+          status: 'COMPLETED'
+        }
+      ]
+    };
+  }
+  
   return request('/games/me', { method: 'GET' });
 }
 
