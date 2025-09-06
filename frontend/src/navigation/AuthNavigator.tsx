@@ -1,6 +1,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import WelcomeScreen from '../screens/auth/WelcomeScreen';
+import SimpleAuthScreen from '../screens/auth/SimpleAuthScreen';
 import ModernAuthScreen from '../screens/auth/ModernAuthScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
@@ -13,12 +14,13 @@ const Stack = createStackNavigator<AuthStackParamList>();
 export default function AuthNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="ModernAuth"
+      initialRouteName="SimpleAuth"
       screenOptions={{
         headerShown: false,
         cardStyle: { backgroundColor: '#FFFFFF' },
       }}
     >
+      <Stack.Screen name="SimpleAuth" component={SimpleAuthScreen} />
       <Stack.Screen name="ModernAuth" component={ModernAuthScreen} />
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />

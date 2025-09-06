@@ -100,6 +100,7 @@ export interface Game {
 
 // Navigation Types
 export type AuthStackParamList = {
+  SimpleAuth: undefined;
   ModernAuth: undefined;
   Welcome: undefined;
   Login: undefined;
