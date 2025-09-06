@@ -111,12 +111,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   const pickAndUploadAvatar = async () => {
     try {
-      // Dynamic import to avoid webpack resolution issues
-      const ImagePicker = await import('expo-image-picker').catch(() => null);
-      if (!ImagePicker) {
-        Alert.alert(t('error.featureUnavailable'), 'Image picker is not available on this platform.');
-        return;
-      }
+      // Dynamic import with fallback to mock
+      const ImagePicker = await import('expo-image-picker').catch(() => 
+        import('@/mocks/expo-image-picker')
+      );
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (perm.status !== 'granted') {
         Alert.alert(t('error.permissionRequired'), 'We need photo library permission to pick an avatar.');
