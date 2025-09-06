@@ -309,21 +309,21 @@ const ProfileScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, highContrast && { backgroundColor: '#000' }]}>
-      {/* Header with Magenta Background */}
-      <LinearGradient colors={highContrast ? ['#111', '#111'] : ['#FF6B6B', '#FF8E8E']} style={styles.header}>
+      {/* Header with Nepal Flag Colors */}
+      <LinearGradient colors={highContrast ? ['#111', '#111'] : [NepalColors.primary, NepalColors.secondary]} style={styles.header}>
         {/* Top Action Buttons */}
         <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.headerIcon}>
+          <TouchableOpacity style={styles.headerIcon} onPress={() => Alert.alert('Settings', 'Settings coming soon!')}>
             <Ionicons name="settings-outline" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.editButton} onPress={() => setShowEditProfile(true)}>
             <Ionicons name="create-outline" size={16} color="white" />
-            <Text style={styles.editButtonText}>Edit</Text>
+            <Text style={styles.editButtonText}>Edit Profile</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.headerIcon} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={24} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.headerIcon}>
+          <TouchableOpacity style={styles.headerIcon} onPress={() => Alert.alert('Share Profile', 'Share profile coming soon!')}>
             <Ionicons name="share-outline" size={24} color="white" />
           </TouchableOpacity>
         </View>
@@ -348,14 +348,14 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { color: highContrast ? '#FFD700' : '#3B82F6' }]}>{user.stats?.totalGamesPlayed || 0}</Text>
-              <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>Games</Text>
+              <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>Games Played</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, highContrast && { color: '#fff' }]}>{user.stats?.totalGamesWon || 0}</Text>
-              <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>Created</Text>
+              <Text style={[styles.statNumber, { color: highContrast ? '#10B981' : '#10B981' }]}>{user.stats?.totalGamesWon || 0}</Text>
+              <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>Wins</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: highContrast ? '#FFFFFF' : '#FF6B6B' }]}>{user.stats?.winRate || 0}%</Text>
+              <Text style={[styles.statNumber, { color: highContrast ? '#FFD700' : '#F59E0B' }]}>{user.stats?.winRate || 0}%</Text>
               <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>Win Rate</Text>
             </View>
           </View>
@@ -404,16 +404,16 @@ const ProfileScreen: React.FC = () => {
         {/* Personal Info Chips */}
         <View style={styles.personalInfoRow}>
           <View style={styles.infoChip}>
-            <Ionicons name="calendar-outline" size={16} color="#666" />
-            <Text style={styles.infoChipText}>Age 25</Text>
+            <Ionicons name="mail-outline" size={16} color="#666" />
+            <Text style={styles.infoChipText}>{user.email || 'No email'}</Text>
           </View>
           <View style={styles.infoChip}>
-            <Ionicons name="person-outline" size={16} color="#666" />
-            <Text style={styles.infoChipText}>Gender {user.gender || 'Male'}</Text>
+            <Ionicons name="call-outline" size={16} color="#666" />
+            <Text style={styles.infoChipText}>{user.phone || 'No phone'}</Text>
           </View>
           <View style={styles.infoChip}>
-            <Ionicons name="flag-outline" size={16} color="#666" />
-            <Text style={styles.infoChipText}>Nationality {user.nationality || 'Not set'}</Text>
+            <Ionicons name="location-outline" size={16} color="#666" />
+            <Text style={styles.infoChipText}>{user.country || 'Nepal'}</Text>
           </View>
         </View>
       </LinearGradient>
@@ -423,6 +423,29 @@ const ProfileScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshAll} />}
       >
+        {/* Quick Actions */}
+        <View style={[styles.quickActionsSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
+          <Text style={[styles.sectionTitle, highContrast && { color: '#fff' }]}>Quick Actions</Text>
+          <View style={styles.quickActionsGrid}>
+            <TouchableOpacity style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} onPress={handleFindGames}>
+              <Ionicons name="search-outline" size={24} color={highContrast ? '#FFD700' : colors.primary} />
+              <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Find Games</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} onPress={handleCreateGame}>
+              <Ionicons name="add-circle-outline" size={24} color={highContrast ? '#10B981' : '#10B981'} />
+              <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Create Game</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} onPress={handleFindPractice}>
+              <Ionicons name="fitness-outline" size={24} color={highContrast ? '#F59E0B' : '#F59E0B'} />
+              <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Find Practice</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} onPress={() => setShowScoutingEditor(true)}>
+              <Ionicons name="person-add-outline" size={24} color={highContrast ? '#8B5CF6' : '#8B5CF6'} />
+              <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Add Sport</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Bio Section */}
         <View style={[styles.bioSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
           <View style={styles.bioHeader}>
@@ -453,7 +476,7 @@ const ProfileScreen: React.FC = () => {
             </View>
           ) : (
             <Text style={[styles.bioText, highContrast && { color: '#fff' }]}>
-              {user.bio || 'No bio yet. Tap the edit icon to add one!'}
+              {user.bio || 'Tell us about yourself, your sports interests, and what makes you unique...'}
             </Text>
           )}
         </View>
@@ -867,6 +890,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.textSecondary,
     marginTop: 6,
+  },
+  quickActionsSection: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    ...colors.shadows?.md,
+  },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  quickActionButton: {
+    width: '48%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...colors.shadows?.sm,
+  },
+  quickActionText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text,
+    fontWeight: '600',
+    marginTop: 8,
+    textAlign: 'center',
   },
 });
 
