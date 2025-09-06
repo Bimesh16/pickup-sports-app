@@ -60,6 +60,10 @@ const SimpleAuthScreen: React.FC = () => {
   const { t } = useLanguage();
 
   const handleLogin = async () => {
+    // Clear previous errors
+    setErrors({});
+
+    // Validate required fields
     if (!username.trim()) {
       setErrors({ username: 'Username is required' });
       return;
@@ -73,7 +77,18 @@ const SimpleAuthScreen: React.FC = () => {
     try {
       await login(username.trim(), password);
     } catch (error: any) {
-      Alert.alert('Login Failed', error.message || 'Please check your credentials');
+      // Check if it's a credentials error vs other error
+      if (error.message && error.message.includes('Invalid credentials')) {
+        setErrors({ 
+          username: 'Username or password is incorrect',
+          password: 'Username or password is incorrect'
+        });
+      } else {
+        setErrors({ 
+          username: error.message || 'Login failed. Please try again.',
+          password: error.message || 'Login failed. Please try again.'
+        });
+      }
     } finally {
       setIsLoading(false);
     }
