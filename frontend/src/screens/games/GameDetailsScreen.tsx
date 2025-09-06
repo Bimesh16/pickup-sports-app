@@ -53,6 +53,14 @@ export default function GameDetailsScreen() {
     }
   };
 
+  if (!game) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading game details...</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
       {/* Game Header */}

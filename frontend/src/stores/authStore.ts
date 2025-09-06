@@ -282,7 +282,7 @@ const mockApi = {
 export const useAuthStore = create<AuthStore>()(
   // Temporarily disable persistence for web testing
   // persist(
-    (set, get) => ({
+  (set, get) => ({
       // State
       user: null,
       token: null,
@@ -598,16 +598,16 @@ export const useAuthStore = create<AuthStore>()(
           isLoading: false
         });
       }
-    }),
-    {
-      name: 'auth-storage',
-      // storage: createJSONStorage(() => AsyncStorage),
-      // partialize: (state) => ({
-      //   user: state.user,
-      //   token: state.token,
-      //   isAuthenticated: state.isAuthenticated,
-      //   biometricEnabled: state.biometricEnabled
-      // })
+    })
+    // {
+    //   name: 'auth-storage',
+    //   storage: createJSONStorage(() => AsyncStorage),
+    //   partialize: (state) => ({
+    //     user: state.user,
+    //     token: state.token,
+    //     isAuthenticated: state.isAuthenticated,
+    //     biometricEnabled: state.biometricEnabled
+    //   })
     // }
   // )
 );
