@@ -163,28 +163,28 @@ const SimpleAuthScreen: React.FC = () => {
                     onPress={() => handleSocialLogin('Google')}
                     disabled={isLoading}
                   >
-                    <Ionicons name="logo-google" size={20} color="#DB4437" />
+                    <Ionicons name="logo-google" size={24} color="#DB4437" />
                   </TouchableOpacity>
                   <TouchableOpacity 
                     style={styles.socialButton}
                     onPress={() => handleSocialLogin('Facebook')}
                     disabled={isLoading}
                   >
-                    <Ionicons name="logo-facebook" size={20} color="#4267B2" />
+                    <Ionicons name="logo-facebook" size={24} color="#4267B2" />
                   </TouchableOpacity>
                   <TouchableOpacity 
                     style={styles.socialButton}
                     onPress={() => handleSocialLogin('GitHub')}
                     disabled={isLoading}
                   >
-                    <Ionicons name="logo-github" size={20} color="#333" />
+                    <Ionicons name="logo-github" size={24} color="#333" />
                   </TouchableOpacity>
                   <TouchableOpacity 
                     style={styles.socialButton}
                     onPress={() => handleSocialLogin('LinkedIn')}
                     disabled={isLoading}
                   >
-                    <Ionicons name="logo-linkedin" size={20} color="#0077B5" />
+                    <Ionicons name="logo-linkedin" size={24} color="#0077B5" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -206,7 +206,7 @@ const SimpleAuthScreen: React.FC = () => {
                   <>
                     <View style={styles.inputContainer}>
                       <View style={styles.inputWrapper}>
-                        <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <Ionicons name="person-outline" size={24} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
                           placeholder="Username"
@@ -221,7 +221,7 @@ const SimpleAuthScreen: React.FC = () => {
                     
                     <View style={styles.inputContainer}>
                       <View style={styles.inputWrapper}>
-                        <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <Ionicons name="lock-closed-outline" size={24} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
                           placeholder="Password"
@@ -239,7 +239,7 @@ const SimpleAuthScreen: React.FC = () => {
                   <>
                     <View style={styles.inputContainer}>
                       <View style={styles.inputWrapper}>
-                        <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <Ionicons name="person-outline" size={24} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
                           placeholder="First Name"
@@ -254,7 +254,7 @@ const SimpleAuthScreen: React.FC = () => {
                     
                     <View style={styles.inputContainer}>
                       <View style={styles.inputWrapper}>
-                        <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <Ionicons name="person-outline" size={24} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
                           placeholder="Last Name"
@@ -269,7 +269,7 @@ const SimpleAuthScreen: React.FC = () => {
                     
                     <View style={styles.inputContainer}>
                       <View style={styles.inputWrapper}>
-                        <Ionicons name="mail-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <Ionicons name="mail-outline" size={24} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
                           placeholder="Email (optional)"
@@ -285,7 +285,7 @@ const SimpleAuthScreen: React.FC = () => {
                     
                     <View style={styles.inputContainer}>
                       <View style={styles.inputWrapper}>
-                        <Ionicons name="call-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <Ionicons name="call-outline" size={24} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
                           placeholder="Phone Number (optional)"
@@ -301,7 +301,7 @@ const SimpleAuthScreen: React.FC = () => {
                     
                     <View style={styles.inputContainer}>
                       <View style={styles.inputWrapper}>
-                        <Ionicons name="calendar-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <Ionicons name="calendar-outline" size={24} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
                           placeholder="Date of Birth (YYYY-MM-DD)"
@@ -316,7 +316,7 @@ const SimpleAuthScreen: React.FC = () => {
                     
                     <View style={styles.inputContainer}>
                       <View style={styles.inputWrapper}>
-                        <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <Ionicons name="lock-closed-outline" size={24} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
                           placeholder="Password"
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   },
   formContent: {
     flex: 1,
-    padding: spacing.xl,
+    padding: spacing.xl * 1.5,
     justifyContent: 'center',
   },
   formTitle: {
@@ -450,30 +450,32 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   inputContainer: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    borderWidth: 2,
     borderColor: colors.border,
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    minHeight: 60,
   },
   inputIcon: {
-    marginRight: spacing.sm,
+    marginRight: spacing.md,
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 18,
     color: colors.textPrimary,
+    paddingVertical: spacing.sm,
   },
   errorText: {
     color: colors.error,
@@ -483,22 +485,24 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: 12,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 16,
     alignItems: 'center',
     marginBottom: spacing.lg,
-    elevation: 3,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    minHeight: 60,
   },
   actionButtonDisabled: {
     backgroundColor: colors.textSecondary,
   },
   actionButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   switchModeButton: {
