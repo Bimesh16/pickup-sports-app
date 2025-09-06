@@ -189,7 +189,7 @@ const SimpleAuthScreen: React.FC = () => {
           {/* Right Panel - Login */}
           <View style={styles.rightPanel}>
             <View style={styles.formContent}>
-              <Text style={styles.formTitle}>Welcome Back!</Text>
+              <Text style={styles.formTitle}>{isLogin ? 'Welcome Back!' : 'Create Account'}</Text>
               
               {/* Form Fields */}
               <View style={styles.formContainer}>
@@ -335,8 +335,12 @@ const SimpleAuthScreen: React.FC = () => {
                 </Text>
               </TouchableOpacity>
 
-              {/* Switch Mode */}
-              <TouchableOpacity style={styles.switchModeButton} onPress={() => setIsLogin(!isLogin)}>
+              {/* Toggle Mode Button */}
+              <TouchableOpacity 
+                style={styles.switchModeButton}
+                onPress={() => setIsLogin(!isLogin)}
+                disabled={isLoading}
+              >
                 <Text style={styles.switchModeText}>
                   {isLogin ? "Don't have an account? " : "Already have an account? "}
                   <Text style={styles.switchModeLink}>
@@ -344,6 +348,7 @@ const SimpleAuthScreen: React.FC = () => {
                   </Text>
                 </Text>
               </TouchableOpacity>
+
             </View>
           </View>
         </View>
@@ -355,34 +360,21 @@ const SimpleAuthScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.primary,
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
-    padding: spacing.lg,
-    minHeight: 600,
   },
   card: {
-    width: '100%',
-    maxWidth: 900,
-    alignSelf: 'center',
-    height: 500,
-    borderRadius: 20,
-    overflow: 'hidden',
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
+    flex: 1,
     flexDirection: 'row',
   },
   leftPanel: {
-    width: '50%',
+    flex: 1,
     height: '100%',
   },
   rightPanel: {
-    width: '50%',
+    flex: 1,
     height: '100%',
     backgroundColor: 'white',
   },
