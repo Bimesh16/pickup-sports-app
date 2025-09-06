@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import { storage } from '@/utils/storage';
 
 const BASE_URL = __DEV__ ? 'http://localhost:8080' : 'https://api.pickupsports.app';
 const ACCESS_TOKEN_KEY = 'access_token';
@@ -7,8 +7,8 @@ const REFRESH_NONCE_KEY = 'refresh_nonce';
 
 async function tryRefresh(): Promise<boolean> {
   try {
-    const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-    const refreshNonce = await SecureStore.getItemAsync(REFRESH_NONCE_KEY);
+    const refreshToken = await storage.getItem(REFRESH_TOKEN_KEY);
+    const refreshNonce = await storage.getItem(REFRESH_NONCE_KEY);
     if (!refreshToken || !refreshNonce) return false;
     const res = await fetch(`${BASE_URL}/auth/refresh`, {
       method: 'POST',
@@ -21,9 +21,9 @@ async function tryRefresh(): Promise<boolean> {
     if (!res.ok) return false;
     const data = await res.json();
     if (data?.accessToken && data?.refreshToken && data?.refreshNonce) {
-      await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, data.accessToken);
-      await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, data.refreshToken);
-      await SecureStore.setItemAsync(REFRESH_NONCE_KEY, data.refreshNonce);
+      await storage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
+      await storage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+      await storage.setItem(REFRESH_NONCE_KEY, data.refreshNonce);
       return true;
     }
     return false;
@@ -36,7 +36,7 @@ async function request<T>(path: string, init: RequestInit = {}) {
   const url = `${BASE_URL}${path}`;
   const doFetch = async () => {
     const headers: Record<string, string> = { 'Content-Type': 'application/json', ...(init.headers as any) };
-    const accessToken = await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
+    const accessToken = await storage.getItem(ACCESS_TOKEN_KEY);
     if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
     const res = await fetch(url, { ...init, headers });
     let data: any = null;
@@ -86,7 +86,7 @@ export async function updateMyProfile(payload: {
 
 export async function uploadAvatar(uri: string, mime: string = 'image/jpeg') {
   const url = `${BASE_URL}/profiles/me/avatar`;
-  const accessToken = await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
+  const accessToken = await storage.getItem(ACCESS_TOKEN_KEY);
   const form = new FormData();
   form.append('avatar', {
     // @ts-ignore - RN FormData file

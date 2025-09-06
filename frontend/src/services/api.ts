@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import { storage } from '@/utils/storage';
 import { 
   User, 
   Game, 
@@ -31,7 +31,7 @@ class ApiClient {
 
   private async getAuthToken(): Promise<string | null> {
     try {
-      return await SecureStore.getItemAsync('auth_token');
+      return await storage.getItem('auth_token');
     } catch (error) {
       console.error('Error getting auth token:', error);
       return null;

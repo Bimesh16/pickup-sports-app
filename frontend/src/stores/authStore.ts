@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
+import { storage } from '@/utils/storage';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as auth from '@/services/auth';
 
@@ -372,8 +372,8 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
         try {
           await auth.logout();
-          await SecureStore.deleteItemAsync('biometric_enabled');
-          await SecureStore.deleteItemAsync('biometric_token');
+          await storage.removeItem('biometric_enabled');
+          await storage.removeItem('biometric_token');
           set({
             user: null,
             token: null,
@@ -472,9 +472,9 @@ export const useAuthStore = create<AuthStore>()(
           });
 
           if (result.success) {
-            await SecureStore.setItemAsync('biometric_enabled', 'true');
+            await storage.setItem('biometric_enabled', 'true');
             if (get().token) {
-              await SecureStore.setItemAsync('biometric_token', get().token!);
+              await storage.setItem('biometric_token', get().token!);
             }
             set({ biometricEnabled: true });
           } else {
@@ -487,8 +487,8 @@ export const useAuthStore = create<AuthStore>()(
 
       disableBiometric: async () => {
         try {
-          await SecureStore.deleteItemAsync('biometric_enabled');
-          await SecureStore.deleteItemAsync('biometric_token');
+          await storage.removeItem('biometric_enabled');
+          await storage.removeItem('biometric_token');
           set({ biometricEnabled: false });
         } catch (error) {
           throw error;
@@ -497,7 +497,7 @@ export const useAuthStore = create<AuthStore>()(
 
       authenticateWithBiometric: async () => {
         try {
-          const biometricEnabled = await SecureStore.getItemAsync('biometric_enabled');
+          const biometricEnabled = await storage.getItem('biometric_enabled');
           if (!biometricEnabled) {
             return false;
           }
@@ -516,7 +516,7 @@ export const useAuthStore = create<AuthStore>()(
           });
 
           if (result.success) {
-            const storedToken = await SecureStore.getItemAsync('biometric_token');
+            const storedToken = await storage.getItem('biometric_token');
             if (storedToken) {
               // In a real app, you would validate the token with your backend
               set({ token: storedToken, isAuthenticated: true });

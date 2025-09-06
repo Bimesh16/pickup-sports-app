@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import { storage } from '@/utils/storage';
 
 type LanguageCode = 'en' | 'ne' | 'es' | 'fr' | 'hi';
 
@@ -426,7 +426,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     (async () => {
       try {
-        const stored = await SecureStore.getItemAsync(STORAGE_KEY);
+        const stored = await storage.getItem(STORAGE_KEY);
         if (stored === 'en' || stored === 'ne' || stored === 'es' || stored === 'fr' || stored === 'hi') {
           setLang(stored);
         }
@@ -440,7 +440,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const setLanguage = useCallback(async (code: LanguageCode) => {
     setLang(code);
-    await SecureStore.setItemAsync(STORAGE_KEY, code);
+    await storage.setItem(STORAGE_KEY, code);
   }, []);
 
   const t = useCallback(
