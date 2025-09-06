@@ -93,7 +93,10 @@ const SimpleAuthScreen: React.FC = () => {
       return;
     }
     if (!email.trim() && !phoneNumber.trim()) {
-      setErrors({ contact: 'Email or phone number is required' });
+      setErrors({ 
+        email: 'Please provide either email or phone number',
+        phoneNumber: 'Please provide either email or phone number'
+      });
       return;
     }
     if (!dateOfBirth.trim()) {
@@ -294,7 +297,7 @@ const SimpleAuthScreen: React.FC = () => {
                         <Ionicons name="mail-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
-                          placeholder="Email (optional)"
+                          placeholder="Email (required if no phone)"
                           placeholderTextColor={colors.textSecondary}
                           value={email}
                           onChangeText={setEmail}
@@ -310,7 +313,7 @@ const SimpleAuthScreen: React.FC = () => {
                         <Ionicons name="call-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
-                          placeholder="Phone Number (optional)"
+                          placeholder="Phone Number (required if no email)"
                           placeholderTextColor={colors.textSecondary}
                           value={phoneNumber}
                           onChangeText={setPhoneNumber}
@@ -318,7 +321,6 @@ const SimpleAuthScreen: React.FC = () => {
                         />
                       </View>
                       {errors.phoneNumber && <Text style={styles.errorText}>{errors.phoneNumber}</Text>}
-                      {errors.contact && <Text style={styles.errorText}>{errors.contact}</Text>}
                     </View>
                     
                     <View style={styles.inputContainer}>
