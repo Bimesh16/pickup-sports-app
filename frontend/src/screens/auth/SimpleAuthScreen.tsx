@@ -25,9 +25,12 @@ type SimpleAuthScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'M
 const SimpleAuthScreen: React.FC = () => {
   const [isLogin, setIsLogin] = useState(false);
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -55,12 +58,24 @@ const SimpleAuthScreen: React.FC = () => {
   };
 
   const handleRegister = async () => {
-    if (!name.trim()) {
-      setErrors({ name: 'Name is required' });
+    // Clear previous errors
+    setErrors({});
+    
+    // Validate required fields
+    if (!firstName.trim()) {
+      setErrors({ firstName: 'First name is required' });
       return;
     }
-    if (!email.trim()) {
-      setErrors({ email: 'Email is required' });
+    if (!lastName.trim()) {
+      setErrors({ lastName: 'Last name is required' });
+      return;
+    }
+    if (!email.trim() && !phoneNumber.trim()) {
+      setErrors({ contact: 'Email or phone number is required' });
+      return;
+    }
+    if (!dateOfBirth.trim()) {
+      setErrors({ dateOfBirth: 'Date of birth is required' });
       return;
     }
     if (!password.trim()) {
@@ -68,14 +83,29 @@ const SimpleAuthScreen: React.FC = () => {
       return;
     }
 
+    // Validate email format if provided
+    if (email.trim() && !/\S+@\S+\.\S+/.test(email.trim())) {
+      setErrors({ email: 'Please enter a valid email address' });
+      return;
+    }
+
+    // Validate phone format if provided
+    if (phoneNumber.trim() && !/^[\+]?[1-9][\d]{0,15}$/.test(phoneNumber.replace(/\s/g, ''))) {
+      setErrors({ phoneNumber: 'Please enter a valid phone number' });
+      return;
+    }
+
     setIsLoading(true);
     try {
+      const username = email.trim() || phoneNumber.trim();
       await register({
-        username: email,
-        email: email,
+        username: username,
+        email: email.trim() || undefined,
+        phoneNumber: phoneNumber.trim() || undefined,
         password: password,
-        firstName: name.split(' ')[0] || name,
-        lastName: name.split(' ').slice(1).join(' ') || '',
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        age: new Date().getFullYear() - new Date(dateOfBirth).getFullYear(),
       });
       Alert.alert('Success', 'Account created successfully!');
     } catch (error: any) {
@@ -197,20 +227,36 @@ const SimpleAuthScreen: React.FC = () => {
                     </View>
                   </>
                 ) : (
-                  // Sign up form - Name, Email, Password
+                  // Sign up form - First Name, Last Name, Email/Phone, Date of Birth, Password
                   <>
                     <View style={styles.inputContainer}>
                       <View style={styles.inputWrapper}>
                         <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
-                          placeholder="Name"
+                          placeholder="First Name"
                           placeholderTextColor={colors.textSecondary}
-                          value={name}
-                          onChangeText={setName}
+                          value={firstName}
+                          onChangeText={setFirstName}
+                          autoCapitalize="words"
                         />
                       </View>
-                      {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+                      {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
+                    </View>
+                    
+                    <View style={styles.inputContainer}>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Last Name"
+                          placeholderTextColor={colors.textSecondary}
+                          value={lastName}
+                          onChangeText={setLastName}
+                          autoCapitalize="words"
+                        />
+                      </View>
+                      {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
                     </View>
                     
                     <View style={styles.inputContainer}>
@@ -218,7 +264,7 @@ const SimpleAuthScreen: React.FC = () => {
                         <Ionicons name="mail-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
-                          placeholder="Email"
+                          placeholder="Email (optional)"
                           placeholderTextColor={colors.textSecondary}
                           value={email}
                           onChangeText={setEmail}
@@ -227,6 +273,37 @@ const SimpleAuthScreen: React.FC = () => {
                         />
                       </View>
                       {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+                    </View>
+                    
+                    <View style={styles.inputContainer}>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons name="call-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Phone Number (optional)"
+                          placeholderTextColor={colors.textSecondary}
+                          value={phoneNumber}
+                          onChangeText={setPhoneNumber}
+                          keyboardType="phone-pad"
+                        />
+                      </View>
+                      {errors.phoneNumber && <Text style={styles.errorText}>{errors.phoneNumber}</Text>}
+                      {errors.contact && <Text style={styles.errorText}>{errors.contact}</Text>}
+                    </View>
+                    
+                    <View style={styles.inputContainer}>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons name="calendar-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Date of Birth (YYYY-MM-DD)"
+                          placeholderTextColor={colors.textSecondary}
+                          value={dateOfBirth}
+                          onChangeText={setDateOfBirth}
+                          keyboardType="numeric"
+                        />
+                      </View>
+                      {errors.dateOfBirth && <Text style={styles.errorText}>{errors.dateOfBirth}</Text>}
                     </View>
                     
                     <View style={styles.inputContainer}>
