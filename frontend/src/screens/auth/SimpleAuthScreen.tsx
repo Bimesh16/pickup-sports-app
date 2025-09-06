@@ -35,8 +35,8 @@ const SimpleAuthScreen: React.FC = () => {
   const { t } = useLanguage();
 
   const handleLogin = async () => {
-    if (!username.trim() && !email.trim()) {
-      setErrors({ username: 'Username or email is required' });
+    if (!username.trim()) {
+      setErrors({ username: 'Username is required' });
       return;
     }
     if (!password.trim()) {
@@ -46,8 +46,7 @@ const SimpleAuthScreen: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const loginIdentifier = username.trim() || email.trim();
-      await login(loginIdentifier, password);
+      await login(username.trim(), password);
     } catch (error: any) {
       Alert.alert('Login Failed', error.message || 'Please check your credentials');
     } finally {
@@ -86,6 +85,37 @@ const SimpleAuthScreen: React.FC = () => {
     }
   };
 
+  const handleSocialLogin = async (provider: string) => {
+    setIsLoading(true);
+    try {
+      // Mock social login for now - in real app, this would integrate with OAuth providers
+      const mockUser = {
+        username: `user_${provider.toLowerCase()}`,
+        email: `user@${provider.toLowerCase()}.com`,
+        firstName: 'Social',
+        lastName: 'User',
+      };
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Use the register function to create/login user
+      await register({
+        username: mockUser.username,
+        email: mockUser.email,
+        password: 'social_login_password', // This would be handled by OAuth
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+      });
+      
+      Alert.alert('Success', `Successfully signed in with ${provider}!`);
+    } catch (error: any) {
+      Alert.alert('Social Login Failed', error.message || `Failed to sign in with ${provider}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
@@ -103,16 +133,32 @@ const SimpleAuthScreen: React.FC = () => {
                 
                 {/* Social Login Buttons */}
                 <View style={styles.socialContainer}>
-                  <TouchableOpacity style={styles.socialButton}>
+                  <TouchableOpacity 
+                    style={styles.socialButton}
+                    onPress={() => handleSocialLogin('Google')}
+                    disabled={isLoading}
+                  >
                     <Ionicons name="logo-google" size={20} color="#DB4437" />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.socialButton}>
+                  <TouchableOpacity 
+                    style={styles.socialButton}
+                    onPress={() => handleSocialLogin('Facebook')}
+                    disabled={isLoading}
+                  >
                     <Ionicons name="logo-facebook" size={20} color="#4267B2" />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.socialButton}>
+                  <TouchableOpacity 
+                    style={styles.socialButton}
+                    onPress={() => handleSocialLogin('GitHub')}
+                    disabled={isLoading}
+                  >
                     <Ionicons name="logo-github" size={20} color="#333" />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.socialButton}>
+                  <TouchableOpacity 
+                    style={styles.socialButton}
+                    onPress={() => handleSocialLogin('LinkedIn')}
+                    disabled={isLoading}
+                  >
                     <Ionicons name="logo-linkedin" size={20} color="#0077B5" />
                   </TouchableOpacity>
                 </View>
@@ -127,68 +173,88 @@ const SimpleAuthScreen: React.FC = () => {
               
               {/* Form Fields */}
               <View style={styles.formContainer}>
-                {isLogin && (
-                  <View style={styles.inputContainer}>
-                    <View style={styles.inputWrapper}>
-                      <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
-                      <TextInput
-                        style={styles.input}
-                        placeholder="Username or Email"
-                        placeholderTextColor={colors.textSecondary}
-                        value={username}
-                        onChangeText={setUsername}
-                      />
+                {isLogin ? (
+                  // Login form - only Username and Password
+                  <>
+                    <View style={styles.inputContainer}>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Username"
+                          placeholderTextColor={colors.textSecondary}
+                          value={username}
+                          onChangeText={setUsername}
+                          autoCapitalize="none"
+                        />
+                      </View>
+                      {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
                     </View>
-                    {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
-                  </View>
-                )}
-                
-                {!isLogin && (
-                  <View style={styles.inputContainer}>
-                    <View style={styles.inputWrapper}>
-                      <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
-                      <TextInput
-                        style={styles.input}
-                        placeholder="Name"
-                        placeholderTextColor={colors.textSecondary}
-                        value={name}
-                        onChangeText={setName}
-                      />
+                    
+                    <View style={styles.inputContainer}>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Password"
+                          placeholderTextColor={colors.textSecondary}
+                          value={password}
+                          onChangeText={setPassword}
+                          secureTextEntry
+                        />
+                      </View>
+                      {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
                     </View>
-                    {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
-                  </View>
+                  </>
+                ) : (
+                  // Sign up form - Name, Email, Password
+                  <>
+                    <View style={styles.inputContainer}>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Name"
+                          placeholderTextColor={colors.textSecondary}
+                          value={name}
+                          onChangeText={setName}
+                        />
+                      </View>
+                      {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+                    </View>
+                    
+                    <View style={styles.inputContainer}>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons name="mail-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Email"
+                          placeholderTextColor={colors.textSecondary}
+                          value={email}
+                          onChangeText={setEmail}
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                        />
+                      </View>
+                      {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+                    </View>
+                    
+                    <View style={styles.inputContainer}>
+                      <View style={styles.inputWrapper}>
+                        <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Password"
+                          placeholderTextColor={colors.textSecondary}
+                          value={password}
+                          onChangeText={setPassword}
+                          secureTextEntry
+                        />
+                      </View>
+                      {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+                    </View>
+                  </>
                 )}
-                
-                <View style={styles.inputContainer}>
-                  <View style={styles.inputWrapper}>
-                    <Ionicons name="mail-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Email"
-                      placeholderTextColor={colors.textSecondary}
-                      value={email}
-                      onChangeText={setEmail}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                    />
-                  </View>
-                  {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-                </View>
-                
-                <View style={styles.inputContainer}>
-                  <View style={styles.inputWrapper}>
-                    <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Password"
-                      placeholderTextColor={colors.textSecondary}
-                      value={password}
-                      onChangeText={setPassword}
-                      secureTextEntry
-                    />
-                  </View>
-                  {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-                </View>
               </View>
 
               {/* Action Button */}
