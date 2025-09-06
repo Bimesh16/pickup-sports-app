@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -55,6 +55,12 @@ const SimpleAuthScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const lastNameRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
+  const dateOfBirthRef = useRef<TextInput>(null);
+  const registerPasswordRef = useRef<TextInput>(null);
 
   const { login, register } = useAuthStore();
   const { t } = useLanguage();
@@ -254,6 +260,11 @@ const SimpleAuthScreen: React.FC = () => {
                           value={username}
                           onChangeText={setUsername}
                           autoCapitalize="none"
+                          returnKeyType="next"
+                          onSubmitEditing={() => {
+                            // Focus on password field when Enter is pressed
+                            passwordRef.current?.focus();
+                          }}
                         />
                       </View>
                       {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
@@ -263,12 +274,20 @@ const SimpleAuthScreen: React.FC = () => {
                       <View style={styles.inputWrapper}>
                         <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
+                          ref={passwordRef}
                           style={styles.input}
                           placeholder="Password"
                           placeholderTextColor={colors.textSecondary}
                           value={password}
                           onChangeText={setPassword}
                           secureTextEntry
+                          returnKeyType="done"
+                          onSubmitEditing={() => {
+                            // Trigger login when Enter is pressed in password field
+                            if (isLogin) {
+                              handleLogin();
+                            }
+                          }}
                         />
                       </View>
                       {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
@@ -287,6 +306,10 @@ const SimpleAuthScreen: React.FC = () => {
                           value={firstName}
                           onChangeText={setFirstName}
                           autoCapitalize="words"
+                          returnKeyType="next"
+                          onSubmitEditing={() => {
+                            lastNameRef.current?.focus();
+                          }}
                         />
                       </View>
                       {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
@@ -296,12 +319,17 @@ const SimpleAuthScreen: React.FC = () => {
                       <View style={styles.inputWrapper}>
                         <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
+                          ref={lastNameRef}
                           style={styles.input}
                           placeholder="Last Name"
                           placeholderTextColor={colors.textSecondary}
                           value={lastName}
                           onChangeText={setLastName}
                           autoCapitalize="words"
+                          returnKeyType="next"
+                          onSubmitEditing={() => {
+                            emailRef.current?.focus();
+                          }}
                         />
                       </View>
                       {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
@@ -311,6 +339,7 @@ const SimpleAuthScreen: React.FC = () => {
                       <View style={styles.inputWrapper}>
                         <Ionicons name="mail-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
+                          ref={emailRef}
                           style={styles.input}
                           placeholder="Email (required if no phone)"
                           placeholderTextColor={colors.textSecondary}
@@ -318,6 +347,10 @@ const SimpleAuthScreen: React.FC = () => {
                           onChangeText={setEmail}
                           keyboardType="email-address"
                           autoCapitalize="none"
+                          returnKeyType="next"
+                          onSubmitEditing={() => {
+                            phoneRef.current?.focus();
+                          }}
                         />
                       </View>
                       {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
@@ -327,12 +360,17 @@ const SimpleAuthScreen: React.FC = () => {
                       <View style={styles.inputWrapper}>
                         <Ionicons name="call-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
+                          ref={phoneRef}
                           style={styles.input}
                           placeholder="Phone Number (required if no email)"
                           placeholderTextColor={colors.textSecondary}
                           value={phoneNumber}
                           onChangeText={setPhoneNumber}
                           keyboardType="phone-pad"
+                          returnKeyType="next"
+                          onSubmitEditing={() => {
+                            dateOfBirthRef.current?.focus();
+                          }}
                         />
                       </View>
                       {errors.phoneNumber && <Text style={styles.errorText}>{errors.phoneNumber}</Text>}
@@ -342,12 +380,17 @@ const SimpleAuthScreen: React.FC = () => {
                       <View style={styles.inputWrapper}>
                         <Ionicons name="calendar-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
+                          ref={dateOfBirthRef}
                           style={styles.input}
                           placeholder="Date of Birth (YYYY-MM-DD)"
                           placeholderTextColor={colors.textSecondary}
                           value={dateOfBirth}
                           onChangeText={setDateOfBirth}
                           keyboardType="numeric"
+                          returnKeyType="next"
+                          onSubmitEditing={() => {
+                            registerPasswordRef.current?.focus();
+                          }}
                         />
                       </View>
                       {errors.dateOfBirth && <Text style={styles.errorText}>{errors.dateOfBirth}</Text>}
@@ -357,12 +400,20 @@ const SimpleAuthScreen: React.FC = () => {
                       <View style={styles.inputWrapper}>
                         <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
+                          ref={registerPasswordRef}
                           style={styles.input}
                           placeholder="Password"
                           placeholderTextColor={colors.textSecondary}
                           value={password}
                           onChangeText={setPassword}
                           secureTextEntry
+                          returnKeyType="done"
+                          onSubmitEditing={() => {
+                            // Trigger registration when Enter is pressed in password field
+                            if (!isLogin) {
+                              handleRegister();
+                            }
+                          }}
                         />
                       </View>
                       {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
