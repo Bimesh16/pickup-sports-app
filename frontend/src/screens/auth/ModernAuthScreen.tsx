@@ -31,8 +31,9 @@ interface ModernAuthScreenProps {
 }
 
 const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({ navigation }) => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false); // Start with sign up
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
@@ -44,7 +45,7 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({ navigation }) => {
   const { login, register } = useAuthStore();
   const { t } = useLanguage();
 
-  const slideAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(width)).current; // Start with sign up panel
 
   const toggleMode = () => {
     const newMode = !isLogin;
@@ -61,21 +62,28 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({ navigation }) => {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-
-    if (!password.trim()) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    if (!isLogin) {
+    if (isLogin) {
+      // For login, check username/email and password
+      if (!username.trim() && !email.trim()) {
+        newErrors.username = 'Username or email is required';
+      }
+      if (!password.trim()) {
+        newErrors.password = 'Password is required';
+      }
+    } else {
+      // For sign up, check all fields
       if (!name.trim()) {
         newErrors.name = 'Name is required';
+      }
+      if (!email.trim()) {
+        newErrors.email = 'Email is required';
+      } else if (!/\S+@\S+\.\S+/.test(email)) {
+        newErrors.email = 'Please enter a valid email';
+      }
+      if (!password.trim()) {
+        newErrors.password = 'Password is required';
+      } else if (password.length < 6) {
+        newErrors.password = 'Password must be at least 6 characters';
       }
       if (!confirmPassword.trim()) {
         newErrors.confirmPassword = 'Please confirm your password';
@@ -93,7 +101,9 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({ navigation }) => {
 
     setIsLoading(true);
     try {
-      await login(email, password);
+      // Use username if provided, otherwise use email
+      const loginIdentifier = username.trim() || email.trim();
+      await login(loginIdentifier, password);
     } catch (error: any) {
       Alert.alert('Login Failed', error.message || 'Please check your credentials');
     } finally {
@@ -166,11 +176,11 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({ navigation }) => {
       
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          {/* Login Panel */}
+          {/* Left Panel - Sign Up */}
           <Animated.View 
             style={[
               styles.panel,
-              styles.loginPanel,
+              styles.leftPanel,
               { transform: [{ translateX: slideAnim }] }
             ]}
           >
@@ -179,67 +189,62 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({ navigation }) => {
               style={styles.gradientPanel}
             >
               <View style={styles.panelContent}>
-                <Text style={styles.welcomeTitle}>Welcome Back!</Text>
-                <Text style={styles.welcomeSubtitle}>
-                  Enter your personal details to use all of site features
-                </Text>
-                <TouchableOpacity 
-                  style={styles.switchButton}
-                  onPress={toggleMode}
-                >
-                  <Text style={styles.switchButtonText}>SIGN IN</Text>
-                </TouchableOpacity>
+                <Text style={styles.welcomeTitle}>Create Account</Text>
+                
+                {/* Social Login Buttons */}
+                <View style={styles.socialContainer}>
+                  <TouchableOpacity 
+                    style={styles.socialButton}
+                    onPress={() => handleSocialLogin('Google')}
+                  >
+                    <Ionicons name="logo-google" size={20} color="#DB4437" />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.socialButton}
+                    onPress={() => handleSocialLogin('Facebook')}
+                  >
+                    <Ionicons name="logo-facebook" size={20} color="#4267B2" />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.socialButton}
+                    onPress={() => handleSocialLogin('GitHub')}
+                  >
+                    <Ionicons name="logo-github" size={20} color="#333" />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.socialButton}
+                    onPress={() => handleSocialLogin('LinkedIn')}
+                  >
+                    <Ionicons name="logo-linkedin" size={20} color="#0077B5" />
+                  </TouchableOpacity>
+                </View>
               </View>
             </LinearGradient>
           </Animated.View>
 
-          {/* Register Panel */}
+          {/* Right Panel - Login */}
           <Animated.View 
             style={[
               styles.panel,
-              styles.registerPanel,
+              styles.rightPanel,
               { transform: [{ translateX: Animated.subtract(0, slideAnim) }] }
             ]}
           >
             <View style={styles.registerContent}>
-              <Text style={styles.registerTitle}>Create Account</Text>
+              <Text style={styles.registerTitle}>Welcome Back!</Text>
               
-              {/* Social Login Buttons */}
-              <View style={styles.socialContainer}>
-                <TouchableOpacity 
-                  style={styles.socialButton}
-                  onPress={() => handleSocialLogin('Google')}
-                >
-                  <Ionicons name="logo-google" size={20} color="#DB4437" />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.socialButton}
-                  onPress={() => handleSocialLogin('Facebook')}
-                >
-                  <Ionicons name="logo-facebook" size={20} color="#4267B2" />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.socialButton}
-                  onPress={() => handleSocialLogin('GitHub')}
-                >
-                  <Ionicons name="logo-github" size={20} color="#333" />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.socialButton}
-                  onPress={() => handleSocialLogin('LinkedIn')}
-                >
-                  <Ionicons name="logo-linkedin" size={20} color="#0077B5" />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.separator}>
-                <View style={styles.separatorLine} />
-                <Text style={styles.separatorText}>or use your email for registration</Text>
-                <View style={styles.separatorLine} />
-              </View>
-
               {/* Form Fields */}
               <View style={styles.formContainer}>
+                {isLogin && (
+                  <InputField
+                    placeholder="Username or Email"
+                    value={username}
+                    onChangeText={setUsername}
+                    icon="person-outline"
+                    error={errors.username}
+                  />
+                )}
+                
                 {!isLogin && (
                   <InputField
                     placeholder="Name"
@@ -314,16 +319,17 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f5f5f5',
   },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
     padding: spacing.lg,
+    minHeight: height,
   },
   card: {
     width: '100%',
-    maxWidth: 800,
+    maxWidth: 900,
     alignSelf: 'center',
     height: 500,
     borderRadius: 20,
@@ -333,16 +339,16 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.25,
     shadowRadius: 20,
+    flexDirection: 'row',
   },
   panel: {
-    position: 'absolute',
-    width: '100%',
+    width: '50%',
     height: '100%',
   },
-  loginPanel: {
+  leftPanel: {
     left: 0,
   },
-  registerPanel: {
+  rightPanel: {
     right: 0,
   },
   gradientPanel: {
@@ -399,7 +405,8 @@ const styles = StyleSheet.create({
   socialContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: spacing.lg,
+    marginTop: spacing.xl,
+    flexWrap: 'wrap',
   },
   socialButton: {
     width: 50,
@@ -409,6 +416,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: spacing.sm,
+    marginVertical: spacing.xs,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
