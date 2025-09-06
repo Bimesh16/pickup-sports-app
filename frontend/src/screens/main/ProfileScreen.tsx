@@ -75,9 +75,16 @@ const ProfileScreen: React.FC = () => {
   const [showScoutingEditor, setShowScoutingEditor] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [editingProfile, setEditingProfile] = useState<ScoutingReportData | null>(null);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioText, setBioText] = useState('');
+  const [accountForm, setAccountForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    bio: '',
+  });
 
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingSummary, setLoadingSummary] = useState(true);
@@ -99,7 +106,7 @@ const ProfileScreen: React.FC = () => {
         const res = await getMyProfile();
         if (mounted && res.ok) {
           const p = res.data;
-          setUser({
+          const userData = {
             id: String(p.id ?? ''),
             name: [p.firstName, p.lastName].filter(Boolean).join(' ') || p.username || 'User',
             username: p.username ?? 'user',
@@ -116,8 +123,16 @@ const ProfileScreen: React.FC = () => {
               longestStreak: p.longestStreak ?? 0,
               winRate: p.winRate ?? 0,
             },
-          } as any);
+          } as any;
+          setUser(userData);
           setBioText(p.bio ?? '');
+          // Initialize account form
+          setAccountForm({
+            name: userData.name,
+            email: userData.email,
+            phone: userData.phone || '',
+            bio: userData.bio || '',
+          });
         }
       } finally {
         if (mounted) setLoadingProfile(false);
@@ -261,6 +276,29 @@ const ProfileScreen: React.FC = () => {
       setUser({ ...user, bio: bioText });
     }
     setIsEditingBio(false);
+  };
+
+  const handleSaveAccountSettings = async () => {
+    try {
+      // Update user data
+      if (user) {
+        const updatedUser = {
+          ...user,
+          name: accountForm.name,
+          email: accountForm.email,
+          phone: accountForm.phone,
+          bio: accountForm.bio,
+        };
+        setUser(updatedUser);
+        setBioText(accountForm.bio);
+      }
+      
+      // Show success message
+      setSnack({ visible: true, message: 'Account settings updated successfully!' });
+      setShowAccountSettings(false);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update account settings');
+    }
   };
 
   const handleFindGames = () => {
@@ -612,7 +650,7 @@ const ProfileScreen: React.FC = () => {
                   style={[styles.settingItem, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]}
                   onPress={() => {
                     setShowSettings(false);
-                    setShowEditProfile(true);
+                    setShowAccountSettings(true);
                   }}
                 >
                   <View style={styles.settingLeft}>
@@ -628,46 +666,6 @@ const ProfileScreen: React.FC = () => {
                 </TouchableOpacity>
               </View>
 
-              {/* Appearance Section */}
-              <View style={[styles.settingsSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
-                <Text style={[styles.sectionTitle, highContrast && { color: '#fff' }]}>Appearance</Text>
-                
-                <View style={[styles.settingItem, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]}>
-                  <View style={styles.settingLeft}>
-                    <View style={styles.settingIcon}>
-                      <Ionicons name="contrast-outline" size={20} color={highContrast ? '#FFD700' : colors.primary} />
-                    </View>
-                    <View style={styles.settingText}>
-                      <Text style={[styles.settingTitle, highContrast && { color: '#fff' }]}>High Contrast</Text>
-                      <Text style={[styles.settingSubtitle, highContrast && { color: '#E5E7EB' }]}>Improve visibility for better accessibility</Text>
-                    </View>
-                  </View>
-                  <Switch
-                    value={highContrast}
-                    onValueChange={toggleHighContrast}
-                    trackColor={{ false: '#E5E7EB', true: colors.primary }}
-                    thumbColor={highContrast ? '#FFD700' : '#fff'}
-                  />
-                </View>
-                
-                <View style={[styles.settingItem, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]}>
-                  <View style={styles.settingLeft}>
-                    <View style={styles.settingIcon}>
-                      <Ionicons name="swap-horizontal-outline" size={20} color={highContrast ? '#FFD700' : colors.primary} />
-                    </View>
-                    <View style={styles.settingText}>
-                      <Text style={[styles.settingTitle, highContrast && { color: '#fff' }]}>Right-to-Left Layout</Text>
-                      <Text style={[styles.settingSubtitle, highContrast && { color: '#E5E7EB' }]}>Enable RTL layout for Arabic and Hebrew</Text>
-                    </View>
-                  </View>
-                  <Switch
-                    value={rtlEnabled}
-                    onValueChange={toggleRTL}
-                    trackColor={{ false: '#E5E7EB', true: colors.primary }}
-                    thumbColor={rtlEnabled ? '#FFD700' : '#fff'}
-                  />
-                </View>
-              </View>
 
               {/* Account Actions */}
               <View style={[styles.settingsSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
@@ -675,7 +673,10 @@ const ProfileScreen: React.FC = () => {
                 
                 <TouchableOpacity 
                   style={[styles.settingItem, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]}
-                  onPress={handleLogout}
+                  onPress={() => {
+                    setShowSettings(false);
+                    handleLogout();
+                  }}
                 >
                   <View style={styles.settingLeft}>
                     <View style={[styles.settingIcon, { backgroundColor: '#EF444420' }]}>
@@ -686,6 +687,95 @@ const ProfileScreen: React.FC = () => {
                       <Text style={[styles.settingSubtitle, highContrast && { color: '#E5E7EB' }]}>Sign out of your account</Text>
                     </View>
                   </View>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Account Settings Modal */}
+      <Modal
+        visible={showAccountSettings}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowAccountSettings(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.settingsModal, highContrast && { backgroundColor: '#1A1A1A' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, highContrast && { color: '#fff' }]}>Account Settings</Text>
+              <TouchableOpacity onPress={() => setShowAccountSettings(false)}>
+                <Ionicons name="close" size={24} color={highContrast ? '#fff' : colors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.settingsContent} showsVerticalScrollIndicator={false}>
+              <View style={[styles.settingsSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
+                <Text style={[styles.sectionTitle, highContrast && { color: '#fff' }]}>Personal Information</Text>
+                
+                <View style={styles.formGroup}>
+                  <Text style={[styles.formLabel, highContrast && { color: '#fff' }]}>Full Name</Text>
+                  <TextInput
+                    style={[styles.formInput, highContrast && { backgroundColor: '#0A0A0A', color: '#fff', borderColor: '#333' }]}
+                    value={accountForm.name}
+                    onChangeText={(text) => setAccountForm({ ...accountForm, name: text })}
+                    placeholder="Enter your full name"
+                    placeholderTextColor={highContrast ? '#666' : colors.textSecondary}
+                  />
+                </View>
+                
+                <View style={styles.formGroup}>
+                  <Text style={[styles.formLabel, highContrast && { color: '#fff' }]}>Email Address</Text>
+                  <TextInput
+                    style={[styles.formInput, highContrast && { backgroundColor: '#0A0A0A', color: '#fff', borderColor: '#333' }]}
+                    value={accountForm.email}
+                    onChangeText={(text) => setAccountForm({ ...accountForm, email: text })}
+                    placeholder="Enter your email address"
+                    placeholderTextColor={highContrast ? '#666' : colors.textSecondary}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+                
+                <View style={styles.formGroup}>
+                  <Text style={[styles.formLabel, highContrast && { color: '#fff' }]}>Phone Number</Text>
+                  <TextInput
+                    style={[styles.formInput, highContrast && { backgroundColor: '#0A0A0A', color: '#fff', borderColor: '#333' }]}
+                    value={accountForm.phone}
+                    onChangeText={(text) => setAccountForm({ ...accountForm, phone: text })}
+                    placeholder="Enter your phone number"
+                    placeholderTextColor={highContrast ? '#666' : colors.textSecondary}
+                    keyboardType="phone-pad"
+                  />
+                </View>
+                
+                <View style={styles.formGroup}>
+                  <Text style={[styles.formLabel, highContrast && { color: '#fff' }]}>Bio</Text>
+                  <TextInput
+                    style={[styles.formInput, styles.bioInput, highContrast && { backgroundColor: '#0A0A0A', color: '#fff', borderColor: '#333' }]}
+                    value={accountForm.bio}
+                    onChangeText={(text) => setAccountForm({ ...accountForm, bio: text })}
+                    placeholder="Tell us about yourself..."
+                    placeholderTextColor={highContrast ? '#666' : colors.textSecondary}
+                    multiline
+                    numberOfLines={4}
+                  />
+                </View>
+              </View>
+              
+              <View style={styles.modalActions}>
+                <TouchableOpacity 
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => setShowAccountSettings(false)}
+                >
+                  <Text style={[styles.modalButtonText, highContrast && { color: '#fff' }]}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.modalButton, styles.saveButton]}
+                  onPress={handleSaveAccountSettings}
+                >
+                  <Text style={styles.saveButtonText}>Save Changes</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -1095,6 +1185,57 @@ const styles = StyleSheet.create({
   settingSubtitle: {
     fontSize: typography.fontSize.sm,
     color: colors.textSecondary,
+  },
+  formGroup: {
+    marginBottom: 16,
+  },
+  formLabel: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: '500',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  formInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: typography.fontSize.md,
+    color: colors.text,
+    backgroundColor: colors.background,
+  },
+  bioInput: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+    marginTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  modalButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  cancelButton: {
+    backgroundColor: colors.surfaceVariant,
+  },
+  saveButton: {
+    backgroundColor: colors.primary,
+  },
+  modalButtonText: {
+    fontSize: typography.fontSize.md,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  saveButtonText: {
+    fontSize: typography.fontSize.md,
+    fontWeight: '500',
+    color: 'white',
   },
 });
 
