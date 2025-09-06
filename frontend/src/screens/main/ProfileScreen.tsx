@@ -100,7 +100,6 @@ const ProfileScreen: React.FC = () => {
   const [loadingGames, setLoadingGames] = useState(true);
   const [dashboard, setDashboard] = useState<any>(null);
   const [games, setGames] = useState<any[]>([]);
-  const [upcomingGames, setUpcomingGames] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [snack, setSnack] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
   const [selectedSport, setSelectedSport] = useState<string | null>('soccer');
@@ -252,45 +251,6 @@ const ProfileScreen: React.FC = () => {
             animateStats();
           }, 100);
           
-          // Mock upcoming games data
-          setUpcomingGames([
-            {
-              id: '1',
-              sport: 'Football',
-              venue: 'Kathmandu Sports Complex',
-              date: '2024-01-15',
-              time: '18:00',
-              participants: 8,
-              maxParticipants: 12,
-              price: 500,
-              status: 'open',
-              sportIcon: '⚽️'
-            },
-            {
-              id: '2',
-              sport: 'Basketball',
-              venue: 'Basketball Court, Patan',
-              date: '2024-01-16',
-              time: '19:30',
-              participants: 6,
-              maxParticipants: 10,
-              price: 300,
-              status: 'open',
-              sportIcon: '🏀'
-            },
-            {
-              id: '3',
-              sport: 'Cricket',
-              venue: 'Cricket Ground, Pokhara',
-              date: '2024-01-17',
-              time: '16:00',
-              participants: 18,
-              maxParticipants: 22,
-              price: 200,
-              status: 'almost_full',
-              sportIcon: '🏏'
-            }
-          ]);
 
           // Mock scouting data
           setScoutingData({
@@ -514,17 +474,6 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  const handleFindGames = () => {
-    Alert.alert('Find Games', 'This will open the games screen');
-  };
-
-  const handleCreateGame = () => {
-    Alert.alert('Create Game', 'This will open the create game screen');
-  };
-
-  const handleFindPractice = () => {
-    Alert.alert('Find Practice', 'This will open the practice games screen');
-  };
 
   if (!user || loadingProfile) {
     return (
@@ -574,15 +523,8 @@ const ProfileScreen: React.FC = () => {
             <TouchableOpacity style={styles.headerIcon} onPress={() => setShowSettings(true)}>
               <Ionicons name="settings-outline" size={24} color="white" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.editButton} onPress={() => setShowEditProfile(true)}>
-              <Ionicons name="create-outline" size={16} color="white" />
-              <Text style={styles.editButtonText}>Edit Profile</Text>
-            </TouchableOpacity>
             <TouchableOpacity style={styles.headerIcon} onPress={handleLogout}>
               <Ionicons name="log-out-outline" size={24} color="white" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.headerIcon} onPress={() => Alert.alert('Share Profile', 'Share profile coming soon!')}>
-              <Ionicons name="share-outline" size={24} color="white" />
             </TouchableOpacity>
           </View>
 
@@ -607,19 +549,21 @@ const ProfileScreen: React.FC = () => {
               <Text style={[styles.userName, highContrast && { color: '#fff' }]}>{user.name}</Text>
               <Text style={[styles.userUsername, highContrast && { color: 'rgba(255,255,255,0.8)' }]}>@{user.username}</Text>
               
-              {/* Quick Actions */}
-              <View style={styles.quickActionsRow}>
-                <TouchableOpacity style={styles.quickActionButton} onPress={() => Alert.alert('Invite', 'Invite player')}>
-                  <Ionicons name="person-add-outline" size={16} color="#22D3EE" />
-                  <Text style={styles.quickActionText}>Invite</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.quickActionButton} onPress={handleCreateGame}>
-                  <Ionicons name="add-circle-outline" size={16} color="#A3E635" />
-                  <Text style={styles.quickActionText}>Create Game</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.quickActionButton} onPress={() => Alert.alert('Share', 'Share profile')}>
-                  <Ionicons name="share-outline" size={16} color="#FB7185" />
-                  <Text style={styles.quickActionText}>Share</Text>
+              {/* Age, Nationality, and Edit Profile */}
+              <View style={styles.userDetailsRow}>
+                {user.birthDate && calculateAge(user.birthDate) && (
+                  <View style={styles.userDetailChip}>
+                    <Ionicons name="calendar-outline" size={14} color="#22D3EE" />
+                    <Text style={styles.userDetailText}>{calculateAge(user.birthDate)} years old</Text>
+                  </View>
+                )}
+                <View style={styles.userDetailChip}>
+                  <Ionicons name="flag-outline" size={14} color="#A3E635" />
+                  <Text style={styles.userDetailText}>{user.nationality || user.country || 'Nepal'}</Text>
+                </View>
+                <TouchableOpacity style={styles.editProfileButton} onPress={() => setShowEditProfile(true)}>
+                  <Ionicons name="create-outline" size={14} color="#FB7185" />
+                  <Text style={styles.editProfileText}>Edit Profile</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -752,202 +696,7 @@ const ProfileScreen: React.FC = () => {
             onEdit={() => Alert.alert('Edit Scouting Report', 'Edit functionality coming soon!')}
           />
         )}
-        {/* Enhanced Quick Actions */}
-        <Animated.View 
-          style={[
-            styles.quickActionsSection, 
-            highContrast && { backgroundColor: '#0A0A0A' },
-            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
-          ]}
-        >
-          <Text style={[styles.sectionTitle, highContrast && { color: '#fff' }]}>Quick Actions</Text>
-          <View style={styles.quickActionsGrid}>
-            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-              <TouchableOpacity 
-                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
-                onPress={handleFindGames}
-                activeOpacity={0.8}
-              >
-                <View style={styles.quickActionIconContainer}>
-                  <Ionicons name="search-outline" size={28} color={highContrast ? '#FFD700' : colors.primary} />
-                </View>
-                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Find Games</Text>
-                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>Discover nearby games</Text>
-              </TouchableOpacity>
-            </Animated.View>
-            
-            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-              <TouchableOpacity 
-                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
-                onPress={handleCreateGame}
-                activeOpacity={0.8}
-              >
-                <View style={styles.quickActionIconContainer}>
-                  <Ionicons name="add-circle-outline" size={28} color={highContrast ? '#10B981' : '#10B981'} />
-                </View>
-                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Create Game</Text>
-                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>Host your own game</Text>
-              </TouchableOpacity>
-            </Animated.View>
-            
-            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-              <TouchableOpacity 
-                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
-                onPress={handleFindPractice}
-                activeOpacity={0.8}
-              >
-                <View style={styles.quickActionIconContainer}>
-                  <Ionicons name="fitness-outline" size={28} color={highContrast ? '#F59E0B' : '#F59E0B'} />
-                </View>
-                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Find Practice</Text>
-                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>Training sessions</Text>
-              </TouchableOpacity>
-            </Animated.View>
-            
-            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-              <TouchableOpacity 
-                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
-                onPress={() => Alert.alert('View Invitations', 'View invitations coming soon!')}
-                activeOpacity={0.8}
-              >
-                <View style={styles.quickActionIconContainer}>
-                  <Ionicons name="mail-outline" size={28} color={highContrast ? '#8B5CF6' : '#8B5CF6'} />
-                </View>
-                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Invitations</Text>
-                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>Pending invites</Text>
-              </TouchableOpacity>
-            </Animated.View>
-            
-            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-              <TouchableOpacity 
-                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
-                onPress={() => Alert.alert('Achievements', 'Achievements coming soon!')}
-                activeOpacity={0.8}
-              >
-                <View style={styles.quickActionIconContainer}>
-                  <Ionicons name="trophy-outline" size={28} color={highContrast ? '#EF4444' : '#EF4444'} />
-                </View>
-                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Achievements</Text>
-                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>Your badges</Text>
-              </TouchableOpacity>
-            </Animated.View>
-            
-            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-              <TouchableOpacity 
-                style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} 
-                onPress={() => Alert.alert('Coming Soon', 'Add Sport feature coming soon!')}
-                activeOpacity={0.8}
-              >
-                <View style={styles.quickActionIconContainer}>
-                  <Ionicons name="add-outline" size={28} color={highContrast ? '#06B6D4' : '#06B6D4'} />
-                </View>
-                <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Add Sport</Text>
-                <Text style={[styles.quickActionSubtext, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>New activities</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          </View>
-        </Animated.View>
 
-        {/* Upcoming Games Section */}
-        <Animated.View 
-          style={[
-            styles.upcomingGamesSection, 
-            highContrast && { backgroundColor: '#0A0A0A' },
-            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
-          ]}
-        >
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, highContrast && { color: '#fff' }]}>Upcoming Games</Text>
-            <TouchableOpacity onPress={() => Alert.alert('View All', 'View all upcoming games')}>
-              <Text style={[styles.viewAllText, highContrast && { color: '#FFD700' }]}>View All</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.upcomingGamesScroll}
-          >
-            {upcomingGames.map((game, index) => (
-              <Animated.View 
-                key={game.id}
-                style={[
-                  styles.upcomingGameCard,
-                  highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' },
-                  { 
-                    transform: [{ scale: scaleAnim }],
-                    marginLeft: index === 0 ? 0 : 12
-                  }
-                ]}
-              >
-                <View style={styles.gameHeader}>
-                  <Text style={styles.sportIcon}>{game.sportIcon}</Text>
-                  <View style={[
-                    styles.statusBadge,
-                    game.status === 'open' && { backgroundColor: '#10B98120' },
-                    game.status === 'almost_full' && { backgroundColor: '#F59E0B20' },
-                    game.status === 'full' && { backgroundColor: '#EF444420' }
-                  ]}>
-                    <Text style={[
-                      styles.statusText,
-                      game.status === 'open' && { color: '#10B981' },
-                      game.status === 'almost_full' && { color: '#F59E0B' },
-                      game.status === 'full' && { color: '#EF4444' }
-                    ]}>
-                      {game.status === 'open' ? 'Open' : game.status === 'almost_full' ? 'Almost Full' : 'Full'}
-                    </Text>
-                  </View>
-                </View>
-                
-                <Text style={[styles.gameSport, highContrast && { color: '#fff' }]}>{game.sport}</Text>
-                <Text style={[styles.gameVenue, highContrast && { color: 'rgba(255,255,255,0.8)' }]}>{game.venue}</Text>
-                
-                <View style={styles.gameDetails}>
-                  <View style={styles.gameDetailItem}>
-                    <Ionicons name="calendar-outline" size={14} color={colors.textSecondary} />
-                    <Text style={[styles.gameDetailText, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>
-                      {new Date(game.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </Text>
-                  </View>
-                  <View style={styles.gameDetailItem}>
-                    <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
-                    <Text style={[styles.gameDetailText, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>
-                      {game.time}
-                    </Text>
-                  </View>
-                </View>
-                
-                <View style={styles.gameParticipants}>
-                  <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
-                  <Text style={[styles.participantsText, highContrast && { color: 'rgba(255,255,255,0.8)' }]}>
-                    {game.participants}/{game.maxParticipants} players
-                  </Text>
-                </View>
-                
-                <View style={styles.gameFooter}>
-                  <Text style={[styles.gamePrice, highContrast && { color: '#FFD700' }]}>
-                    NPR {game.price}
-                  </Text>
-                  <TouchableOpacity 
-                    style={[
-                      styles.joinButton,
-                      game.status === 'full' && styles.joinButtonDisabled
-                    ]}
-                    onPress={() => Alert.alert('Join Game', `Join ${game.sport} game at ${game.venue}`)}
-                    disabled={game.status === 'full'}
-                  >
-                    <Text style={[
-                      styles.joinButtonText,
-                      game.status === 'full' && styles.joinButtonTextDisabled
-                    ]}>
-                      {game.status === 'full' ? 'Full' : 'Join Now'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </Animated.View>
-            ))}
-          </ScrollView>
-        </Animated.View>
 
         {/* Bio Section */}
         <View style={[styles.bioSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
@@ -1939,25 +1688,42 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   // New component styles
-  quickActionsRow: {
+  userDetailsRow: {
     flexDirection: 'row',
     marginTop: 12,
     gap: 8,
+    flexWrap: 'wrap',
   },
-  quickActionButton: {
+  userDetailChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  quickActionText: {
+  userDetailText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#F8FAFC',
+    marginLeft: 4,
+  },
+  editProfileButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: 'rgba(251, 113, 133, 0.2)',
+    borderWidth: 1,
+    borderColor: '#FB7185',
+  },
+  editProfileText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#F8FAFC',
+    color: '#FB7185',
     marginLeft: 4,
   },
   newStatsCard: {
