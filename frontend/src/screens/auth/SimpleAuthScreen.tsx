@@ -58,6 +58,7 @@ const SimpleAuthScreen: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [showGenderModal, setShowGenderModal] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const passwordRef = useRef<TextInput>(null);
   const lastNameRef = useRef<TextInput>(null);
   const emailRef = useRef<TextInput>(null);
@@ -75,6 +76,24 @@ const SimpleAuthScreen: React.FC = () => {
     setShowGenderModal(false);
     // Focus on email field after selection
     emailRef.current?.focus();
+  };
+
+  const handleDateSelect = (selectedDate: Date) => {
+    const formattedDate = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+    setDateOfBirth(formattedDate);
+    setShowDatePicker(false);
+    // Focus on password field after selection
+    registerPasswordRef.current?.focus();
+  };
+
+  const formatDateForDisplay = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   const handleLogin = async () => {
@@ -414,7 +433,7 @@ const SimpleAuthScreen: React.FC = () => {
                           returnKeyType="next"
                           maxLength={12}
                           onSubmitEditing={() => {
-                            dateOfBirthRef.current?.focus();
+                            setShowDatePicker(true);
                           }}
                         />
                       </View>
@@ -422,33 +441,16 @@ const SimpleAuthScreen: React.FC = () => {
                     </View>
                     
                     <View style={styles.inputContainer}>
-                      <View style={styles.inputWrapper}>
+                      <TouchableOpacity 
+                        style={[styles.inputWrapper, dateOfBirth && styles.inputWrapperSelected]}
+                        onPress={() => setShowDatePicker(true)}
+                      >
                         <Ionicons name="calendar-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
-                        <TextInput
-                          ref={dateOfBirthRef}
-                          style={styles.input}
-                          placeholder="Date of Birth (YYYY-MM-DD)"
-                          placeholderTextColor={colors.textSecondary}
-                          value={dateOfBirth}
-                          onChangeText={(text) => {
-                            // Auto-format date as user types
-                            let formatted = text.replace(/\D/g, ''); // Remove non-digits
-                            if (formatted.length >= 4) {
-                              formatted = formatted.substring(0, 4) + '-' + formatted.substring(4);
-                            }
-                            if (formatted.length >= 7) {
-                              formatted = formatted.substring(0, 7) + '-' + formatted.substring(7, 9);
-                            }
-                            setDateOfBirth(formatted);
-                          }}
-                          keyboardType="numeric"
-                          returnKeyType="next"
-                          maxLength={10}
-                          onSubmitEditing={() => {
-                            registerPasswordRef.current?.focus();
-                          }}
-                        />
-                      </View>
+                        <Text style={[styles.input, dateOfBirth ? styles.inputText : styles.inputPlaceholder]}>
+                          {dateOfBirth ? formatDateForDisplay(dateOfBirth) : 'Select Date of Birth'}
+                        </Text>
+                        <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
+                      </TouchableOpacity>
                       {errors.dateOfBirth && <Text style={styles.errorText}>{errors.dateOfBirth}</Text>}
                     </View>
                     
@@ -539,6 +541,113 @@ const SimpleAuthScreen: React.FC = () => {
                 </Text>
               </TouchableOpacity>
             ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Date Picker Modal */}
+      <Modal
+        visible={showDatePicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDatePicker(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowDatePicker(false)}
+        >
+          <View style={styles.datePickerModal}>
+            <Text style={styles.datePickerTitle}>Select Date of Birth</Text>
+            <View style={styles.datePickerContainer}>
+              <View style={styles.datePickerRow}>
+                <Text style={styles.datePickerLabel}>Year:</Text>
+                <ScrollView style={styles.datePickerScroll} showsVerticalScrollIndicator={false}>
+                  {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - 18 - i).map((year) => (
+                    <TouchableOpacity
+                      key={year}
+                      style={[
+                        styles.datePickerOption,
+                        dateOfBirth && new Date(dateOfBirth).getFullYear() === year && styles.datePickerOptionSelected
+                      ]}
+                      onPress={() => {
+                        const currentDate = dateOfBirth ? new Date(dateOfBirth) : new Date();
+                        const newDate = new Date(year, currentDate.getMonth(), currentDate.getDate());
+                        handleDateSelect(newDate);
+                      }}
+                    >
+                      <Text style={[
+                        styles.datePickerOptionText,
+                        dateOfBirth && new Date(dateOfBirth).getFullYear() === year && styles.datePickerOptionSelectedText
+                      ]}>
+                        {year}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+              
+              <View style={styles.datePickerRow}>
+                <Text style={styles.datePickerLabel}>Month:</Text>
+                <ScrollView style={styles.datePickerScroll} showsVerticalScrollIndicator={false}>
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                    <TouchableOpacity
+                      key={month}
+                      style={[
+                        styles.datePickerOption,
+                        dateOfBirth && new Date(dateOfBirth).getMonth() + 1 === month && styles.datePickerOptionSelected
+                      ]}
+                      onPress={() => {
+                        const currentDate = dateOfBirth ? new Date(dateOfBirth) : new Date();
+                        const newDate = new Date(currentDate.getFullYear(), month - 1, currentDate.getDate());
+                        handleDateSelect(newDate);
+                      }}
+                    >
+                      <Text style={[
+                        styles.datePickerOptionText,
+                        dateOfBirth && new Date(dateOfBirth).getMonth() + 1 === month && styles.datePickerOptionSelectedText
+                      ]}>
+                        {new Date(0, month - 1).toLocaleString('default', { month: 'long' })}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+              
+              <View style={styles.datePickerRow}>
+                <Text style={styles.datePickerLabel}>Day:</Text>
+                <ScrollView style={styles.datePickerScroll} showsVerticalScrollIndicator={false}>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                    <TouchableOpacity
+                      key={day}
+                      style={[
+                        styles.datePickerOption,
+                        dateOfBirth && new Date(dateOfBirth).getDate() === day && styles.datePickerOptionSelected
+                      ]}
+                      onPress={() => {
+                        const currentDate = dateOfBirth ? new Date(dateOfBirth) : new Date();
+                        const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                        handleDateSelect(newDate);
+                      }}
+                    >
+                      <Text style={[
+                        styles.datePickerOptionText,
+                        dateOfBirth && new Date(dateOfBirth).getDate() === day && styles.datePickerOptionSelectedText
+                      ]}>
+                        {day}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </View>
+            
+            <TouchableOpacity
+              style={styles.datePickerDoneButton}
+              onPress={() => setShowDatePicker(false)}
+            >
+              <Text style={styles.datePickerDoneButtonText}>Done</Text>
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
       </Modal>
@@ -752,6 +861,73 @@ const styles = StyleSheet.create({
   },
   inputPlaceholder: {
     color: colors.textSecondary,
+  },
+  // Date picker modal styles
+  datePickerModal: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    width: '90%',
+    maxWidth: 400,
+    maxHeight: '80%',
+  },
+  datePickerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  datePickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  datePickerRow: {
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  datePickerLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  datePickerScroll: {
+    maxHeight: 150,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+  },
+  datePickerOption: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  datePickerOptionText: {
+    fontSize: 14,
+    color: colors.text,
+    textAlign: 'center',
+  },
+  datePickerOptionSelected: {
+    backgroundColor: colors.primary + '10',
+  },
+  datePickerOptionSelectedText: {
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  datePickerDoneButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignSelf: 'center',
+  },
+  datePickerDoneButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
