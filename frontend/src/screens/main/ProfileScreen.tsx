@@ -27,7 +27,6 @@ import { useUIStore } from '@/stores/uiStore';
 import { Snackbar } from 'react-native-paper';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuthStore } from '@/stores/authStore';
-import { useNavigation } from '@react-navigation/native';
 
 interface User {
   id: string;
@@ -74,6 +73,7 @@ const ProfileScreen: React.FC = () => {
   const [sportProfiles, setSportProfiles] = useState<ScoutingReportData[]>([]);
   const [showScoutingEditor, setShowScoutingEditor] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [editingProfile, setEditingProfile] = useState<ScoutingReportData | null>(null);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioText, setBioText] = useState('');
@@ -85,10 +85,9 @@ const ProfileScreen: React.FC = () => {
   const [games, setGames] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [snack, setSnack] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-  const { t } = useLanguage();
-  const { highContrast, rtlEnabled } = useUIStore();
+  const { t, setLanguage, currentLanguage } = useLanguage();
+  const { highContrast, rtlEnabled, toggleHighContrast, toggleRTL } = useUIStore();
   const { logout } = useAuthStore();
-  const navigation = useNavigation();
 
   // Fetch real data
   useEffect(() => {
@@ -315,7 +314,7 @@ const ProfileScreen: React.FC = () => {
       <LinearGradient colors={highContrast ? ['#111', '#111'] : [NepalColors.primary, NepalColors.secondary]} style={styles.header}>
         {/* Top Action Buttons */}
         <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.headerIcon} onPress={() => navigation.navigate('Settings' as never)}>
+          <TouchableOpacity style={styles.headerIcon} onPress={() => setShowSettings(true)}>
             <Ionicons name="settings-outline" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.editButton} onPress={() => setShowEditProfile(true)}>
@@ -586,6 +585,112 @@ const ProfileScreen: React.FC = () => {
         onDismiss={() => setSnack({ visible: false, message: '' })}
         duration={2000}
       >{snack.message}</Snackbar>
+
+      {/* Settings Modal */}
+      <Modal
+        visible={showSettings}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowSettings(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.settingsModal, highContrast && { backgroundColor: '#1A1A1A' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, highContrast && { color: '#fff' }]}>Settings</Text>
+              <TouchableOpacity onPress={() => setShowSettings(false)}>
+                <Ionicons name="close" size={24} color={highContrast ? '#fff' : colors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.settingsContent} showsVerticalScrollIndicator={false}>
+              {/* Account Section */}
+              <View style={[styles.settingsSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
+                <Text style={[styles.sectionTitle, highContrast && { color: '#fff' }]}>Account</Text>
+                
+                <TouchableOpacity 
+                  style={[styles.settingItem, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]}
+                  onPress={() => {
+                    setShowSettings(false);
+                    setShowEditProfile(true);
+                  }}
+                >
+                  <View style={styles.settingLeft}>
+                    <View style={styles.settingIcon}>
+                      <Ionicons name="person-outline" size={20} color={highContrast ? '#FFD700' : colors.primary} />
+                    </View>
+                    <View style={styles.settingText}>
+                      <Text style={[styles.settingTitle, highContrast && { color: '#fff' }]}>Account Settings</Text>
+                      <Text style={[styles.settingSubtitle, highContrast && { color: '#E5E7EB' }]}>Manage your profile and personal information</Text>
+                    </View>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={highContrast ? '#E5E7EB' : colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Appearance Section */}
+              <View style={[styles.settingsSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
+                <Text style={[styles.sectionTitle, highContrast && { color: '#fff' }]}>Appearance</Text>
+                
+                <View style={[styles.settingItem, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]}>
+                  <View style={styles.settingLeft}>
+                    <View style={styles.settingIcon}>
+                      <Ionicons name="contrast-outline" size={20} color={highContrast ? '#FFD700' : colors.primary} />
+                    </View>
+                    <View style={styles.settingText}>
+                      <Text style={[styles.settingTitle, highContrast && { color: '#fff' }]}>High Contrast</Text>
+                      <Text style={[styles.settingSubtitle, highContrast && { color: '#E5E7EB' }]}>Improve visibility for better accessibility</Text>
+                    </View>
+                  </View>
+                  <Switch
+                    value={highContrast}
+                    onValueChange={toggleHighContrast}
+                    trackColor={{ false: '#E5E7EB', true: colors.primary }}
+                    thumbColor={highContrast ? '#FFD700' : '#fff'}
+                  />
+                </View>
+                
+                <View style={[styles.settingItem, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]}>
+                  <View style={styles.settingLeft}>
+                    <View style={styles.settingIcon}>
+                      <Ionicons name="swap-horizontal-outline" size={20} color={highContrast ? '#FFD700' : colors.primary} />
+                    </View>
+                    <View style={styles.settingText}>
+                      <Text style={[styles.settingTitle, highContrast && { color: '#fff' }]}>Right-to-Left Layout</Text>
+                      <Text style={[styles.settingSubtitle, highContrast && { color: '#E5E7EB' }]}>Enable RTL layout for Arabic and Hebrew</Text>
+                    </View>
+                  </View>
+                  <Switch
+                    value={rtlEnabled}
+                    onValueChange={toggleRTL}
+                    trackColor={{ false: '#E5E7EB', true: colors.primary }}
+                    thumbColor={rtlEnabled ? '#FFD700' : '#fff'}
+                  />
+                </View>
+              </View>
+
+              {/* Account Actions */}
+              <View style={[styles.settingsSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
+                <Text style={[styles.sectionTitle, highContrast && { color: '#fff' }]}>Account Actions</Text>
+                
+                <TouchableOpacity 
+                  style={[styles.settingItem, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]}
+                  onPress={handleLogout}
+                >
+                  <View style={styles.settingLeft}>
+                    <View style={[styles.settingIcon, { backgroundColor: '#EF444420' }]}>
+                      <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+                    </View>
+                    <View style={styles.settingText}>
+                      <Text style={[styles.settingTitle, highContrast && { color: '#fff' }, { color: '#EF4444' }]}>Sign Out</Text>
+                      <Text style={[styles.settingSubtitle, highContrast && { color: '#E5E7EB' }]}>Sign out of your account</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -923,6 +1028,72 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 8,
     textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  settingsModal: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+    ...colors.shadows?.lg,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  settingsContent: {
+    flex: 1,
+  },
+  settingsSection: {
+    backgroundColor: colors.surface,
+    marginBottom: 20,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  settingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  settingIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  settingText: {
+    flex: 1,
+  },
+  settingTitle: {
+    fontSize: typography.fontSize.md,
+    fontWeight: '500',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  settingSubtitle: {
+    fontSize: typography.fontSize.sm,
+    color: colors.textSecondary,
   },
 });
 
