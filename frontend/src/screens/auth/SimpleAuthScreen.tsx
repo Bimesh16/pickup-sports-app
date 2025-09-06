@@ -89,24 +89,14 @@ const SimpleAuthScreen: React.FC = () => {
     setIsLoading(true);
     try {
       // Mock social login for now - in real app, this would integrate with OAuth providers
-      const mockUser = {
-        username: `user_${provider.toLowerCase()}`,
-        email: `user@${provider.toLowerCase()}.com`,
-        firstName: 'Social',
-        lastName: 'User',
-      };
+      const mockUsername = `user_${provider.toLowerCase()}`;
+      const mockPassword = 'social_login_password';
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Use the register function to create/login user
-      await register({
-        username: mockUser.username,
-        email: mockUser.email,
-        password: 'social_login_password', // This would be handled by OAuth
-        firstName: mockUser.firstName,
-        lastName: mockUser.lastName,
-      });
+      // Use the login function to sign in the user
+      await login(mockUsername, mockPassword);
       
       Alert.alert('Success', `Successfully signed in with ${provider}!`);
     } catch (error: any) {

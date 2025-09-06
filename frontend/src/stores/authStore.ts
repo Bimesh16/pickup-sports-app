@@ -339,9 +339,55 @@ export const useAuthStore = create<AuthStore>()(
                 isLoading: false,
               });
               return;
+            }
+            
+            // Social login credentials
+            if (usernameOrEmail.startsWith('user_') && password === 'social_login_password') {
+              const provider = usernameOrEmail.replace('user_', '');
+              const mockUser: User = {
+                id: `social_${provider}`,
+                name: `Social ${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
+                username: usernameOrEmail,
+                email: `user@${provider}.com`,
+                phoneNumber: '+1234567890',
+                avatar: `https://via.placeholder.com/80x80/4A5568/FFFFFF?text=${provider.charAt(0).toUpperCase()}`,
+                location: {
+                  latitude: 27.7172,
+                  longitude: 85.3240,
+                  address: 'Kathmandu, Nepal'
+                },
+                preferences: {
+                  sports: ['football', 'basketball'],
+                  maxDistance: 10,
+                  skillLevel: 'INTERMEDIATE'
+                },
+                stats: {
+                  gamesPlayed: 0,
+                  totalGamesPlayed: 0,
+                  gamesWon: 0,
+                  totalGamesWon: 0,
+                  totalGamesLost: 0,
+                  totalGamesDrawn: 0,
+                  currentStreak: 0,
+                  longestStreak: 0,
+                  winRate: 0,
+                  rating: 0,
+                  reliability: 0
+                },
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              };
+              
+              set({
+                user: mockUser,
+                token: `social-token-${provider}`,
+                isAuthenticated: true,
+                isLoading: false,
+              });
+              return;
             } else {
               set({ isLoading: false });
-              throw { success: false, message: 'Invalid credentials. Use test/password' };
+              throw { success: false, message: 'Invalid credentials. Use test/password or try social login' };
             }
           }
           
