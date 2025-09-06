@@ -33,6 +33,7 @@ const SimpleAuthScreen: React.FC = () => {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const { login, register } = useAuthStore();
   const { t } = useLanguage();
@@ -205,7 +206,7 @@ const SimpleAuthScreen: React.FC = () => {
                   // Login form - only Username and Password
                   <>
                     <View style={styles.inputContainer}>
-                      <View style={styles.inputWrapper}>
+                      <View style={[styles.inputWrapper, focusedField === 'username' && styles.inputWrapperFocused]}>
                         <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
@@ -213,6 +214,8 @@ const SimpleAuthScreen: React.FC = () => {
                           placeholderTextColor={colors.textSecondary}
                           value={username}
                           onChangeText={setUsername}
+                          onFocus={() => setFocusedField('username')}
+                          onBlur={() => setFocusedField(null)}
                           autoCapitalize="none"
                         />
                       </View>
@@ -220,7 +223,7 @@ const SimpleAuthScreen: React.FC = () => {
                     </View>
                     
                     <View style={styles.inputContainer}>
-                      <View style={styles.inputWrapper}>
+                      <View style={[styles.inputWrapper, focusedField === 'password' && styles.inputWrapperFocused]}>
                         <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                         <TextInput
                           style={styles.input}
@@ -228,6 +231,8 @@ const SimpleAuthScreen: React.FC = () => {
                           placeholderTextColor={colors.textSecondary}
                           value={password}
                           onChangeText={setPassword}
+                          onFocus={() => setFocusedField('password')}
+                          onBlur={() => setFocusedField(null)}
                           secureTextEntry
                         />
                       </View>
@@ -467,6 +472,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     minHeight: 50,
+  },
+  inputWrapperFocused: {
+    borderColor: colors.border,
+    borderWidth: 1,
   },
   inputIcon: {
     marginRight: spacing.sm,
