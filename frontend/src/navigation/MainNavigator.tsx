@@ -12,7 +12,7 @@ import MessagesScreen from '@/screens/main/MessagesScreen';
 import ProfileScreen from '@/screens/main/ProfileScreen';
 import GameDetailsScreen from '@/screens/games/GameDetailsScreen';
 import VenueDetailsScreen from '@/screens/venues/VenueDetailsScreen';
-import SettingsScreen from '@/screens/settings/SettingsScreen';
+import SettingsNavigator from '@/navigation/SettingsNavigator';
 import PaymentScreen from '@/screens/payment/PaymentScreen';
 
 export type MainTabParamList = {
@@ -81,7 +81,7 @@ export const MainNavigator: React.FC = () => {
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
       <Stack.Screen name="GameDetails" component={GameDetailsScreen} />
       <Stack.Screen name="VenueDetails" component={VenueDetailsScreen} />
-      <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="Settings" component={SettingsNavigator} />
       <Stack.Screen name="Payment" component={PaymentScreen} />
     </Stack.Navigator>
   );

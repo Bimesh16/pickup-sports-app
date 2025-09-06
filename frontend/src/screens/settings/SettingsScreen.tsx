@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,10 +15,26 @@ import { NepalColors, FontSizes, Spacing } from '../../constants/theme';
 import { useAuthStore } from '../../stores/authStore';
 import { useLanguage } from '../../contexts/LanguageContext';
 import LanguageSelector from '../../components/LanguageSelector';
+import { useNavigation } from '@react-navigation/native';
+import { TextInput, Button } from 'react-native-paper';
+import { changePassword, changeEmail } from '@/services/auth';
+import { getMyNotificationPrefs, updateMyNotificationPrefs } from '@/services/notifications';
+import { useUIStore } from '@/stores/uiStore';
+import { useNotificationPrefStore } from '@/stores/notificationPrefStore';
 
 export default function SettingsScreen() {
   const { user, logout, biometricEnabled, enableBiometric, disableBiometric } = useAuthStore();
   const { t } = useLanguage();
+  const navigation = useNavigation<any>();
+  const { reducedMotion, highContrast, setReducedMotion, setHighContrast } = useUIStore();
+  const { gameInvites, recommendations, systemAlerts, setGameInvites, setRecommendations, setSystemAlerts } = useNotificationPrefStore();
+  const [syncingPrefs, setSyncingPrefs] = useState(false);
+  const [showPwdModal, setShowPwdModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleLogout = () => {
     Alert.alert(
@@ -62,6 +79,81 @@ export default function SettingsScreen() {
         }
       ]
     );
+  };
+
+  // Load backend notification prefs and map to three categories (basic mapping)
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const res = await getMyNotificationPrefs();
+        if (res.ok) {
+          const p = res.data;
+          // Map: game invites -> inAppOnRsvp, recommendations -> pushOnCreate, systemAlerts -> emailOnCancel
+          setGameInvites(!!p.inAppOnRsvp);
+          setRecommendations(!!p.pushOnCreate);
+          setSystemAlerts(!!p.emailOnCancel);
+        }
+      } catch {}
+    })();
+  }, []);
+
+  // Debounced sync to backend on toggle changes
+  React.useEffect(() => {
+    const id = setTimeout(async () => {
+      try {
+        setSyncingPrefs(true);
+        await updateMyNotificationPrefs({
+          inAppOnRsvp: gameInvites,
+          pushOnCreate: recommendations,
+          emailOnCancel: systemAlerts,
+        });
+      } finally {
+        setSyncingPrefs(false);
+      }
+    }, 500);
+    return () => clearTimeout(id);
+  }, [gameInvites, recommendations, systemAlerts]);
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword) {
+      Alert.alert(t('common.error'), 'Please fill both current and new password');
+      return;
+    }
+    try {
+      setSubmitting(true);
+      const res = await changePassword(currentPassword, newPassword);
+      if (res.success) {
+        Alert.alert(t('common.success'), 'Password changed successfully');
+        setShowPwdModal(false);
+        setCurrentPassword('');
+        setNewPassword('');
+      } else {
+        Alert.alert(t('common.error'), res.message || 'Failed to change password');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleChangeEmail = async () => {
+    if (!newEmail || !currentPassword) {
+      Alert.alert(t('common.error'), 'Please fill new email and current password');
+      return;
+    }
+    try {
+      setSubmitting(true);
+      const res = await changeEmail(newEmail, currentPassword);
+      if (res.success) {
+        Alert.alert(t('common.success'), 'Email change requested. Please verify via the link sent to your new email.');
+        setShowEmailModal(false);
+        setNewEmail('');
+        setCurrentPassword('');
+      } else {
+        Alert.alert(t('common.error'), res.message || 'Failed to change email');
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const SettingItem = ({ 
@@ -149,6 +241,43 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('settings.appSettings')}</Text>
           <View style={styles.sectionContent}>
+            {/* Notification Categories */}
+            <View style={styles.settingItem}>
+              <View style={styles.settingLeft}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name="notifications-outline" size={24} color={NepalColors.primary} />
+                </View>
+                <View style={styles.settingText}>
+                  <Text style={styles.settingTitle}>Game Invites</Text>
+                  <Text style={styles.settingSubtitle}>Invitations to games and RSVPs</Text>
+                </View>
+              </View>
+              <Switch value={gameInvites} onValueChange={setGameInvites} />
+            </View>
+            <View style={styles.settingItem}>
+              <View style={styles.settingLeft}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name="sparkles-outline" size={24} color={NepalColors.primary} />
+                </View>
+                <View style={styles.settingText}>
+                  <Text style={styles.settingTitle}>Recommendations</Text>
+                  <Text style={styles.settingSubtitle}>Games and venues you might like</Text>
+                </View>
+              </View>
+              <Switch value={recommendations} onValueChange={setRecommendations} />
+            </View>
+            <View style={styles.settingItem}>
+              <View style={styles.settingLeft}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name="alert-circle-outline" size={24} color={NepalColors.primary} />
+                </View>
+                <View style={styles.settingText}>
+                  <Text style={styles.settingTitle}>System Alerts</Text>
+                  <Text style={styles.settingSubtitle}>Announcements and account alerts</Text>
+                </View>
+              </View>
+              <Switch value={systemAlerts} onValueChange={setSystemAlerts} />
+            </View>
             <View style={styles.settingItem}>
               <View style={styles.settingLeft}>
                 <View style={styles.iconContainer}>
@@ -166,9 +295,7 @@ export default function SettingsScreen() {
               icon="notifications-outline"
               title={t('settings.notifications')}
               subtitle={t('settings.notificationsSubtitle')}
-              onPress={() => {
-                Alert.alert(t('common.info'), 'Notification settings coming soon');
-              }}
+              onPress={() => navigation.navigate('Settings', { screen: 'Notifications' })}
             />
 
             <View style={styles.settingItem}>
@@ -230,6 +357,57 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('settings.account')}</Text>
           <View style={styles.sectionContent}>
+            <View style={styles.settingItem}>
+              <View style={styles.settingLeft}>
+                <View className="iconContainer" style={styles.iconContainer}>
+                  <Ionicons name="contrast-outline" size={24} color={NepalColors.primary} />
+                </View>
+                <View style={styles.settingText}>
+                  <Text style={styles.settingTitle}>High Contrast</Text>
+                  <Text style={styles.settingSubtitle}>Improve readability for text and UI</Text>
+                </View>
+              </View>
+              <Switch value={highContrast} onValueChange={setHighContrast} />
+            </View>
+            <View style={styles.settingItem}>
+              <View style={styles.settingLeft}>
+                <View className="iconContainer" style={styles.iconContainer}>
+                  <Ionicons name="remove-outline" size={24} color={NepalColors.primary} />
+                </View>
+                <View style={styles.settingText}>
+                  <Text style={styles.settingTitle}>Reduced Motion</Text>
+                  <Text style={styles.settingSubtitle}>Limit animations and motion effects</Text>
+                </View>
+              </View>
+              <Switch value={reducedMotion} onValueChange={setReducedMotion} />
+            </View>
+            <View style={styles.settingItem}>
+              <View style={styles.settingLeft}>
+                <View className="iconContainer" style={styles.iconContainer}>
+                  <Ionicons name="swap-horizontal-outline" size={24} color={NepalColors.primary} />
+                </View>
+                <View style={styles.settingText}>
+                  <Text style={styles.settingTitle}>RTL Layout</Text>
+                  <Text style={styles.settingSubtitle}>Right-to-left layout (requires reload)</Text>
+                </View>
+              </View>
+              <Switch value={useUIStore.getState().rtlEnabled} onValueChange={(v) => {
+                useUIStore.getState().setRtlEnabled(v);
+                Alert.alert('Restart Required', 'Please restart the app for RTL changes to take full effect.');
+              }} />
+            </View>
+            <SettingItem
+              icon="key-outline"
+              title={t('settings.changePassword') || 'Change Password'}
+              subtitle={t('settings.changePasswordSubtitle') || 'Update your password'}
+              onPress={() => setShowPwdModal(true)}
+            />
+            <SettingItem
+              icon="mail-outline"
+              title={t('settings.changeEmail') || 'Change Email'}
+              subtitle={t('settings.changeEmailSubtitle') || 'Request email change'}
+              onPress={() => setShowEmailModal(true)}
+            />
             <SettingItem
               icon="log-out-outline"
               title={t('settings.logout')}
@@ -252,6 +430,68 @@ export default function SettingsScreen() {
           <Text style={styles.footerText}>Made with ❤️ in Nepal</Text>
         </View>
       </ScrollView>
+      {/* Change Password Modal */}
+      <Modal visible={showPwdModal} transparent animationType="slide" onRequestClose={() => setShowPwdModal(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{t('settings.changePassword') || 'Change Password'}</Text>
+            <TextInput
+              label={t('register.password') || 'Password'}
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              mode="outlined"
+              secureTextEntry
+              style={styles.modalInput}
+            />
+            <TextInput
+              label={'New Password'}
+              value={newPassword}
+              onChangeText={setNewPassword}
+              mode="outlined"
+              secureTextEntry
+              style={styles.modalInput}
+            />
+            <Button mode="contained" onPress={handleChangePassword} loading={submitting} disabled={submitting}>
+              {t('settings.changePassword') || 'Change Password'}
+            </Button>
+            <Button onPress={() => setShowPwdModal(false)} style={{ marginTop: 8 }}>
+              {t('common.cancel')}
+            </Button>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Change Email Modal */}
+      <Modal visible={showEmailModal} transparent animationType="slide" onRequestClose={() => setShowEmailModal(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{t('settings.changeEmail') || 'Change Email'}</Text>
+            <TextInput
+              label={'New Email'}
+              value={newEmail}
+              onChangeText={setNewEmail}
+              mode="outlined"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              style={styles.modalInput}
+            />
+            <TextInput
+              label={t('register.password') || 'Password'}
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              mode="outlined"
+              secureTextEntry
+              style={styles.modalInput}
+            />
+            <Button mode="contained" onPress={handleChangeEmail} loading={submitting} disabled={submitting}>
+              {t('settings.changeEmail') || 'Change Email'}
+            </Button>
+            <Button onPress={() => setShowEmailModal(false)} style={{ marginTop: 8 }}>
+              {t('common.cancel')}
+            </Button>
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -349,5 +589,26 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: FontSizes.sm,
     color: 'rgba(255, 255, 255, 0.6)',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: Spacing.lg,
+    width: '100%',
+  },
+  modalTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '700',
+    marginBottom: Spacing.md,
+  },
+  modalInput: {
+    marginBottom: Spacing.md,
   },
 });

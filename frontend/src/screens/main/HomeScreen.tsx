@@ -10,20 +10,25 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/stores/authStore';
 import { useGameStore } from '@/stores/gameStore';
-import { useLocationStore } from '@/stores/locationStore';
+import Shimmer from '@/components/common/Shimmer';
+import { joinGame } from '@/services/games';
+import { selectionAsync, impactAsync } from '@/services/haptics';
 import { colors, spacing, typography, borderRadius } from '@/constants/theme';
+import { useUIStore } from '@/stores/uiStore';
 import { Game } from '@/types';
 
 const { width } = Dimensions.get('window');
 
 const HomeScreen: React.FC = () => {
   const { user } = useAuthStore();
-  const { nearbyGames, featuredGames, fetchNearbyGames, fetchFeaturedGames } = useGameStore();
-  const { location, requestLocationPermission } = useLocationStore();
+  const navigation = useNavigation<any>();
+  const { nearbyGames, featuredGames, fetchNearbyGames, fetchFeaturedGames, isLoading } = useGameStore();
+  const { rtlEnabled, highContrast } = useUIStore();
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -32,7 +37,6 @@ const HomeScreen: React.FC = () => {
 
   const initializeData = async () => {
     try {
-      await requestLocationPermission();
       await Promise.all([
         fetchNearbyGames(),
         fetchFeaturedGames(),
@@ -56,19 +60,28 @@ const HomeScreen: React.FC = () => {
     }
   };
 
-  const handleJoinGame = (gameId: string) => {
-    Alert.alert('Join Game', `Join game ${gameId}?`);
+  const handleJoinGame = async (gameId: string) => {
+    try {
+      const res = await joinGame(gameId);
+      if (res.ok) { await impactAsync('light'); Alert.alert('Joined', 'You have joined the game'); }
+      else Alert.alert('Error', res.data?.message || 'Failed to join');
+    } catch (e: any) {
+      Alert.alert('Error', e?.message || 'Failed to join');
+    }
   };
 
-  const handleCreateGame = () => {
+  const handleCreateGame = async () => {
+    await selectionAsync();
     Alert.alert('Create Game', 'Create new game');
   };
 
-  const handleFindGames = () => {
+  const handleFindGames = async () => {
+    await selectionAsync();
     Alert.alert('Find Games', 'Find nearby games');
   };
 
-  const handleMyGames = () => {
+  const handleMyGames = async () => {
+    await selectionAsync();
     Alert.alert('My Games', 'View my games');
   };
 
@@ -77,7 +90,7 @@ const HomeScreen: React.FC = () => {
       colors={['#4A90E2', '#E91E63']}
       style={styles.header}
     >
-      <View style={styles.headerContent}>
+      <View style={[styles.headerContent, rtlEnabled && { flexDirection: 'row-reverse' }]}>
         <View>
           <Text style={styles.greeting}>
             Namaste, {user?.name || 'Demo Apple User'}! 🙏
@@ -95,45 +108,45 @@ const HomeScreen: React.FC = () => {
     <View style={styles.quickActionsSection}>
       <Text style={styles.sectionTitle}>Quick Actions</Text>
       <View style={styles.quickActionsGrid}>
-        <TouchableOpacity style={styles.quickActionButton} onPress={handleFindGames}>
+        <TouchableOpacity style={[styles.quickActionButton, highContrast && { borderColor: '#333', borderWidth: 1 }]} onPress={handleFindGames}>
           <View style={[styles.quickActionIcon, { backgroundColor: '#4A90E2' }]}>
             <Ionicons name="search" size={24} color={colors.textLight} />
           </View>
-          <Text style={styles.quickActionText}>Find Games</Text>
+          <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Find Games</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.quickActionButton} onPress={handleCreateGame}>
+        <TouchableOpacity style={[styles.quickActionButton, highContrast && { borderColor: '#333', borderWidth: 1 }]} onPress={handleCreateGame}>
           <View style={[styles.quickActionIcon, { backgroundColor: colors.success }]}>
             <Ionicons name="add-circle" size={24} color={colors.textLight} />
           </View>
-          <Text style={styles.quickActionText}>Create Game</Text>
+          <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Create Game</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.quickActionButton} onPress={handleMyGames}>
+        <TouchableOpacity style={[styles.quickActionButton, highContrast && { borderColor: '#333', borderWidth: 1 }]} onPress={handleMyGames}>
           <View style={[styles.quickActionIcon, { backgroundColor: '#FF9800' }]}>
             <Ionicons name="calendar" size={24} color={colors.textLight} />
           </View>
-          <Text style={styles.quickActionText}>My Games</Text>
+          <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>My Games</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.quickActionButton}>
+        <TouchableOpacity style={[styles.quickActionButton, highContrast && { borderColor: '#333', borderWidth: 1 }]}>
           <View style={[styles.quickActionIcon, { backgroundColor: '#E91E63' }]}>
             <Ionicons name="chatbubble" size={24} color={colors.textLight} />
           </View>
-          <Text style={styles.quickActionText}>Chat</Text>
+          <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Chat</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 
-  const renderGameCard = (game: Game) => (
-    <View key={game.id} style={styles.gameCard}>
+  const renderGameCard = (game: any) => (
+    <View key={game.id} style={[styles.gameCard, highContrast && styles.gameCardHC]}>
       <View style={styles.gameCardHeader}>
         <View style={styles.gameInfo}>
           <Ionicons name="football" size={20} color={colors.textLight} />
           <View style={styles.gameTitleContainer}>
-            <Text style={styles.gameSport}>{game.sport}</Text>
-            <Text style={styles.gameOrganizer}>Demo Organizer</Text>
+            <Text style={[styles.gameSport, highContrast && { color: '#FFD700' }]}>{game.sport}</Text>
+            <Text style={[styles.gameOrganizer, highContrast && { color: '#E5E7EB' }]}>Demo Organizer</Text>
           </View>
         </View>
         <View style={[styles.gameLevel, { backgroundColor: colors.sportsGreen }]}>
@@ -146,36 +159,36 @@ const HomeScreen: React.FC = () => {
         <Text style={styles.gameDistanceText}>2.5km</Text>
       </View>
       
-      <Text style={styles.gameTitle}>{game.title}</Text>
+      <Text style={[styles.gameTitle, highContrast && { color: '#FFFFFF' }]}>{game.title}</Text>
       
       <View style={styles.gameDetails}>
         <View style={styles.gameDetailItem}>
           <Ionicons name="time-outline" size={16} color={colors.textSecondary} />
-          <Text style={styles.gameDetailText}>
-            {new Date(game.dateTime).toLocaleDateString()}
+          <Text style={[styles.gameDetailText, highContrast && { color: '#E5E7EB' }]}>
+            {new Date(game.dateTime || game.time || game.date).toLocaleDateString()}
           </Text>
         </View>
         <View style={styles.gameDetailItem}>
           <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
-          <Text style={styles.gameDetailText}>{game.location.address}</Text>
+          <Text style={[styles.gameDetailText, highContrast && { color: '#E5E7EB' }]}>{(game.location && game.location.address) || game.location || 'Unknown'}</Text>
         </View>
         <View style={styles.gameDetailItem}>
           <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
-          <Text style={styles.gameDetailText}>
+          <Text style={[styles.gameDetailText, highContrast && { color: '#E5E7EB' }]}>
             {game.currentPlayers}/{game.maxPlayers} players
           </Text>
         </View>
       </View>
-      
+
       <View style={styles.gameFooter}>
-        <Text style={styles.gamePrice}>
+        <Text style={[styles.gamePrice, highContrast && { color: '#FFD700' }]}>
           {game.cost > 0 ? `Rs. ${game.cost}` : 'Free'}
         </Text>
         <TouchableOpacity 
-          style={styles.joinButton}
+          style={[styles.joinButton, highContrast && { backgroundColor: '#FFD700' }]}
           onPress={() => handleJoinGame(game.id)}
         >
-          <Text style={styles.joinButtonText}>Join</Text>
+          <Text style={[styles.joinButtonText, highContrast && { color: '#111' }]}>Join</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -183,14 +196,24 @@ const HomeScreen: React.FC = () => {
 
   const renderFeaturedGames = () => (
     <View style={styles.featuredGamesSection}>
-      <View style={styles.sectionHeader}>
+      <View style={[styles.sectionHeader, rtlEnabled && { flexDirection: 'row-reverse' }]}>
         <Text style={styles.sectionTitle}>Featured Games</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Explore', { sport: featuredGames?.[0]?.sport }) }>
           <Text style={styles.seeAllText}>See All</Text>
         </TouchableOpacity>
       </View>
       
-      {featuredGames.length > 0 ? (
+      {isLoading && featuredGames.length === 0 ? (
+        <View style={{ flexDirection: 'row' }}>
+          {[1,2].map(i => (
+            <View key={i} style={[styles.gameCard, { marginRight: spacing.md }] }>
+              <Shimmer width={'80%'} height={18} />
+              <Shimmer width={'60%'} height={14} style={{ marginTop: 8 }} />
+              <Shimmer width={'40%'} height={12} style={{ marginTop: 8 }} />
+            </View>
+          ))}
+        </View>
+      ) : featuredGames.length > 0 ? (
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -208,8 +231,47 @@ const HomeScreen: React.FC = () => {
     </View>
   );
 
+  const renderNearbyGames = () => (
+    <View style={styles.featuredGamesSection}>
+      <View style={[styles.sectionHeader, rtlEnabled && { flexDirection: 'row-reverse' }]}>
+        <Text style={styles.sectionTitle}>Nearby Games</Text>
+        <TouchableOpacity onPress={async () => {
+          const coords = await getCurrentCoords();
+          navigation.navigate('Explore', { near: { lat: coords.latitude, lon: coords.longitude, radiusKm: 5 } });
+        }}>
+          <Text style={styles.seeAllText}>See All</Text>
+        </TouchableOpacity>
+      </View>
+      {isLoading && nearbyGames.length === 0 ? (
+        <View>
+          {[1,2,3].map(i => (
+            <View key={i} style={[styles.nearbyCard]}>
+              <Shimmer width={'60%'} height={16} />
+              <Shimmer width={'40%'} height={12} style={{ marginTop: 6 }} />
+            </View>
+          ))}
+        </View>
+      ) : nearbyGames.length > 0 ? (
+        <View>
+          {nearbyGames.slice(0,5).map((g: any) => (
+            <View key={g.id} style={styles.nearbyCard}>
+              <Text style={{ color: colors.textLight, fontWeight: '700' }}>{g.title}</Text>
+              <Text style={{ color: colors.textLight, opacity: 0.8 }}>{g.location}</Text>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.emptyState}>
+          <Ionicons name="location-outline" size={48} color={colors.textSecondary} />
+          <Text style={styles.emptyText}>No nearby games</Text>
+          <Text style={styles.emptySubtext}>Try expanding your search radius</Text>
+        </View>
+      )}
+    </View>
+  );
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, highContrast && { backgroundColor: '#000' }]}>
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -218,9 +280,10 @@ const HomeScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         {renderHeader()}
-        <View style={styles.content}>
+        <View style={[styles.content, highContrast && { backgroundColor: '#000' }]}>
           {renderQuickActions()}
           {renderFeaturedGames()}
+          {renderNearbyGames()}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -320,6 +383,12 @@ const styles = StyleSheet.create({
   gamesScrollContent: {
     paddingRight: spacing.lg,
   },
+  nearbyCard: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+  },
   gameCard: {
     width: width * 0.8,
     backgroundColor: colors.surface,
@@ -327,6 +396,11 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginRight: spacing.md,
     ...colors.shadows?.md,
+  },
+  gameCardHC: {
+    backgroundColor: '#0A0A0A',
+    borderWidth: 1,
+    borderColor: '#333',
   },
   gameCardHeader: {
     flexDirection: 'row',

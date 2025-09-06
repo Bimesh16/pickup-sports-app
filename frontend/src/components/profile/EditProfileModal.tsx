@@ -10,6 +10,7 @@ import {
   Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { colors, typography, spacing } from '../../constants/theme';
 
 interface User {
@@ -30,6 +31,7 @@ interface EditProfileModalProps {
   onClose: () => void;
   onSave: (user: User) => void;
   user: User | null;
+  onAvatarChanged?: (url: string) => void;
 }
 
 const GENDERS = ['Male', 'Female', 'Other', 'Prefer not to say'];
@@ -50,6 +52,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   onSave,
   user,
 }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<User>({
     id: '',
     name: '',
@@ -64,6 +67,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   });
 
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -103,6 +107,40 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     onSave(formData);
     Alert.alert('Success', 'Profile updated successfully!');
     onClose();
+  };
+
+  const pickAndUploadAvatar = async () => {
+    try {
+      // Dynamic import to avoid webpack resolution issues
+      const ImagePicker = await import('expo-image-picker').catch(() => null);
+      if (!ImagePicker) {
+        Alert.alert(t('error.featureUnavailable'), 'Image picker is not available on this platform.');
+        return;
+      }
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (perm.status !== 'granted') {
+        Alert.alert(t('error.permissionRequired'), 'We need photo library permission to pick an avatar.');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1,1], quality: 0.9 });
+      if (result.canceled) return;
+      const uri = result.assets?.[0]?.uri;
+      if (!uri) return;
+      setUploading(true);
+      const { uploadAvatar } = await import('@/services/profile');
+      const up = await uploadAvatar(uri);
+      setUploading(false);
+      if (!up.ok) {
+        Alert.alert(t('error.uploadFailed'), up?.data?.message || 'Unable to upload avatar');
+        return;
+      }
+      const url = up.data;
+      if (url && typeof url === 'string' && onAvatarChanged) onAvatarChanged(url);
+      Alert.alert(t('common.success'), t('toast.avatarUpdated'));
+    } catch (e) {
+      setUploading(false);
+      Alert.alert('Not Available', 'Please install expo-image-picker to enable avatar upload.');
+    }
   };
 
   const renderTextInput = (
@@ -183,12 +221,18 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={styles.title}>Edit Profile</Text>
-          <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+          <TouchableOpacity onPress={handleSave} style={styles.saveButton} disabled={uploading}>
             <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={[styles.section, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
+            <Text style={styles.sectionTitle}>Profile Photo</Text>
+            <TouchableOpacity onPress={pickAndUploadAvatar} style={[styles.saveButton, { paddingVertical: 6 }]} disabled={uploading}>
+              <Text style={styles.saveButtonText}>{uploading ? 'Uploading...' : 'Change Photo'}</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Basic Information</Text>
             

@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
+import * as auth from '@/services/auth';
 
 export interface User {
   id: string;
@@ -288,20 +289,24 @@ export const useAuthStore = create<AuthStore>()(
       biometricEnabled: false,
 
       // Actions
-      login: async (email: string, password: string) => {
-        console.log('Login attempt:', { email, password: '***' });
+      login: async (usernameOrEmail: string, password: string) => {
         set({ isLoading: true });
         try {
-          const response = await mockApi.login(email, password);
-          console.log('Login successful:', response.user.name);
+          const res = await auth.login(usernameOrEmail, password);
+          if (!res.success) {
+            set({ isLoading: false });
+            // Throw structured error so UI can show field-level errors and lockout
+            throw res as any;
+          }
+          // Fetch minimal identity (optional)
+          const me = await auth.me();
           set({
-            user: response.user,
-            token: response.token,
+            user: me.success ? (me.data as any) : null,
+            token: (await auth.getStoredTokens()).accessToken || null,
             isAuthenticated: true,
-            isLoading: false
+            isLoading: false,
           });
         } catch (error) {
-          console.log('Login failed:', error);
           set({ isLoading: false });
           throw error;
         }
@@ -310,12 +315,17 @@ export const useAuthStore = create<AuthStore>()(
       loginWithPhone: async (phone: string, password: string) => {
         set({ isLoading: true });
         try {
-          const response = await mockApi.loginWithPhone(phone, password);
+          const res = await auth.login(phone, password);
+          if (!res.success) {
+            set({ isLoading: false });
+            throw new Error(res.message || 'Login failed');
+          }
+          const me = await auth.me();
           set({
-            user: response.user,
-            token: response.token,
+            user: me.success ? (me.data as any) : null,
+            token: (await auth.getStoredTokens()).accessToken || null,
             isAuthenticated: true,
-            isLoading: false
+            isLoading: false,
           });
         } catch (error) {
           set({ isLoading: false });
@@ -326,7 +336,15 @@ export const useAuthStore = create<AuthStore>()(
       register: async (userData: RegisterData) => {
         set({ isLoading: true });
         try {
-          await mockApi.register(userData);
+          // Expect shape: { username, password, preferredSport, location }
+          const payload: any = {
+            username: userData.username || userData.email || userData.phoneNumber,
+            password: userData.password,
+            preferredSport: (userData as any).preferredSport || (userData.preferences?.sports?.[0] ?? 'FOOTBALL'),
+            location: (userData as any).locationText || userData.location?.address || 'Unknown',
+          };
+          const res = await auth.register(payload);
+          if (!res.success) throw new Error(res.message || 'Registration failed');
           set({ isLoading: false });
         } catch (error) {
           set({ isLoading: false });
@@ -353,16 +371,15 @@ export const useAuthStore = create<AuthStore>()(
       logout: async () => {
         set({ isLoading: true });
         try {
-          // Clear biometric data
+          await auth.logout();
           await SecureStore.deleteItemAsync('biometric_enabled');
           await SecureStore.deleteItemAsync('biometric_token');
-          
           set({
             user: null,
             token: null,
             isAuthenticated: false,
             biometricEnabled: false,
-            isLoading: false
+            isLoading: false,
           });
         } catch (error) {
           set({ isLoading: false });

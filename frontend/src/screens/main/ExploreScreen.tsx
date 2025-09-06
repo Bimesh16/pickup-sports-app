@@ -3,14 +3,23 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Title, Paragraph, Chip, Button } from 'react-native-paper';
 import { NepalColors, FontSizes, Spacing, BorderRadius } from '@/constants/theme';
+import { useUIStore } from '@/stores/uiStore';
 import { GameSummary, SportType, SkillLevel } from '@/types';
+import { searchGames, getNearbyGames, joinGame } from '@/services/games';
+import { selectionAsync, impactAsync } from '@/services/haptics';
+import { useRoute, useNavigation } from '@react-navigation/native';
 
 export default function ExploreScreen() {
+  const route = useRoute<any>();
+  const navigation = useNavigation<any>();
+  const { highContrast, rtlEnabled } = useUIStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSport, setSelectedSport] = useState<SportType | null>(null);
   const [selectedSkillLevel, setSelectedSkillLevel] = useState<SkillLevel | null>(null);
   const [games, setGames] = useState<GameSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const near = route.params?.near as { lat: number; lon: number; radiusKm?: number } | undefined;
+  const initialSport = route.params?.sport as SportType | undefined;
 
   const sports: SportType[] = ['FOOTBALL', 'BASKETBALL', 'CRICKET', 'BADMINTON', 'TENNIS', 'VOLLEYBALL', 'TABLE_TENNIS', 'FUTSAL'];
   const skillLevels: SkillLevel[] = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
@@ -19,11 +28,36 @@ export default function ExploreScreen() {
     loadGames();
   }, [selectedSport, selectedSkillLevel]);
 
+  useEffect(() => {
+    if (initialSport) setSelectedSport(initialSport);
+  }, [initialSport]);
+
   const loadGames = async () => {
     try {
       setIsLoading(true);
-      // TODO: Load games from API based on filters
-      setGames([]);
+      let res: any;
+      if (near) {
+        res = await getNearbyGames(near.lat, near.lon, near.radiusKm || 5);
+      } else {
+        res = await searchGames({ sport: selectedSport || undefined, skillLevel: selectedSkillLevel || undefined, q: searchQuery || undefined }, 0);
+      }
+      if (res.ok) {
+        const list = (res.data?.content || res.data || []) as any[];
+        const mapped: GameSummary[] = list.map((g: any) => ({
+          id: String(g.id || Math.random()),
+          title: g.title || `${g.sport || 'Game'}`,
+          sport: g.sport || 'SPORT',
+          location: { id: String(g.venue?.id || '0'), name: g.venue?.name || g.location || 'Unknown', address: g.venue?.address || '' },
+          dateTime: g.time || g.dateTime || new Date().toISOString(),
+          maxPlayers: g.maxPlayers || g.capacity || 0,
+          currentPlayers: g.currentParticipants || g.currentPlayers || 0,
+          skillLevel: g.skillLevel || 'BEGINNER',
+          cost: g.pricePerPlayer || g.totalCost || 0,
+        }));
+        setGames(mapped);
+      } else {
+        setGames([]);
+      }
     } catch (error) {
       console.error('Failed to load games:', error);
     } finally {
@@ -50,10 +84,10 @@ export default function ExploreScreen() {
   };
 
   const renderGameCard = (game: GameSummary) => (
-    <Card key={game.id} style={styles.gameCard}>
+    <Card key={game.id} style={[styles.gameCard, highContrast && { backgroundColor: '#0A0A0A' }] }>
       <Card.Content>
         <View style={styles.gameHeader}>
-          <Title style={styles.gameTitle}>{game.title}</Title>
+          <Title style={[styles.gameTitle, highContrast && { color: '#fff' }]}>{game.title}</Title>
           <Chip 
             mode="outlined" 
             style={[styles.sportChip, { backgroundColor: getSportColor(game.sport) }]}
@@ -63,36 +97,36 @@ export default function ExploreScreen() {
           </Chip>
         </View>
         
-        <Paragraph style={styles.gameLocation}>
+        <Paragraph style={[styles.gameLocation, highContrast && { color: '#E5E7EB' }]}>
           <Ionicons name="location" size={16} color={NepalColors.textSecondary} />
           {' '}{game.location.name}
         </Paragraph>
         
-        <Paragraph style={styles.gameDateTime}>
+        <Paragraph style={[styles.gameDateTime, highContrast && { color: '#E5E7EB' }]}>
           <Ionicons name="calendar" size={16} color={NepalColors.textSecondary} />
           {' '}{new Date(game.dateTime).toLocaleDateString()} at {new Date(game.dateTime).toLocaleTimeString()}
         </Paragraph>
         
         <View style={styles.gameFooter}>
           <View style={styles.gameInfo}>
-            <Text style={styles.gamePlayers}>
+            <Text style={[styles.gamePlayers, highContrast && { color: '#E5E7EB' }]}>
               {game.currentPlayers}/{game.maxPlayers} players
             </Text>
-            <Text style={styles.gameSkillLevel}>
+            <Text style={[styles.gameSkillLevel, highContrast && { color: '#FFD700' }]}>
               {game.skillLevel}
             </Text>
           </View>
           <View style={styles.gameCost}>
-            <Text style={styles.costText}>Rs. {game.cost}</Text>
+            <Text style={[styles.costText, highContrast && { color: '#FFD700' }]}>Rs. {game.cost}</Text>
           </View>
         </View>
         
-        <Button
-          mode="contained"
-          onPress={() => {/* Navigate to game details */}}
-          style={styles.joinButton}
-        >
-          Join Game
+        <Button mode="contained" onPress={async () => {
+          await selectionAsync();
+          const res = await joinGame(game.id);
+          if (res.ok) { await impactAsync('light'); navigation.navigate('GameDetails', { gameId: game.id }); }
+        }} style={[styles.joinButton, highContrast && { backgroundColor: '#FFD700' }]}>
+          <Text style={highContrast ? { color: '#111', fontWeight: '700' } : undefined}>Join Game</Text>
         </Button>
       </Card.Content>
     </Card>
@@ -113,10 +147,10 @@ export default function ExploreScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, highContrast && { backgroundColor: '#000' }]}>
       {/* Search Bar */}
-      <View style={styles.searchSection}>
-        <View style={styles.searchBar}>
+      <View style={[styles.searchSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
+        <View style={[styles.searchBar, rtlEnabled && { flexDirection: 'row-reverse' }, highContrast && { backgroundColor: '#111', borderColor: '#333', borderWidth: 1 }]}>
           <Ionicons name="search" size={20} color={NepalColors.textSecondary} />
           <TextInput
             style={styles.searchInput}
@@ -135,7 +169,7 @@ export default function ExploreScreen() {
         {/* Sport Filters */}
         <View style={styles.filterSection}>
           <Text style={styles.filterTitle}>Sports</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={rtlEnabled ? { flexDirection: 'row-reverse' } : undefined}>
             <View style={styles.filterChips}>
               {sports.map((sport) => (
                 <Chip
@@ -198,7 +232,11 @@ export default function ExploreScreen() {
           
           {games.length > 0 ? (
             <View>
-              {games.map(renderGameCard)}
+              {games.map((g) => (
+                <View key={g.id} style={highContrast ? { backgroundColor: '#0A0A0A', borderRadius: 12, marginBottom: Spacing.md } : undefined}>
+                  {renderGameCard(g)}
+                </View>
+              ))}
             </View>
           ) : (
             <Card style={styles.emptyCard}>

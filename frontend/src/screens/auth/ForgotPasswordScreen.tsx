@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { TextInput, Button, Card } from 'react-native-paper';
-import { authAPI } from '@/services/api';
+import { forgot } from '@/services/auth';
 import { NepalColors, FontSizes, Spacing, BorderRadius } from '@/constants/theme';
 import { AuthStackParamList } from '@/types';
 
@@ -24,8 +24,7 @@ export default function ForgotPasswordScreen() {
 
     try {
       setIsLoading(true);
-      const response = await authAPI.forgotPassword(email);
-      
+      const response = await forgot(email);
       if (response.success) {
         Alert.alert(
           'Reset Link Sent',

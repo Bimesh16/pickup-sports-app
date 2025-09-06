@@ -10,9 +10,13 @@ import { NepalTheme } from '@/constants/theme';
 import RootNavigator from '@/navigation/RootNavigator';
 import { LoadingScreen } from '@/screens/LoadingScreen';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
+import { useUIStore } from '@/stores/uiStore';
+import { I18nManager } from 'react-native';
 
 export default function App() {
   const { isLoading: authLoading } = useAuthStore();
+  const { rtlEnabled, highContrast } = useUIStore();
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -33,14 +37,37 @@ export default function App() {
     return <LoadingScreen />;
   }
 
+  // Note: changing RTL at runtime may require app reload; we set allowRTL
+  I18nManager.allowRTL(rtlEnabled);
+
+  const theme = React.useMemo(() => {
+    if (!highContrast) return NepalTheme;
+    return {
+      ...NepalTheme,
+      colors: {
+        ...NepalTheme.colors,
+        primary: '#FFD700',
+        secondary: '#FFFFFF',
+        background: '#000000',
+        surface: '#0A0A0A',
+        onSurface: '#FFFFFF',
+        onBackground: '#FFFFFF',
+        onPrimary: '#000000',
+        onSecondary: '#000000',
+      },
+    } as typeof NepalTheme;
+  }, [highContrast]);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <LanguageProvider>
-          <PaperProvider theme={NepalTheme}>
-            <NavigationContainer>
-              <RootNavigator />
-            </NavigationContainer>
+          <PaperProvider theme={theme}>
+            <ErrorBoundary>
+              <NavigationContainer>
+                <RootNavigator />
+              </NavigationContainer>
+            </ErrorBoundary>
           </PaperProvider>
         </LanguageProvider>
       </SafeAreaProvider>

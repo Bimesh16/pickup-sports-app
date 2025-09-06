@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,16 +9,23 @@ import {
   Image,
   TextInput,
   Modal,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, typography, spacing, borderRadius } from '@/constants/theme';
+import { colors, typography, spacing, borderRadius, NepalColors } from '@/constants/theme';
+import Shimmer from '@/components/common/Shimmer';
+import { getMyProfile, getDashboardSummary, getMyGames } from '@/services/profile';
 import ScoutingReportEditor from '@/components/profile/ScoutingReportEditor';
 import MultiSportProfile from '@/components/profile/MultiSportProfile';
 import ScoutingReport from '@/components/profile/ScoutingReport';
 import AchievementSystem from '@/components/profile/AchievementSystem';
 import PerformanceInsights from '@/components/profile/PerformanceInsights';
 import EditProfileModal from '@/components/profile/EditProfileModal';
+import { updateMyProfile } from '@/services/profile';
+import { useUIStore } from '@/stores/uiStore';
+import { Snackbar } from 'react-native-paper';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface User {
   id: string;
@@ -69,31 +76,103 @@ const ProfileScreen: React.FC = () => {
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioText, setBioText] = useState('');
 
-  // Mock user data - replace with actual API call
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [loadingSummary, setLoadingSummary] = useState(true);
+  const [loadingGames, setLoadingGames] = useState(true);
+  const [dashboard, setDashboard] = useState<any>(null);
+  const [games, setGames] = useState<any[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [snack, setSnack] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
+  const { t } = useLanguage();
+  const { highContrast, rtlEnabled } = useUIStore();
+
+  // Fetch real data
   useEffect(() => {
-    setUser({
-      id: '1',
-      name: 'Demo Apple User',
-      username: 'demo_apple_user',
-      email: 'demo@example.com',
-      phone: '+1234567890',
-      gender: 'Male',
-      nationality: 'Nepali',
-      birthDate: '1990-01-01',
-      country: 'Nepal',
-      bio: 'Passionate about sports and always ready to play! Love football and basketball.',
-      avatar: 'https://via.placeholder.com/80x80/4A5568/FFFFFF?text=DA',
-      stats: {
-        totalGamesPlayed: 10,
-        totalGamesWon: 5,
-        totalGamesLost: 3,
-        totalGamesDrawn: 2,
-        currentStreak: 0,
-        longestStreak: 3,
-        winRate: 50,
-      },
-    });
-    setBioText('Passionate about sports and always ready to play! Love football and basketball.');
+    let mounted = true;
+    (async () => {
+      try {
+        setLoadingProfile(true);
+        const res = await getMyProfile();
+        if (mounted && res.ok) {
+          const p = res.data;
+          setUser({
+            id: String(p.id ?? ''),
+            name: [p.firstName, p.lastName].filter(Boolean).join(' ') || p.username || 'User',
+            username: p.username ?? 'user',
+            email: p.email ?? '',
+            phone: p.phone ?? p.phoneNumber,
+            bio: p.bio ?? '',
+            avatar: p.avatarUrl,
+            stats: {
+              totalGamesPlayed: p.totalGamesPlayed ?? 0,
+              totalGamesWon: p.totalGamesWon ?? 0,
+              totalGamesLost: p.totalGamesLost ?? 0,
+              totalGamesDrawn: p.totalGamesDrawn ?? 0,
+              currentStreak: p.currentStreak ?? 0,
+              longestStreak: p.longestStreak ?? 0,
+              winRate: p.winRate ?? 0,
+            },
+          } as any);
+          setBioText(p.bio ?? '');
+        }
+      } finally {
+        if (mounted) setLoadingProfile(false);
+      }
+    })();
+
+    (async () => {
+      try {
+        setLoadingSummary(true);
+        const res = await getDashboardSummary();
+        if (mounted && res.ok) setDashboard(res.data);
+      } finally {
+        if (mounted) setLoadingSummary(false);
+      }
+    })();
+
+    (async () => {
+      try {
+        setLoadingGames(true);
+        const res = await getMyGames();
+        if (mounted && res.ok) setGames(res.data?.content || res.data || []);
+      } finally {
+        if (mounted) setLoadingGames(false);
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, []);
+
+  const refreshAll = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      const [p, s, g] = await Promise.all([getMyProfile(), getDashboardSummary(), getMyGames()]);
+      if (p.ok) {
+        const pp = p.data;
+        setUser({
+          id: String(pp.id ?? ''),
+          name: [pp.firstName, pp.lastName].filter(Boolean).join(' ') || pp.username || 'User',
+          username: pp.username ?? 'user',
+          email: pp.email ?? '',
+          phone: pp.phone ?? pp.phoneNumber,
+          bio: pp.bio ?? '',
+          avatar: pp.avatarUrl,
+          stats: {
+            totalGamesPlayed: pp.totalGamesPlayed ?? 0,
+            totalGamesWon: pp.totalGamesWon ?? 0,
+            totalGamesLost: pp.totalGamesLost ?? 0,
+            totalGamesDrawn: pp.totalGamesDrawn ?? 0,
+            currentStreak: pp.currentStreak ?? 0,
+            longestStreak: pp.longestStreak ?? 0,
+            winRate: pp.winRate ?? 0,
+          },
+        } as any);
+      }
+      if (g.ok) setGames(g.data?.content || g.data || []);
+      if (s.ok) setDashboard(s.data);
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
   const handleSaveSportProfile = (data: ScoutingReportData) => {
@@ -120,9 +199,46 @@ const ProfileScreen: React.FC = () => {
     setSportProfiles(prev => prev.filter(profile => profile.sport !== sport));
   };
 
-  const handleSaveProfile = (updatedUser: User) => {
-    setUser(updatedUser);
-    setShowEditProfile(false);
+  const handleSaveProfile = async (updatedUser: User) => {
+    try {
+      const [firstName, ...rest] = (updatedUser.name || '').split(' ');
+      const lastName = rest.join(' ');
+      await updateMyProfile({
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        bio: updatedUser.bio || undefined,
+        phone: updatedUser.phone || undefined,
+        location: updatedUser.country || undefined,
+      });
+      // Refresh profile from backend to ensure consistency
+      const res = await getMyProfile();
+      if (res.ok) {
+        const p = res.data;
+        setUser({
+          id: String(p.id ?? ''),
+          name: [p.firstName, p.lastName].filter(Boolean).join(' ') || p.username || 'User',
+          username: p.username ?? 'user',
+          email: p.email ?? '',
+          phone: p.phone ?? p.phoneNumber,
+          bio: p.bio ?? '',
+          avatar: p.avatarUrl,
+          stats: {
+            totalGamesPlayed: p.totalGamesPlayed ?? 0,
+            totalGamesWon: p.totalGamesWon ?? 0,
+            totalGamesLost: p.totalGamesLost ?? 0,
+            totalGamesDrawn: p.totalGamesDrawn ?? 0,
+            currentStreak: p.currentStreak ?? 0,
+            longestStreak: p.longestStreak ?? 0,
+            winRate: p.winRate ?? 0,
+          },
+        } as any);
+      }
+      setSnack({ visible: true, message: t('toast.profileUpdated') });
+    } catch (e: any) {
+      Alert.alert('Error', e?.message || 'Failed to update profile');
+    } finally {
+      setShowEditProfile(false);
+    }
   };
 
   const handleSaveBio = () => {
@@ -144,21 +260,44 @@ const ProfileScreen: React.FC = () => {
     Alert.alert('Find Practice', 'This will open the practice games screen');
   };
 
-  if (!user) {
+  if (!user || loadingProfile) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading...</Text>
+      <View style={[styles.container, highContrast && { backgroundColor: '#000' }]}>
+        <LinearGradient colors={[NepalColors.primary, NepalColors.secondary]} style={styles.header}>
+          <View style={styles.headerContent}>
+            <View style={styles.profileSection}>
+              <View style={styles.avatarContainer}>
+                <Shimmer width={80} height={80} borderRadius={40} />
+              </View>
+              <View style={styles.userInfo}>
+                <Shimmer width={160} height={20} />
+                <Shimmer width={100} height={16} style={{ marginTop: 8 }} />
+                <Shimmer width={220} height={14} style={{ marginTop: 8 }} />
+              </View>
+            </View>
+            <View style={[styles.editButton, { opacity: 0.6 }] }>
+              <Shimmer width={70} height={32} borderRadius={16} />
+            </View>
+          </View>
+          <View style={styles.statsContainer}>
+            <View style={styles.statsRow}>
+              {[1,2,3].map(i => (
+                <View key={i} style={styles.statItem}>
+                  <Shimmer width={40} height={18} />
+                  <Shimmer width={60} height={12} style={{ marginTop: 6 }} />
+                </View>
+              ))}
+            </View>
+          </View>
+        </LinearGradient>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, highContrast && { backgroundColor: '#000' }]}>
       {/* Header with Magenta Background */}
-      <LinearGradient
-        colors={['#FF6B6B', '#FF8E8E']}
-        style={styles.header}
-      >
+      <LinearGradient colors={highContrast ? ['#111', '#111'] : ['#FF6B6B', '#FF8E8E']} style={styles.header}>
         {/* Top Action Buttons */}
         <View style={styles.headerIcons}>
           <TouchableOpacity style={styles.headerIcon}>
@@ -174,7 +313,7 @@ const ProfileScreen: React.FC = () => {
         </View>
 
         {/* Profile Section */}
-        <View style={styles.profileSection}>
+        <View style={[styles.profileSection, rtlEnabled && { alignItems: 'stretch' }]}>
           <View style={styles.avatarContainer}>
             <Image
               source={{ uri: user.avatar || 'https://via.placeholder.com/80x80/4A5568/FFFFFF?text=' + (user?.name?.charAt(0) || 'U') }}
@@ -183,25 +322,25 @@ const ProfileScreen: React.FC = () => {
             <View style={styles.onlineStatus} />
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{user.name}</Text>
-            <Text style={styles.userUsername}>@{user.username}</Text>
+            <Text style={[styles.userName, highContrast && { color: '#fff' }]}>{user.name}</Text>
+            <Text style={[styles.userUsername, highContrast && { color: 'rgba(255,255,255,0.8)' }]}>@{user.username}</Text>
           </View>
         </View>
 
         {/* Stats Card */}
-        <View style={styles.statsCard}>
+        <View style={[styles.statsCard, highContrast && { backgroundColor: '#0A0A0A' }]}>
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: '#3B82F6' }]}>{user.stats?.totalGamesPlayed || 0}</Text>
-              <Text style={styles.statLabel}>Games</Text>
+              <Text style={[styles.statNumber, { color: highContrast ? '#FFD700' : '#3B82F6' }]}>{user.stats?.totalGamesPlayed || 0}</Text>
+              <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>Games</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{user.stats?.totalGamesWon || 0}</Text>
-              <Text style={styles.statLabel}>Created</Text>
+              <Text style={[styles.statNumber, highContrast && { color: '#fff' }]}>{user.stats?.totalGamesWon || 0}</Text>
+              <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>Created</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: '#FF6B6B' }]}>{user.stats?.winRate || 0}%</Text>
-              <Text style={styles.statLabel}>Win Rate</Text>
+              <Text style={[styles.statNumber, { color: highContrast ? '#FFFFFF' : '#FF6B6B' }]}>{user.stats?.winRate || 0}%</Text>
+              <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>Win Rate</Text>
             </View>
           </View>
 
@@ -263,13 +402,17 @@ const ProfileScreen: React.FC = () => {
         </View>
       </LinearGradient>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={[styles.content, highContrast && { backgroundColor: '#000' }]}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshAll} />}
+      >
         {/* Bio Section */}
-        <View style={styles.bioSection}>
+        <View style={[styles.bioSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
           <View style={styles.bioHeader}>
-            <Text style={styles.bioTitle}>About Me</Text>
+            <Text style={[styles.bioTitle, highContrast && { color: '#fff' }]}>{t('profile.aboutMe')}</Text>
             <TouchableOpacity onPress={() => setIsEditingBio(true)}>
-              <Ionicons name="create-outline" size={20} color={colors.primary} />
+              <Ionicons name="create-outline" size={20} color={highContrast ? '#FFD700' : colors.primary} />
             </TouchableOpacity>
           </View>
           {isEditingBio ? (
@@ -285,7 +428,7 @@ const ProfileScreen: React.FC = () => {
               />
               <View style={styles.bioActions}>
                 <TouchableOpacity onPress={() => setIsEditingBio(false)} style={styles.bioCancelButton}>
-                  <Text style={styles.bioCancelText}>Cancel</Text>
+                  <Text style={[styles.bioCancelText, highContrast && { color: '#fff' }]}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleSaveBio} style={styles.bioSaveButton}>
                   <Text style={styles.bioSaveText}>Save</Text>
@@ -293,9 +436,60 @@ const ProfileScreen: React.FC = () => {
               </View>
             </View>
           ) : (
-            <Text style={styles.bioText}>
+            <Text style={[styles.bioText, highContrast && { color: '#fff' }]}>
               {user.bio || 'No bio yet. Tap the edit icon to add one!'}
             </Text>
+          )}
+        </View>
+
+        {/* Upcoming Games */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t('profile.upcomingGames')}</Text>
+            <TouchableOpacity onPress={handleFindGames}>
+              <Text style={styles.sectionLink}>{t('profile.explore')}</Text>
+            </TouchableOpacity>
+          </View>
+          {loadingGames ? (
+            <View>
+              {[1, 2, 3].map((i) => (
+                <View key={i} style={[styles.gameCard, highContrast && { backgroundColor: '#0A0A0A', borderColor: '#333', borderWidth: 1 }]}>
+                  <View style={styles.gameRow}>
+                    <Shimmer width={36} height={36} borderRadius={18} />
+                    <View style={{ flex: 1, marginLeft: 12 }}>
+                      <Shimmer width={'60%'} height={14} />
+                      <Shimmer width={'40%'} height={12} style={{ marginTop: 6 }} />
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View>
+              {(games && games.length ? games : []).slice(0, 5).map((g: any) => (
+                <View key={String(g.id || Math.random())} style={[styles.gameCard, highContrast && { backgroundColor: '#0A0A0A', borderColor: '#333', borderWidth: 1 }]}>
+                  <View style={styles.gameRow}>
+                    <View style={styles.gameIconCircle}>
+                      <Ionicons name="football-outline" size={18} color={colors.textLight} />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 12 }}>
+                      <Text style={[styles.gameTitle, highContrast && { color: '#fff' }]}>{g.title || g.sport || 'Game'}</Text>
+                      <Text style={[styles.gameMeta, highContrast && { color: '#E5E7EB' }]}>
+                        {(g.venue?.name || g.location || g.city || 'Unknown venue')} • {g.time || g.dateTime || g.startTime || 'TBA'}
+                      </Text>
+                    </View>
+                    <View style={styles.gameCapacityChip}>
+                      <Text style={[styles.gameCapacityText, highContrast && { color: '#111' }]}>
+                        {g.currentParticipants || g.currentPlayers || 0}/{g.capacity || g.maxPlayers || 0}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+              {(!games || games.length === 0) && (
+                <Text style={[styles.emptyText, highContrast && { color: '#E5E7EB' }]}>No upcoming games—{t('profile.explore').toLowerCase()} to join one!</Text>
+              )}
+            </View>
           )}
         </View>
 
@@ -340,7 +534,17 @@ const ProfileScreen: React.FC = () => {
         onClose={() => setShowEditProfile(false)}
         onSave={handleSaveProfile}
         user={user}
+        onAvatarChanged={(url) => {
+          if (user) setUser({ ...user, avatar: url });
+          setSnack({ visible: true, message: t('toast.avatarUpdated') });
+        }}
       />
+
+      <Snackbar
+        visible={snack.visible}
+        onDismiss={() => setSnack({ visible: false, message: '' })}
+        duration={2000}
+      >{snack.message}</Snackbar>
     </View>
   );
 };
@@ -578,6 +782,75 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.md,
     color: 'white',
     fontWeight: '600',
+  },
+  section: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    ...colors.shadows?.md,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  sectionLink: {
+    fontSize: typography.fontSize.sm,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  gameCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  gameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  gameIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  gameTitle: {
+    fontSize: typography.fontSize.md,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  gameMeta: {
+    fontSize: typography.fontSize.sm,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  gameCapacityChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: colors.surfaceVariant,
+  },
+  gameCapacityText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text,
+    fontWeight: '700',
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: colors.textSecondary,
+    marginTop: 6,
   },
 });
 

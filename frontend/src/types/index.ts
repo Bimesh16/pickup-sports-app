@@ -38,6 +38,15 @@ export interface User {
   updatedAt: string;
 }
 
+// Auth response (per backend spec)
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  refreshNonce: string;
+  expiresIn: number;
+  tokenType: 'Bearer' | string;
+}
+
 export interface UserProfile extends User {
   bio?: string;
   achievements: Achievement[];
@@ -163,4 +172,3 @@ export interface ScoutingReportData {
   travelRadius: number;
   openToInvites: boolean;
 }
-
