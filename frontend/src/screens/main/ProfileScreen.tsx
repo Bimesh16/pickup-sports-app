@@ -77,6 +77,7 @@ const ProfileScreen: React.FC = () => {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [editingProfile, setEditingProfile] = useState<ScoutingReportData | null>(null);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioText, setBioText] = useState('');
@@ -196,21 +197,19 @@ const ProfileScreen: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Sign Out', 
-          style: 'destructive', 
-          onPress: () => {
-            console.log('User confirmed logout');
-            performLogout();
-          }
-        },
-      ]
-    );
+    console.log('handleLogout called');
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    console.log('User confirmed logout');
+    setShowLogoutConfirm(false);
+    performLogout();
+  };
+
+  const cancelLogout = () => {
+    console.log('User cancelled logout');
+    setShowLogoutConfirm(false);
   };
 
   const performLogout = async () => {
@@ -824,6 +823,40 @@ const ProfileScreen: React.FC = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        visible={showLogoutConfirm}
+        transparent
+        animationType="fade"
+        onRequestClose={cancelLogout}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.logoutModal, highContrast && { backgroundColor: '#1A1A1A' }]}>
+            <View style={styles.logoutIconContainer}>
+              <Ionicons name="log-out-outline" size={48} color="#EF4444" />
+            </View>
+            <Text style={[styles.logoutTitle, highContrast && { color: '#fff' }]}>Sign Out</Text>
+            <Text style={[styles.logoutMessage, highContrast && { color: '#E5E7EB' }]}>
+              Are you sure you want to sign out?
+            </Text>
+            <View style={styles.logoutActions}>
+              <TouchableOpacity 
+                style={[styles.logoutButton, styles.cancelLogoutButton]}
+                onPress={cancelLogout}
+              >
+                <Text style={[styles.logoutButtonText, highContrast && { color: '#fff' }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.logoutButton, styles.confirmLogoutButton]}
+                onPress={confirmLogout}
+              >
+                <Text style={styles.confirmLogoutButtonText}>Sign Out</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -1277,6 +1310,65 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: typography.fontSize.md,
     fontWeight: '500',
+    color: 'white',
+  },
+  logoutModal: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 24,
+    width: '85%',
+    maxWidth: 400,
+    alignItems: 'center',
+    ...colors.shadows?.lg,
+  },
+  logoutIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#EF444420',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  logoutTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  logoutMessage: {
+    fontSize: typography.fontSize.md,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  logoutActions: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  logoutButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelLogoutButton: {
+    backgroundColor: colors.surfaceVariant,
+  },
+  confirmLogoutButton: {
+    backgroundColor: '#EF4444',
+  },
+  logoutButtonText: {
+    fontSize: typography.fontSize.md,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  confirmLogoutButtonText: {
+    fontSize: typography.fontSize.md,
+    fontWeight: '600',
     color: 'white',
   },
 });
