@@ -475,7 +475,7 @@ const ProfileScreen: React.FC = () => {
                     <View style={{ flex: 1, marginLeft: 12 }}>
                       <Text style={[styles.gameTitle, highContrast && { color: '#fff' }]}>{g.title || g.sport || 'Game'}</Text>
                       <Text style={[styles.gameMeta, highContrast && { color: '#E5E7EB' }]}>
-                        {(g.venue?.name || g.location || g.city || 'Unknown venue')} • {g.time || g.dateTime || g.startTime || 'TBA'}
+                        {(g.venue?.name || (typeof g.location === 'string' ? g.location : g.location?.name || g.location?.address) || g.city || 'Unknown venue')} • {g.time || g.dateTime || g.startTime || 'TBA'}
                       </Text>
                     </View>
                     <View style={styles.gameCapacityChip}>

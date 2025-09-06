@@ -260,7 +260,9 @@ const HomeScreen: React.FC = () => {
           {nearbyGames.slice(0,5).map((g: any) => (
             <View key={g.id} style={styles.nearbyCard}>
               <Text style={{ color: colors.textLight, fontWeight: '700' }}>{g.title}</Text>
-              <Text style={{ color: colors.textLight, opacity: 0.8 }}>{g.location}</Text>
+              <Text style={{ color: colors.textLight, opacity: 0.8 }}>
+                {typeof g.location === 'string' ? g.location : g.location?.name || g.location?.address || 'Unknown'}
+              </Text>
             </View>
           ))}
         </View>
