@@ -10,17 +10,18 @@ import {
   TextInput,
   Modal,
   RefreshControl,
+  Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, typography, spacing, borderRadius, NepalColors } from '@/constants/theme';
 import Shimmer from '@/components/common/Shimmer';
 import { getMyProfile, getDashboardSummary, getMyGames } from '@/services/profile';
-import ScoutingReportEditor from '@/components/profile/ScoutingReportEditor';
-import MultiSportProfile from '@/components/profile/MultiSportProfile';
-import ScoutingReport from '@/components/profile/ScoutingReport';
-import AchievementSystem from '@/components/profile/AchievementSystem';
-import PerformanceInsights from '@/components/profile/PerformanceInsights';
+// import ScoutingReportEditor from '@/components/profile/ScoutingReportEditor';
+// import MultiSportProfile from '@/components/profile/MultiSportProfile';
+// import ScoutingReport from '@/components/profile/ScoutingReport';
+// import AchievementSystem from '@/components/profile/AchievementSystem';
+// import PerformanceInsights from '@/components/profile/PerformanceInsights';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import { updateMyProfile } from '@/services/profile';
 import { useUIStore } from '@/stores/uiStore';
@@ -440,7 +441,7 @@ const ProfileScreen: React.FC = () => {
               <Ionicons name="fitness-outline" size={24} color={highContrast ? '#F59E0B' : '#F59E0B'} />
               <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Find Practice</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} onPress={() => setShowScoutingEditor(true)}>
+            <TouchableOpacity style={[styles.quickActionButton, highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' }]} onPress={() => Alert.alert('Coming Soon', 'Add Sport feature coming soon!')}>
               <Ionicons name="person-add-outline" size={24} color={highContrast ? '#8B5CF6' : '#8B5CF6'} />
               <Text style={[styles.quickActionText, highContrast && { color: '#fff' }]}>Add Sport</Text>
             </TouchableOpacity>
@@ -533,32 +534,32 @@ const ProfileScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Sports Profiles */}
-        <MultiSportProfile
+        {/* Sports Profiles - Temporarily disabled for debugging */}
+        {/* <MultiSportProfile
           sportProfiles={sportProfiles}
           onAddSport={() => setShowScoutingEditor(true)}
           onEditSport={handleEditSportProfile}
           onRemoveSport={handleRemoveSportProfile}
-        />
+        /> */}
 
-        {/* Achievements */}
-        {user.stats && (
+        {/* Achievements - Temporarily disabled for debugging */}
+        {/* {user.stats && (
           <AchievementSystem userStats={user.stats} />
-        )}
+        )} */}
 
-        {/* Performance Insights */}
-        {user.stats && (
+        {/* Performance Insights - Temporarily disabled for debugging */}
+        {/* {user.stats && (
           <PerformanceInsights
             userStats={user.stats}
             onFindGames={handleFindGames}
             onCreateGame={handleCreateGame}
             onFindPractice={handleFindPractice}
           />
-        )}
+        )} */}
       </ScrollView>
 
       {/* Modals */}
-      <ScoutingReportEditor
+      {/* <ScoutingReportEditor
         visible={showScoutingEditor}
         onClose={() => {
           setShowScoutingEditor(false);
@@ -567,7 +568,7 @@ const ProfileScreen: React.FC = () => {
         onSave={handleSaveSportProfile}
         editingProfile={editingProfile}
         onUpdateProfile={handleUpdateSportProfile}
-      />
+      /> */}
 
       <EditProfileModal
         visible={showEditProfile}
