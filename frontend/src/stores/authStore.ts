@@ -469,11 +469,15 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       logout: async () => {
+        console.log('Auth store logout called');
         set({ isLoading: true });
         try {
+          console.log('Calling auth service logout...');
           await auth.logout();
+          console.log('Auth service logout completed');
           await storage.removeItem('biometric_enabled');
           await storage.removeItem('biometric_token');
+          console.log('Clearing auth state...');
           set({
             user: null,
             token: null,
@@ -481,7 +485,9 @@ export const useAuthStore = create<AuthStore>()(
             biometricEnabled: false,
             isLoading: false,
           });
+          console.log('Auth state cleared successfully');
         } catch (error) {
+          console.error('Logout error in auth store:', error);
           set({ isLoading: false });
           throw error;
         }

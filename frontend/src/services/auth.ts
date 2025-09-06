@@ -101,10 +101,20 @@ export async function login(username: string, password: string): Promise<LoginSu
 }
 
 export async function logout(): Promise<void> {
-  await request<void>('/auth/logout', { method: 'POST' });
+  console.log('Auth service logout called');
+  try {
+    console.log('Making logout request to backend...');
+    await request<void>('/auth/logout', { method: 'POST' });
+    console.log('Backend logout request completed');
+  } catch (error) {
+    console.log('Backend logout failed, continuing with local cleanup:', error);
+  }
+  
+  console.log('Removing local storage items...');
   await storage.removeItem(ACCESS_TOKEN_KEY);
   await storage.removeItem(REFRESH_TOKEN_KEY);
   await storage.removeItem(REFRESH_NONCE_KEY);
+  console.log('Local storage cleared');
 }
 
 export async function register(params: { username: string; password: string; preferredSport: string; location: string }) {

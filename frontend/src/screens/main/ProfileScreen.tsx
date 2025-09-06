@@ -194,13 +194,26 @@ const ProfileScreen: React.FC = () => {
     }
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: logout },
+        { 
+          text: 'Sign Out', 
+          style: 'destructive', 
+          onPress: async () => {
+            try {
+              console.log('Starting logout process...');
+              await logout();
+              console.log('Logout completed successfully');
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to sign out. Please try again.');
+            }
+          }
+        },
       ]
     );
   };
