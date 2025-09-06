@@ -95,6 +95,7 @@ const ProfileScreen: React.FC = () => {
   const [loadingGames, setLoadingGames] = useState(true);
   const [dashboard, setDashboard] = useState<any>(null);
   const [games, setGames] = useState<any[]>([]);
+  const [upcomingGames, setUpcomingGames] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [snack, setSnack] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
   const { t, setLanguage, currentLanguage } = useLanguage();
@@ -243,6 +244,46 @@ const ProfileScreen: React.FC = () => {
             animateHeader();
             animateStats();
           }, 100);
+          
+          // Mock upcoming games data
+          setUpcomingGames([
+            {
+              id: '1',
+              sport: 'Football',
+              venue: 'Kathmandu Sports Complex',
+              date: '2024-01-15',
+              time: '18:00',
+              participants: 8,
+              maxParticipants: 12,
+              price: 500,
+              status: 'open',
+              sportIcon: '⚽️'
+            },
+            {
+              id: '2',
+              sport: 'Basketball',
+              venue: 'Basketball Court, Patan',
+              date: '2024-01-16',
+              time: '19:30',
+              participants: 6,
+              maxParticipants: 10,
+              price: 300,
+              status: 'open',
+              sportIcon: '🏀'
+            },
+            {
+              id: '3',
+              sport: 'Cricket',
+              venue: 'Cricket Ground, Pokhara',
+              date: '2024-01-17',
+              time: '16:00',
+              participants: 18,
+              maxParticipants: 22,
+              price: 200,
+              status: 'almost_full',
+              sportIcon: '🏏'
+            }
+          ]);
         }
       } finally {
         if (mounted) setLoadingProfile(false);
@@ -785,6 +826,107 @@ const ProfileScreen: React.FC = () => {
               </TouchableOpacity>
             </Animated.View>
           </View>
+        </Animated.View>
+
+        {/* Upcoming Games Section */}
+        <Animated.View 
+          style={[
+            styles.upcomingGamesSection, 
+            highContrast && { backgroundColor: '#0A0A0A' },
+            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
+          ]}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, highContrast && { color: '#fff' }]}>Upcoming Games</Text>
+            <TouchableOpacity onPress={() => Alert.alert('View All', 'View all upcoming games')}>
+              <Text style={[styles.viewAllText, highContrast && { color: '#FFD700' }]}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.upcomingGamesScroll}
+          >
+            {upcomingGames.map((game, index) => (
+              <Animated.View 
+                key={game.id}
+                style={[
+                  styles.upcomingGameCard,
+                  highContrast && { backgroundColor: '#1A1A1A', borderColor: '#333' },
+                  { 
+                    transform: [{ scale: scaleAnim }],
+                    marginLeft: index === 0 ? 0 : 12
+                  }
+                ]}
+              >
+                <View style={styles.gameHeader}>
+                  <Text style={styles.sportIcon}>{game.sportIcon}</Text>
+                  <View style={[
+                    styles.statusBadge,
+                    game.status === 'open' && { backgroundColor: '#10B98120' },
+                    game.status === 'almost_full' && { backgroundColor: '#F59E0B20' },
+                    game.status === 'full' && { backgroundColor: '#EF444420' }
+                  ]}>
+                    <Text style={[
+                      styles.statusText,
+                      game.status === 'open' && { color: '#10B981' },
+                      game.status === 'almost_full' && { color: '#F59E0B' },
+                      game.status === 'full' && { color: '#EF4444' }
+                    ]}>
+                      {game.status === 'open' ? 'Open' : game.status === 'almost_full' ? 'Almost Full' : 'Full'}
+                    </Text>
+                  </View>
+                </View>
+                
+                <Text style={[styles.gameSport, highContrast && { color: '#fff' }]}>{game.sport}</Text>
+                <Text style={[styles.gameVenue, highContrast && { color: 'rgba(255,255,255,0.8)' }]}>{game.venue}</Text>
+                
+                <View style={styles.gameDetails}>
+                  <View style={styles.gameDetailItem}>
+                    <Ionicons name="calendar-outline" size={14} color={colors.textSecondary} />
+                    <Text style={[styles.gameDetailText, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>
+                      {new Date(game.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </Text>
+                  </View>
+                  <View style={styles.gameDetailItem}>
+                    <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
+                    <Text style={[styles.gameDetailText, highContrast && { color: 'rgba(255,255,255,0.7)' }]}>
+                      {game.time}
+                    </Text>
+                  </View>
+                </View>
+                
+                <View style={styles.gameParticipants}>
+                  <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
+                  <Text style={[styles.participantsText, highContrast && { color: 'rgba(255,255,255,0.8)' }]}>
+                    {game.participants}/{game.maxParticipants} players
+                  </Text>
+                </View>
+                
+                <View style={styles.gameFooter}>
+                  <Text style={[styles.gamePrice, highContrast && { color: '#FFD700' }]}>
+                    NPR {game.price}
+                  </Text>
+                  <TouchableOpacity 
+                    style={[
+                      styles.joinButton,
+                      game.status === 'full' && styles.joinButtonDisabled
+                    ]}
+                    onPress={() => Alert.alert('Join Game', `Join ${game.sport} game at ${game.venue}`)}
+                    disabled={game.status === 'full'}
+                  >
+                    <Text style={[
+                      styles.joinButtonText,
+                      game.status === 'full' && styles.joinButtonTextDisabled
+                    ]}>
+                      {game.status === 'full' ? 'Full' : 'Join Now'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </Animated.View>
+            ))}
+          </ScrollView>
         </Animated.View>
 
         {/* Bio Section */}
@@ -1471,6 +1613,120 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 4,
+  },
+  // Upcoming Games Section Styles
+  upcomingGamesSection: {
+    backgroundColor: 'white',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    marginTop: 8,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  viewAllText: {
+    fontSize: 14,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  upcomingGamesScroll: {
+    paddingRight: 20,
+  },
+  upcomingGameCard: {
+    width: 280,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  gameHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sportIcon: {
+    fontSize: 24,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  gameSport: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  gameVenue: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 12,
+  },
+  gameDetails: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  gameDetailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  gameDetailText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginLeft: 4,
+  },
+  gameParticipants: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  participantsText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginLeft: 6,
+  },
+  gameFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  gamePrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  joinButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  joinButtonDisabled: {
+    backgroundColor: '#E5E7EB',
+  },
+  joinButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  joinButtonTextDisabled: {
+    color: '#9CA3AF',
   },
   quickActionText: {
     fontSize: typography.fontSize.sm,
