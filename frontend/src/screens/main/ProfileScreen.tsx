@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
   Modal,
   RefreshControl,
   Switch,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -99,6 +101,107 @@ const ProfileScreen: React.FC = () => {
   const { highContrast, rtlEnabled, toggleHighContrast, toggleRTL } = useUIStore();
   const { logout } = useAuthStore();
 
+  // Animation refs
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const statsAnimations = useRef({
+    gamesPlayed: new Animated.Value(0),
+    wins: new Animated.Value(0),
+    losses: new Animated.Value(0),
+    draws: new Animated.Value(0),
+    winRate: new Animated.Value(0),
+    currentStreak: new Animated.Value(0),
+    longestStreak: new Animated.Value(0),
+  }).current;
+
+  // Count-up animation function
+  const animateCountUp = (animValue: Animated.Value, targetValue: number, duration: number = 1000) => {
+    Animated.timing(animValue, {
+      toValue: targetValue,
+      duration: duration,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  // Animate stats on load
+  const animateStats = useCallback(() => {
+    if (user?.stats) {
+      const { stats } = user;
+      animateCountUp(statsAnimations.gamesPlayed, stats.totalGamesPlayed || 0, 1200);
+      animateCountUp(statsAnimations.wins, stats.totalGamesWon || 0, 1000);
+      animateCountUp(statsAnimations.losses, stats.totalGamesLost || 0, 1000);
+      animateCountUp(statsAnimations.draws, stats.totalGamesDrawn || 0, 1000);
+      animateCountUp(statsAnimations.winRate, stats.winRate || 0, 1500);
+      animateCountUp(statsAnimations.currentStreak, stats.currentStreak || 0, 800);
+      animateCountUp(statsAnimations.longestStreak, stats.longestStreak || 0, 800);
+    }
+  }, [user?.stats]);
+
+  // Animate header on load
+  const animateHeader = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  // Helper function to calculate age
+  const calculateAge = (birthDate: string) => {
+    if (!birthDate) return null;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // Animated Stat Component
+  const AnimatedStat = ({ animValue, label, color, icon, suffix = '' }: {
+    animValue: Animated.Value;
+    label: string;
+    color: string;
+    icon: string;
+    suffix?: string;
+  }) => {
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+      const listener = animValue.addListener(({ value }) => {
+        setDisplayValue(Math.round(value));
+      });
+      return () => animValue.removeListener(listener);
+    }, [animValue]);
+
+    return (
+      <Animated.View style={[styles.statItem, { opacity: fadeAnim }]}>
+        <View style={styles.statIconContainer}>
+          <Ionicons name={icon as any} size={20} color={color} />
+        </View>
+        <Animated.Text style={[styles.statNumber, { color }]}>
+          {displayValue}{suffix}
+        </Animated.Text>
+        <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>{label}</Text>
+      </Animated.View>
+    );
+  };
+
   // Fetch real data
   useEffect(() => {
     let mounted = true;
@@ -135,6 +238,11 @@ const ProfileScreen: React.FC = () => {
             phone: userData.phone || '',
             bio: userData.bio || '',
           });
+          // Trigger animations
+          setTimeout(() => {
+            animateHeader();
+            animateStats();
+          }, 100);
         }
       } finally {
         if (mounted) setLoadingProfile(false);
@@ -424,79 +532,158 @@ const ProfileScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Stats Card */}
-        <View style={[styles.statsCard, highContrast && { backgroundColor: '#0A0A0A' }]}>
+        {/* Enhanced Stats Card with Animations */}
+        <Animated.View 
+          style={[
+            styles.statsCard, 
+            highContrast && { backgroundColor: '#0A0A0A' },
+            { 
+              opacity: fadeAnim,
+              transform: [
+                { translateY: slideAnim },
+                { scale: scaleAnim }
+              ]
+            }
+          ]}
+        >
+          {/* Main Stats Row */}
           <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: highContrast ? '#FFD700' : '#3B82F6' }]}>{user.stats?.totalGamesPlayed || 0}</Text>
-              <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>Games Played</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: highContrast ? '#10B981' : '#10B981' }]}>{user.stats?.totalGamesWon || 0}</Text>
-              <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>Wins</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: highContrast ? '#FFD700' : '#F59E0B' }]}>{user.stats?.winRate || 0}%</Text>
-              <Text style={[styles.statLabel, highContrast && { color: '#fff' }]}>Win Rate</Text>
-            </View>
+            <AnimatedStat
+              animValue={statsAnimations.gamesPlayed}
+              label="Games Played"
+              color={highContrast ? '#FFD700' : '#3B82F6'}
+              icon="game-controller-outline"
+            />
+            <AnimatedStat
+              animValue={statsAnimations.wins}
+              label="Wins"
+              color={highContrast ? '#10B981' : '#10B981'}
+              icon="trophy"
+            />
+            <AnimatedStat
+              animValue={statsAnimations.winRate}
+              label="Win Rate"
+              color={highContrast ? '#FFD700' : '#F59E0B'}
+              icon="trending-up"
+              suffix="%"
+            />
           </View>
 
+          {/* Win/Loss/Draw Pills */}
           <View style={styles.winLossRow}>
-            <View style={[styles.winLossBadge, { backgroundColor: '#3B82F620' }]}>
+            <Animated.View 
+              style={[
+                styles.winLossBadge, 
+                { backgroundColor: '#3B82F620' },
+                { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
+              ]}
+            >
               <Ionicons name="trophy" size={16} color="#3B82F6" />
-              <Text style={[styles.winLossText, { color: '#3B82F6' }]}>
+              <Animated.Text style={[styles.winLossText, { color: '#3B82F6' }]}>
                 {user.stats?.totalGamesWon || 0} Wins
-              </Text>
-            </View>
-            <View style={[styles.winLossBadge, { backgroundColor: '#EF444420' }]}>
+              </Animated.Text>
+            </Animated.View>
+            <Animated.View 
+              style={[
+                styles.winLossBadge, 
+                { backgroundColor: '#EF444420' },
+                { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
+              ]}
+            >
               <Ionicons name="close" size={16} color="#EF4444" />
-              <Text style={[styles.winLossText, { color: '#EF4444' }]}>
+              <Animated.Text style={[styles.winLossText, { color: '#EF4444' }]}>
                 {user.stats?.totalGamesLost || 0} Losses
-              </Text>
-            </View>
-            <View style={[styles.winLossBadge, { backgroundColor: '#F59E0B20' }]}>
+              </Animated.Text>
+            </Animated.View>
+            <Animated.View 
+              style={[
+                styles.winLossBadge, 
+                { backgroundColor: '#F59E0B20' },
+                { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
+              ]}
+            >
               <Ionicons name="remove" size={16} color="#F59E0B" />
-              <Text style={[styles.winLossText, { color: '#F59E0B' }]}>
+              <Animated.Text style={[styles.winLossText, { color: '#F59E0B' }]}>
                 {user.stats?.totalGamesDrawn || 0} Draws
-              </Text>
-            </View>
+              </Animated.Text>
+            </Animated.View>
           </View>
 
+          {/* Streak Row */}
           <View style={styles.streakRow}>
-            <View style={styles.streakItem}>
+            <Animated.View 
+              style={[
+                styles.streakItem,
+                { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }
+              ]}
+            >
               <Ionicons name="flame" size={16} color="#F59E0B" />
               <Text style={styles.streakText}>
                 {user.stats?.currentStreak || 0} Current Streak
               </Text>
-            </View>
-            <View style={styles.streakItem}>
+            </Animated.View>
+            <Animated.View 
+              style={[
+                styles.streakItem,
+                { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }
+              ]}
+            >
               <Ionicons name="trophy" size={16} color="#3B82F6" />
               <Text style={styles.streakText}>
                 {user.stats?.longestStreak || 0} Best Streak
               </Text>
-            </View>
+            </Animated.View>
           </View>
 
-          <Text style={styles.autoTrackingNote}>
+          <Animated.Text 
+            style={[
+              styles.autoTrackingNote,
+              { opacity: fadeAnim }
+            ]}
+          >
             📊 Stats automatically updated from game results
-          </Text>
-        </View>
+          </Animated.Text>
+        </Animated.View>
 
-        {/* Personal Info Chips */}
-        <View style={styles.personalInfoRow}>
-          <View style={styles.infoChip}>
-            <Ionicons name="mail-outline" size={16} color="#666" />
-            <Text style={styles.infoChipText}>{user.email || 'No email'}</Text>
-          </View>
-          <View style={styles.infoChip}>
-            <Ionicons name="call-outline" size={16} color="#666" />
-            <Text style={styles.infoChipText}>{user.phone || 'No phone'}</Text>
-          </View>
-          <View style={styles.infoChip}>
-            <Ionicons name="location-outline" size={16} color="#666" />
-            <Text style={styles.infoChipText}>{user.country || 'Nepal'}</Text>
-          </View>
-        </View>
+        {/* Enhanced Personal Info Chips */}
+        <Animated.View 
+          style={[
+            styles.personalInfoRow,
+            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
+          ]}
+        >
+          {user.birthDate && calculateAge(user.birthDate) && (
+            <Animated.View 
+              style={[
+                styles.infoChip,
+                { transform: [{ scale: scaleAnim }] }
+              ]}
+            >
+              <Ionicons name="calendar-outline" size={16} color="#3B82F6" />
+              <Text style={styles.infoChipText}>{calculateAge(user.birthDate)} years old</Text>
+            </Animated.View>
+          )}
+          <Animated.View 
+            style={[
+              styles.infoChip,
+              { transform: [{ scale: scaleAnim }] }
+            ]}
+          >
+            <Ionicons name="flag-outline" size={16} color="#10B981" />
+            <Text style={styles.infoChipText}>{user.nationality || user.country || 'Nepal'}</Text>
+          </Animated.View>
+          {user.gender && (
+            <Animated.View 
+              style={[
+                styles.infoChip,
+                { transform: [{ scale: scaleAnim }] }
+              ]}
+            >
+              <Ionicons name="person-outline" size={16} color="#F59E0B" />
+              <Text style={styles.infoChipText}>{user.gender}</Text>
+            </Animated.View>
+          )}
+        </Animated.View>
       </LinearGradient>
 
       <ScrollView
@@ -961,6 +1148,13 @@ const styles = StyleSheet.create({
   },
   statItem: {
     alignItems: 'center',
+    paddingVertical: 8,
+  },
+  statIconContainer: {
+    marginBottom: 8,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   statNumber: {
     fontSize: typography.fontSize['2xl'],
