@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, View, StyleSheet, ViewStyle } from 'react-native';
+import { Animated, View, StyleSheet, ViewStyle, Platform } from 'react-native';
+import { createTimingAnimation, createSequenceAnimation, createLoopAnimation } from '@/utils/animation';
 import { useUIStore } from '@/stores/uiStore';
 
 interface ShimmerProps {
@@ -15,10 +16,10 @@ export default function Shimmer({ width = '100%', height = 16, style, borderRadi
 
   useEffect(() => {
     if (reducedMotion) return;
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(translateX, { toValue: 300, duration: 1200, useNativeDriver: true }),
-        Animated.timing(translateX, { toValue: -100, duration: 0, useNativeDriver: true }),
+    const loop = createLoopAnimation(
+      createSequenceAnimation([
+        createTimingAnimation(translateX, { toValue: 300, duration: 1200, useNativeDriver: Platform.OS !== 'web' }),
+        createTimingAnimation(translateX, { toValue: -100, duration: 0, useNativeDriver: Platform.OS !== 'web' }),
       ])
     );
     loop.start();

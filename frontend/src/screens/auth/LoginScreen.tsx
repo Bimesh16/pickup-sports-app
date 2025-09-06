@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { createSpringAnimation } from '@/utils/animation';
 import {
   View,
   Text,
@@ -320,8 +321,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           <Animated.View style={{ transform: [{ scale }] }}>
             <TouchableOpacity
               style={[styles.signInButton, isLoading && styles.signInButtonDisabled]}
-              onPressIn={() => Animated.spring(scale, { toValue: 0.98, useNativeDriver: true }).start()}
-              onPressOut={() => Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start()}
+              onPressIn={() => createSpringAnimation(scale, { toValue: 0.98, useNativeDriver: Platform.OS !== 'web' }).start()}
+              onPressOut={() => createSpringAnimation(scale, { toValue: 1, useNativeDriver: Platform.OS !== 'web' }).start()}
               onPress={handleSignIn}
               disabled={isLoading || (lockoutRemaining !== null && lockoutRemaining > 0)}
             >

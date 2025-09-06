@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Animated, Easing, Platform } from 'react-native';
+import { createTimingAnimation } from '@/utils/animation';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 // Location will be imported dynamically to avoid webpack issues
@@ -41,11 +42,11 @@ export default function RegisterScreen() {
   // Animations
   const translateX = useRef(new Animated.Value(0)).current;
   const nextStep = () => {
-    Animated.timing(translateX, { toValue: -stepWidth * (step + 1), duration: 250, useNativeDriver: true, easing: Easing.out(Easing.ease) }).start();
+    createTimingAnimation(translateX, { toValue: -stepWidth * (step + 1), duration: 250, useNativeDriver: Platform.OS !== 'web', easing: Easing.out(Easing.ease) }).start();
     setStep((s) => (Math.min(2, (s + 1)) as Step));
   };
   const prevStep = () => {
-    Animated.timing(translateX, { toValue: -stepWidth * (step - 1), duration: 250, useNativeDriver: true, easing: Easing.out(Easing.ease) }).start();
+    createTimingAnimation(translateX, { toValue: -stepWidth * (step - 1), duration: 250, useNativeDriver: Platform.OS !== 'web', easing: Easing.out(Easing.ease) }).start();
     setStep((s) => (Math.max(0, (s - 1)) as Step));
   };
   const stepWidth = 320; // viewport approximation; container uses flex, so we also set width style
