@@ -208,6 +208,23 @@ const ProfileScreen: React.FC = () => {
               console.log('Starting logout process...');
               await logout();
               console.log('Logout completed successfully');
+              
+              // Force navigation to auth screen as a fallback
+              setTimeout(() => {
+                console.log('Checking auth state after logout...');
+                const { isAuthenticated } = useAuthStore.getState();
+                console.log('Current auth state:', { isAuthenticated });
+                if (isAuthenticated) {
+                  console.log('Still authenticated, forcing logout...');
+                  useAuthStore.setState({
+                    user: null,
+                    token: null,
+                    isAuthenticated: false,
+                    biometricEnabled: false,
+                    isLoading: false,
+                  });
+                }
+              }, 1000);
             } catch (error) {
               console.error('Logout error:', error);
               Alert.alert('Error', 'Failed to sign out. Please try again.');
