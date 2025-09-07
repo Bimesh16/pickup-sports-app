@@ -23,6 +23,7 @@ import ProgressRing from '@/components/profile/ProgressRing';
 import SportFilterPills from '@/components/profile/SportFilterPills';
 import ScoutingReport from '@/components/profile/ScoutingReport';
 import Shimmer from '@/components/common/Shimmer';
+import { storage } from '@/utils/storage';
 import { getMyProfile, getDashboardSummary, getMyGames } from '@/services/profile';
 // import ScoutingReportEditor from '@/components/profile/ScoutingReportEditor';
 // import MultiSportProfile from '@/components/profile/MultiSportProfile';
@@ -105,6 +106,22 @@ const ProfileScreen: React.FC = () => {
   const [selectedSport, setSelectedSport] = useState<string | null>('soccer');
   const [scoutingData, setScoutingData] = useState<any>(null);
   const { t, setLanguage, currentLanguage } = useLanguage();
+  
+  // Ensure English is set as default language
+  useEffect(() => {
+    // Force English language on profile screen and clear any stored language
+    const forceEnglish = async () => {
+      try {
+        // Clear stored language preference
+        await storage.removeItem('app_language');
+        // Set to English
+        await setLanguage('en');
+      } catch (error) {
+        console.error('Error setting language to English:', error);
+      }
+    };
+    forceEnglish();
+  }, [setLanguage]);
   const { highContrast, rtlEnabled, toggleHighContrast, toggleRTL } = useUIStore();
   const { logout } = useAuthStore();
 
