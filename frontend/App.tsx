@@ -31,12 +31,6 @@ export default function App() {
     initializeApp();
   }, []);
 
-  const isLoading = authLoading;
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-
   // Note: changing RTL at runtime may require app reload; we set allowRTL
   I18nManager.allowRTL(rtlEnabled);
 
@@ -57,6 +51,12 @@ export default function App() {
       },
     } as typeof NepalTheme;
   }, [highContrast]);
+
+  const isLoading = authLoading;
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

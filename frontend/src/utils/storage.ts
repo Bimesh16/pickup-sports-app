@@ -1,5 +1,6 @@
 // Cross-platform storage utility
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Web-compatible storage interface
 interface StorageInterface {
@@ -33,42 +34,29 @@ const webStorage: StorageInterface = {
   },
 };
 
-// Native storage implementation
-let nativeStorage: StorageInterface | null = null;
-
-const getNativeStorage = async (): Promise<StorageInterface> => {
-  if (nativeStorage) return nativeStorage;
-  
-  try {
-    const SecureStore = await import('expo-secure-store');
-    nativeStorage = {
-      async getItem(key: string): Promise<string | null> {
-        try {
-          return await SecureStore.getItemAsync(key);
-        } catch {
-          return null;
-        }
-      },
-      async setItem(key: string, value: string): Promise<void> {
-        try {
-          await SecureStore.setItemAsync(key, value);
-        } catch {
-          // Ignore storage errors
-        }
-      },
-      async removeItem(key: string): Promise<void> {
-        try {
-          await SecureStore.deleteItemAsync(key);
-        } catch {
-          // Ignore storage errors
-        }
-      },
-    };
-    return nativeStorage;
-  } catch {
-    // Fallback to web storage if SecureStore is not available
-    return webStorage;
-  }
+// Native storage implementation using AsyncStorage
+const nativeStorage: StorageInterface = {
+  async getItem(key: string): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  async setItem(key: string, value: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch {
+      // Ignore storage errors
+    }
+  },
+  async removeItem(key: string): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch {
+      // Ignore storage errors
+    }
+  },
 };
 
 // Main storage interface
@@ -77,21 +65,18 @@ export const storage: StorageInterface = {
     if (Platform.OS === 'web') {
       return webStorage.getItem(key);
     }
-    const native = await getNativeStorage();
-    return native.getItem(key);
+    return nativeStorage.getItem(key);
   },
   async setItem(key: string, value: string): Promise<void> {
     if (Platform.OS === 'web') {
       return webStorage.setItem(key, value);
     }
-    const native = await getNativeStorage();
-    return native.setItem(key, value);
+    return nativeStorage.setItem(key, value);
   },
   async removeItem(key: string): Promise<void> {
     if (Platform.OS === 'web') {
       return webStorage.removeItem(key);
     }
-    const native = await getNativeStorage();
-    return native.removeItem(key);
+    return nativeStorage.removeItem(key);
   },
 };

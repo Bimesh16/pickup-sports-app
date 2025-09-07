@@ -56,7 +56,17 @@ const ImagePickerComponent: React.FC<ImagePickerComponentProps> = ({
   const launchCamera = async (options: ImagePickerOptions): Promise<ImagePickerResult | null> => {
     try {
       if (Platform.OS === 'web') {
-        return createWebFileInput('camera');
+        // Try to use MediaDevices API first for better camera access
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          try {
+            return await capturePhotoWithCamera();
+          } catch (cameraError) {
+            console.log('Camera API not available, falling back to file input:', cameraError);
+            return createWebFileInput('camera');
+          }
+        } else {
+          return createWebFileInput('camera');
+        }
       }
 
       // For native, this would use expo-image-picker
@@ -95,6 +105,142 @@ const ImagePickerComponent: React.FC<ImagePickerComponentProps> = ({
     }
   };
 
+  const capturePhotoWithCamera = (): Promise<ImagePickerResult | null> => {
+    return new Promise((resolve) => {
+      console.log('ImagePickerComponent: Capturing photo with camera API');
+      
+      // Create a video element to capture the camera stream
+      const video = document.createElement('video');
+      video.style.display = 'none';
+      document.body.appendChild(video);
+      
+      // Create a canvas to capture the photo
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      
+      navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment', // Use back camera
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      }).then((stream) => {
+        video.srcObject = stream;
+        video.play();
+        
+        // Create a modal to show camera preview
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.9);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          z-index: 10000;
+        `;
+        
+        const preview = document.createElement('video');
+        preview.srcObject = stream;
+        preview.style.cssText = `
+          width: 90%;
+          max-width: 500px;
+          height: auto;
+          border-radius: 8px;
+        `;
+        preview.autoplay = true;
+        preview.muted = true;
+        
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.cssText = `
+          margin-top: 20px;
+          display: flex;
+          gap: 20px;
+        `;
+        
+        const captureButton = document.createElement('button');
+        captureButton.textContent = 'Capture Photo';
+        captureButton.style.cssText = `
+          padding: 12px 24px;
+          background: #22D3EE;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+        `;
+        
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = 'Cancel';
+        cancelButton.style.cssText = `
+          padding: 12px 24px;
+          background: #6B7280;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+        `;
+        
+        captureButton.onclick = () => {
+          // Set canvas dimensions to match video
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          
+          // Draw the current video frame to canvas
+          context?.drawImage(video, 0, 0);
+          
+          // Convert to blob
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const reader = new FileReader();
+              reader.onload = (e: any) => {
+                resolve({
+                  uri: e.target.result,
+                  width: canvas.width,
+                  height: canvas.height,
+                  type: blob.type,
+                  fileName: `camera_photo_${Date.now()}.jpg`,
+                  fileSize: blob.size,
+                });
+              };
+              reader.readAsDataURL(blob);
+            } else {
+              resolve(null);
+            }
+            
+            // Cleanup
+            stream.getTracks().forEach(track => track.stop());
+            document.body.removeChild(modal);
+            document.body.removeChild(video);
+          }, 'image/jpeg', 0.8);
+        };
+        
+        cancelButton.onclick = () => {
+          stream.getTracks().forEach(track => track.stop());
+          document.body.removeChild(modal);
+          document.body.removeChild(video);
+          resolve(null);
+        };
+        
+        buttonContainer.appendChild(captureButton);
+        buttonContainer.appendChild(cancelButton);
+        modal.appendChild(preview);
+        modal.appendChild(buttonContainer);
+        document.body.appendChild(modal);
+        
+      }).catch((error) => {
+        console.error('Error accessing camera:', error);
+        document.body.removeChild(video);
+        resolve(null);
+      });
+    });
+  };
+
   const createWebFileInput = (type: 'camera' | 'gallery'): Promise<ImagePickerResult | null> => {
     return new Promise((resolve) => {
       console.log('ImagePickerComponent: Creating web file input for', type);
@@ -103,7 +249,9 @@ const ImagePickerComponent: React.FC<ImagePickerComponentProps> = ({
       input.accept = 'image/*';
       
       if (type === 'camera') {
-        input.capture = 'camera';
+        // Try to force camera access on mobile devices
+        input.capture = 'environment'; // Use back camera
+        input.setAttribute('capture', 'environment');
       }
 
       input.onchange = (event: any) => {
@@ -139,7 +287,7 @@ const ImagePickerComponent: React.FC<ImagePickerComponentProps> = ({
         resolve(null);
       };
       
-      console.log('ImagePickerComponent: Clicking file input');
+      console.log('ImagePickerComponent: Clicking file input for', type);
       input.click();
     });
   };
@@ -168,6 +316,7 @@ export const useImagePicker = () => {
     setOnImageSelected(() => callback);
     setOptions(pickerOptions);
     setShowModal(true);
+    console.log('useImagePicker: Modal should be visible now');
   };
 
   const handleClose = () => {
@@ -176,18 +325,20 @@ export const useImagePicker = () => {
   };
 
   const handleCameraPress = async () => {
-    console.log('useImagePicker: Camera selected');
+    console.log('useImagePicker: Camera selected - calling launchCamera');
     setShowModal(false);
     const result = await launchCamera(options);
+    console.log('useImagePicker: Camera result:', result);
     if (onImageSelected) {
       onImageSelected(result);
     }
   };
 
   const handleGalleryPress = async () => {
-    console.log('useImagePicker: Gallery selected');
+    console.log('useImagePicker: Gallery selected - calling launchImageLibrary');
     setShowModal(false);
     const result = await launchImageLibrary(options);
+    console.log('useImagePicker: Gallery result:', result);
     if (onImageSelected) {
       onImageSelected(result);
     }
@@ -196,7 +347,19 @@ export const useImagePicker = () => {
   const launchCamera = async (options: ImagePickerOptions): Promise<ImagePickerResult | null> => {
     try {
       if (Platform.OS === 'web') {
-        return createWebFileInput('camera');
+        // Try to use MediaDevices API first for better camera access
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          try {
+            console.log('useImagePicker: Using camera API');
+            return await capturePhotoWithCamera();
+          } catch (cameraError) {
+            console.log('Camera API not available, falling back to file input:', cameraError);
+            return createWebFileInput('camera');
+          }
+        } else {
+          console.log('useImagePicker: MediaDevices not available, using file input');
+          return createWebFileInput('camera');
+        }
       }
 
       return {
@@ -216,6 +379,7 @@ export const useImagePicker = () => {
   const launchImageLibrary = async (options: ImagePickerOptions): Promise<ImagePickerResult | null> => {
     try {
       if (Platform.OS === 'web') {
+        console.log('useImagePicker: Using gallery file input');
         return createWebFileInput('gallery');
       }
 
@@ -241,7 +405,12 @@ export const useImagePicker = () => {
       input.accept = 'image/*';
       
       if (type === 'camera') {
-        input.capture = 'camera';
+        // Try to force camera access on mobile devices
+        console.log('useImagePicker: Setting camera capture attributes');
+        input.capture = 'environment'; // Use back camera
+        input.setAttribute('capture', 'environment');
+      } else {
+        console.log('useImagePicker: Setting gallery file input (no capture)');
       }
 
       input.onchange = (event: any) => {
@@ -277,7 +446,7 @@ export const useImagePicker = () => {
         resolve(null);
       };
       
-      console.log('useImagePicker: Clicking file input');
+      console.log('useImagePicker: Clicking file input for', type);
       input.click();
     });
   };

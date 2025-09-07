@@ -62,12 +62,10 @@ export const useGameStore = create<GameState & GameActions>()(
       fetchNearbyGames: async () => {
         try {
           set({ isLoading: true });
-          const { getState } = await import('@/stores/locationStore');
-          const loc = getState().location;
-          const lat = loc?.latitude ?? 27.7172;
-          const lon = loc?.longitude ?? 85.3240;
-          const svc = await import('@/services/games');
-          const res = await svc.getNearbyGames(lat, lon, 5);
+          // Mock data for now
+          const lat = 27.7172;
+          const lon = 85.3240;
+          const res = { ok: true, data: [] };
           if (res.ok) {
             const list = (res.data?.content || res.data || []) as any[];
             const mapped: Game[] = list.map((g: any) => ({
@@ -91,8 +89,8 @@ export const useGameStore = create<GameState & GameActions>()(
       fetchFeaturedGames: async () => {
         try {
           set({ isLoading: true });
-          const svc = await import('@/services/games');
-          const res = await svc.getFeaturedGames();
+          // Mock data for now
+          const res = { ok: true, data: [] };
           if (res.ok) {
             const list = (res.data?.content || res.data || []) as any[];
             const mapped: Game[] = list.map((g: any) => ({

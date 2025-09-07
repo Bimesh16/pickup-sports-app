@@ -91,17 +91,8 @@ export default function RegisterScreen() {
 
   const handleUseMyLocation = async () => {
     try {
-      // Dynamic import with fallback to mock
-      const Location = await import('expo-location').catch(() => 
-        import('@/mocks/expo-location')
-      );
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission required', 'Location permission is needed to autofill your city.');
-        return;
-      }
-      const pos = await Location.getCurrentPositionAsync({});
-      const str = `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
+      // Mock location for now
+      const str = `27.71720, 85.32400`;
       setLocationText(str);
     } catch (e) {
       Alert.alert('Error', 'Unable to fetch location');

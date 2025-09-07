@@ -8,9 +8,9 @@ import { LoadingScreen } from '@/screens/LoadingScreen';
 const Stack = createStackNavigator();
 
 const RootNavigator: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading, user } = useAuthStore();
 
-  console.log('RootNavigator state:', { isAuthenticated, isLoading });
+  console.log('RootNavigator state:', { isAuthenticated, isLoading, user: user?.name });
 
   if (isLoading) {
     return <LoadingScreen />;

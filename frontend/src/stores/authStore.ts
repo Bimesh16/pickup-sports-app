@@ -280,9 +280,8 @@ const mockApi = {
 };
 
 export const useAuthStore = create<AuthStore>()(
-  // Temporarily disable persistence for web testing
-  // persist(
-  (set, get) => ({
+  persist(
+    (set, get) => ({
       // State
       user: null,
       token: null,
@@ -292,12 +291,15 @@ export const useAuthStore = create<AuthStore>()(
 
       // Actions
       login: async (usernameOrEmail: string, password: string) => {
+        console.log('Login attempt:', { usernameOrEmail, password, platform: Platform.OS });
         set({ isLoading: true });
         try {
           // For web testing - bypass backend and create mock user
           if (Platform.OS === 'web') {
+            console.log('Using web login path');
             // Simple test credentials
             if ((usernameOrEmail === 'test' || usernameOrEmail === 'test@test.com' || usernameOrEmail === 'demo') && password === 'password') {
+              console.log('Login successful with demo credentials');
               const mockUser: User = {
                 id: '1',
                 name: usernameOrEmail === 'demo' ? 'Demo User' : 'Test User',
@@ -338,6 +340,7 @@ export const useAuthStore = create<AuthStore>()(
                 isAuthenticated: true,
                 isLoading: false,
               });
+              console.log('Authentication state set:', { isAuthenticated: true, user: mockUser.name });
               return;
             }
             
@@ -392,21 +395,27 @@ export const useAuthStore = create<AuthStore>()(
           }
           
           // Original backend logic for mobile
+          console.log('Using mobile login path');
           const res = await auth.login(usernameOrEmail, password);
+          console.log('Auth login response:', res);
           if (!res.success) {
             set({ isLoading: false });
+            console.log('Login failed:', res.message);
             // Throw structured error so UI can show field-level errors and lockout
             throw res as any;
           }
           // Fetch minimal identity (optional)
           const me = await auth.me();
+          console.log('Auth me response:', me);
           set({
             user: me.success ? (me.data as any) : null,
             token: (await auth.getStoredTokens()).accessToken || null,
             isAuthenticated: true,
             isLoading: false,
           });
+          console.log('Mobile login successful');
         } catch (error) {
+          console.log('Login error:', error);
           set({ isLoading: false });
           throw error;
         }
@@ -650,16 +659,16 @@ export const useAuthStore = create<AuthStore>()(
           isLoading: false
         });
       }
-    })
-    // {
-    //   name: 'auth-storage',
-    //   storage: createJSONStorage(() => AsyncStorage),
-    //   partialize: (state) => ({
-    //     user: state.user,
-    //     token: state.token,
-    //     isAuthenticated: state.isAuthenticated,
-    //     biometricEnabled: state.biometricEnabled
-    //   })
-    // }
-  // )
+    }),
+    {
+      name: 'auth-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+        biometricEnabled: state.biometricEnabled
+      })
+    }
+  )
 );

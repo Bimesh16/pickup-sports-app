@@ -725,18 +725,6 @@ const ProfileScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Test Image Picker Button */}
-        <View style={[styles.bioSection, { marginHorizontal: 20, marginVertical: 8 }]}>
-          <TouchableOpacity 
-            style={[styles.bioButton, styles.bioSaveButton]}
-            onPress={() => {
-              console.log('Test button pressed - this should now work with the modal');
-              // The SportRing now handles image picking with the modal
-            }}
-          >
-            <Text style={styles.bioButtonText}>Test Image Picker (Use SportRing)</Text>
-          </TouchableOpacity>
-        </View>
 
         {/* My Sports Profile */}
         <MySportsProfile

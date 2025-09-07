@@ -15,11 +15,23 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
   onCameraPress,
   onGalleryPress
 }) => {
+  console.log('ImagePickerModal: Rendering with visible:', visible);
+  
   if (Platform.OS !== 'web') {
     // For native, we can use Alert.alert
+    console.log('ImagePickerModal: Not web platform, returning null');
     return null;
   }
+  
+  console.log('ImagePickerModal: Web platform, rendering modal');
 
+  if (!visible) {
+    console.log('ImagePickerModal: Not visible, returning null');
+    return null;
+  }
+  
+  console.log('ImagePickerModal: Rendering modal with visible=true');
+  
   return (
     <Modal
       visible={visible}
@@ -37,9 +49,13 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
           </View>
           
           <Text style={styles.subtitle}>Choose how you want to select your photo</Text>
+          <Text style={styles.note}>On mobile devices, "Camera" will open your camera app</Text>
           
           <View style={styles.options}>
-            <TouchableOpacity style={styles.option} onPress={onCameraPress}>
+            <TouchableOpacity style={styles.option} onPress={() => {
+              console.log('ImagePickerModal: Camera button pressed');
+              onCameraPress();
+            }}>
               <View style={styles.optionIcon}>
                 <Ionicons name="camera" size={32} color="#22D3EE" />
               </View>
@@ -47,7 +63,10 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
               <Text style={styles.optionSubtext}>Take a new photo</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.option} onPress={onGalleryPress}>
+            <TouchableOpacity style={styles.option} onPress={() => {
+              console.log('ImagePickerModal: Gallery button pressed');
+              onGalleryPress();
+            }}>
               <View style={styles.optionIcon}>
                 <Ionicons name="images" size={32} color="#22D3EE" />
               </View>
@@ -101,8 +120,15 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#9CA3AF',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  note: {
+    fontSize: 14,
+    color: '#6B7280',
     marginBottom: 24,
     textAlign: 'center',
+    fontStyle: 'italic',
   },
   options: {
     gap: 16,

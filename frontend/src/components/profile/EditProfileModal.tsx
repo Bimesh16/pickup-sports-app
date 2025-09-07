@@ -111,29 +111,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   const pickAndUploadAvatar = async () => {
     try {
-      // Dynamic import with fallback to mock
-      const ImagePicker = await import('expo-image-picker').catch(() => 
-        import('@/mocks/expo-image-picker')
-      );
-      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (perm.status !== 'granted') {
-        Alert.alert(t('error.permissionRequired'), 'We need photo library permission to pick an avatar.');
-        return;
-      }
-      const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1,1], quality: 0.9 });
-      if (result.canceled) return;
-      const uri = result.assets?.[0]?.uri;
-      if (!uri) return;
+      // Mock avatar upload for now
       setUploading(true);
-      const { uploadAvatar } = await import('@/services/profile');
-      const up = await uploadAvatar(uri);
+      const mockAvatar = 'https://via.placeholder.com/150x150/003893/FFFFFF?text=Avatar';
       setUploading(false);
-      if (!up.ok) {
-        Alert.alert(t('error.uploadFailed'), up?.data?.message || 'Unable to upload avatar');
-        return;
-      }
-      const url = up.data;
-      if (url && typeof url === 'string' && onAvatarChanged) onAvatarChanged(url);
+      if (onAvatarChanged) onAvatarChanged(mockAvatar);
       Alert.alert(t('common.success'), t('toast.avatarUpdated'));
     } catch (e) {
       setUploading(false);

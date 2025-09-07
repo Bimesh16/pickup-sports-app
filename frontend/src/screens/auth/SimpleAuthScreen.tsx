@@ -97,6 +97,7 @@ const SimpleAuthScreen: React.FC = () => {
   };
 
   const handleLogin = async () => {
+    console.log('HandleLogin called with:', { username, password });
     // Clear previous errors
     setErrors({});
 
@@ -112,8 +113,11 @@ const SimpleAuthScreen: React.FC = () => {
 
     setIsLoading(true);
     try {
+      console.log('Calling login function...');
       await login(username.trim(), password);
+      console.log('Login function completed successfully');
     } catch (error: any) {
+      console.log('Login error caught in SimpleAuthScreen:', error);
       // Check if it's a credentials error vs other error
       if (error.message && error.message.includes('Invalid credentials')) {
         setErrors({ 
@@ -770,10 +774,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
     paddingVertical: spacing.sm,
-    outline: 'none',
-    border: 'none',
     backgroundColor: 'transparent',
-    boxShadow: 'none',
   },
   errorText: {
     color: colors.error,
