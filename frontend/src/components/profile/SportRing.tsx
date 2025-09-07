@@ -1,11 +1,14 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Animated, StyleSheet } from 'react-native';
+import { View, Animated, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface SportRingProps {
   sport: string;
   size?: number;
   isActive?: boolean;
   onPress?: () => void;
+  avatar?: string;
+  onAvatarPress?: () => void;
 }
 
 const SPORT_COLORS = {
@@ -24,7 +27,9 @@ const SportRing: React.FC<SportRingProps> = ({
   sport, 
   size = 100, 
   isActive = false, 
-  onPress 
+  onPress,
+  avatar,
+  onAvatarPress
 }) => {
   const glowAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -137,8 +142,8 @@ const SportRing: React.FC<SportRingProps> = ({
         ]}
       />
       
-      {/* Inner content area */}
-      <View
+      {/* Inner content area with avatar */}
+      <TouchableOpacity
         style={[
           styles.innerContent,
           {
@@ -147,7 +152,29 @@ const SportRing: React.FC<SportRingProps> = ({
             borderRadius: (size - 8) / 2,
           },
         ]}
-      />
+        onPress={onAvatarPress}
+        activeOpacity={0.8}
+      >
+        {avatar ? (
+          <Image
+            source={{ uri: avatar }}
+            style={[
+              styles.avatarImage,
+              {
+                width: size - 16,
+                height: size - 16,
+                borderRadius: (size - 16) / 2,
+              },
+            ]}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={styles.avatarPlaceholder}>
+            <Ionicons name="person" size={size * 0.4} color="rgba(255,255,255,0.6)" />
+            <Text style={[styles.uploadText, { fontSize: size * 0.12 }]}>Tap to upload</Text>
+          </View>
+        )}
+      </TouchableOpacity>
     </Animated.View>
   );
 };
@@ -169,6 +196,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(17, 24, 39, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  avatarImage: {
+    backgroundColor: 'rgba(17, 24, 39, 0.9)',
+  },
+  avatarPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
+  uploadText: {
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 4,
+    textAlign: 'center',
   },
 });
 

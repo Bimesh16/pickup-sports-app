@@ -575,42 +575,37 @@ const ProfileScreen: React.FC = () => {
                 sport={selectedSport || 'soccer'} 
                 size={100} 
                 isActive={true}
+                avatar={user.avatar}
+                onAvatarPress={() => setShowEditProfile(true)}
                 onPress={() => Alert.alert('Sport Ring', 'Sport ring tapped!')}
               />
-              <View style={styles.avatarOverlay}>
-                <Image
-                  source={{ uri: user.avatar || 'https://via.placeholder.com/80x80/4A5568/FFFFFF?text=' + (user?.name?.charAt(0) || 'U') }}
-                  style={styles.avatar}
-                />
-                <View style={styles.onlineStatus} />
-              </View>
             </View>
             <View style={styles.userInfo}>
               <Text style={[styles.userName, highContrast && { color: '#fff' }]}>{user.name}</Text>
               <Text style={[styles.userUsername, highContrast && { color: 'rgba(255,255,255,0.8)' }]}>@{user.username}</Text>
               
-              {/* Age, Nationality, and Edit Profile */}
+              {/* User Details: Nationality, Gender, Edit Profile */}
               <View style={styles.userDetailsRow}>
-                {user.birthDate && calculateAge(user.birthDate) && (
-                  <View style={styles.userDetailChip}>
-                    <Ionicons name="calendar-outline" size={14} color="#22D3EE" />
-                    <Text style={styles.userDetailText}>{calculateAge(user.birthDate)} years old</Text>
-                  </View>
-                )}
                 <View style={styles.userDetailChip}>
                   <Ionicons name="flag-outline" size={14} color="#A3E635" />
-                  <Text style={styles.userDetailText}>{user.nationality || user.country || 'Nepal'}</Text>
+                  <Text style={styles.userDetailText}>{user.nationality || 'Nepal'}</Text>
                 </View>
-              <TouchableOpacity 
-                style={styles.editProfileButton} 
-                onPress={() => setShowEditProfile(true)}
-                accessibilityLabel="Edit Profile"
-                accessibilityRole="button"
-                accessibilityHint="Opens edit profile modal"
-              >
-                <Ionicons name="create-outline" size={14} color="#FB7185" />
-                <Text style={styles.editProfileText}>Edit Profile</Text>
-              </TouchableOpacity>
+                {user.gender && (
+                  <View style={styles.userDetailChip}>
+                    <Ionicons name="person-outline" size={14} color="#F59E0B" />
+                    <Text style={styles.userDetailText}>{user.gender}</Text>
+                  </View>
+                )}
+                <TouchableOpacity 
+                  style={styles.editProfileButton} 
+                  onPress={() => setShowEditProfile(true)}
+                  accessibilityLabel="Edit Profile"
+                  accessibilityRole="button"
+                  accessibilityHint="Opens edit profile modal"
+                >
+                  <Ionicons name="create-outline" size={14} color="#FB7185" />
+                  <Text style={styles.editProfileText}>Edit Profile</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -677,45 +672,6 @@ const ProfileScreen: React.FC = () => {
             </View>
           </Animated.View>
 
-          {/* Enhanced Personal Info Chips */}
-          <Animated.View 
-            style={[
-              styles.personalInfoRow,
-              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
-            ]}
-          >
-            {user.birthDate && calculateAge(user.birthDate) && (
-              <Animated.View 
-                style={[
-                  styles.infoChip,
-                  { transform: [{ scale: scaleAnim }] }
-                ]}
-              >
-                <Ionicons name="calendar-outline" size={16} color="#3B82F6" />
-                <Text style={styles.infoChipText}>{calculateAge(user.birthDate)} years old</Text>
-              </Animated.View>
-            )}
-            <Animated.View 
-              style={[
-                styles.infoChip,
-                { transform: [{ scale: scaleAnim }] }
-              ]}
-            >
-              <Ionicons name="flag-outline" size={16} color="#10B981" />
-              <Text style={styles.infoChipText}>{user.nationality || user.country || 'Nepal'}</Text>
-            </Animated.View>
-            {user.gender && (
-              <Animated.View 
-                style={[
-                  styles.infoChip,
-                  { transform: [{ scale: scaleAnim }] }
-                ]}
-              >
-                <Ionicons name="person-outline" size={16} color="#F59E0B" />
-                <Text style={styles.infoChipText}>{user.gender}</Text>
-              </Animated.View>
-            )}
-          </Animated.View>
 
           {/* Sport Filter Pills */}
           <SportFilterPills
@@ -1095,8 +1051,8 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   header: {
-    paddingTop: 50,
-    paddingBottom: 20,
+    paddingTop: 40,
+    paddingBottom: 16,
     paddingHorizontal: 20,
   },
   headerContent: {
