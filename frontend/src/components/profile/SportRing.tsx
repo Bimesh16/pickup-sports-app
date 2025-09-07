@@ -94,6 +94,7 @@ const SportRing: React.FC<SportRingProps> = ({
 
   const handleAvatarPress = async () => {
     try {
+      console.log('SportRing: handleAvatarPress called');
       const result = await ImagePickerService.showImagePicker({
         allowsEditing: true,
         aspect: [1, 1],
@@ -101,11 +102,15 @@ const SportRing: React.FC<SportRingProps> = ({
         mediaTypes: 'Images',
       });
 
+      console.log('SportRing: Image picker result:', result);
       if (result && onAvatarChange) {
+        console.log('SportRing: Calling onAvatarChange with URI:', result.uri);
         onAvatarChange(result.uri);
+      } else {
+        console.log('SportRing: No result or onAvatarChange not provided');
       }
     } catch (error) {
-      console.error('Error picking image:', error);
+      console.error('SportRing: Error picking image:', error);
       Alert.alert('Error', 'Failed to select image');
     }
   };

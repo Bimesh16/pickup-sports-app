@@ -577,9 +577,13 @@ const ProfileScreen: React.FC = () => {
                 isActive={true}
                 avatar={user.avatar}
                 onAvatarChange={(uri) => {
+                  console.log('ProfileScreen: onAvatarChange called with URI:', uri);
                   if (user) {
+                    console.log('ProfileScreen: Updating user avatar');
                     setUser({ ...user, avatar: uri });
                     // You can also save to backend here
+                  } else {
+                    console.log('ProfileScreen: No user found');
                   }
                 }}
                 onPress={() => Alert.alert('Sport Ring', 'Sport ring tapped!')}

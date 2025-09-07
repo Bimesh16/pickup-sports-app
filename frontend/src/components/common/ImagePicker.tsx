@@ -38,12 +38,15 @@ class ImagePickerService {
     options: ImagePickerOptions = {}
   ): Promise<ImagePickerResult | null> {
     try {
+      console.log('ImagePickerService: showImagePicker called');
       const hasPermission = await this.requestPermissions();
       if (!hasPermission) {
+        console.log('ImagePickerService: Permission denied');
         Alert.alert('Permission Required', 'Please grant permission to access your photos and camera');
         return null;
       }
 
+      console.log('ImagePickerService: Showing alert dialog');
       return new Promise((resolve) => {
         Alert.alert(
           'Select Photo',
@@ -51,16 +54,25 @@ class ImagePickerService {
           [
             {
               text: 'Camera',
-              onPress: () => this.launchCamera(options).then(resolve),
+              onPress: () => {
+                console.log('ImagePickerService: Camera selected');
+                this.launchCamera(options).then(resolve);
+              },
             },
             {
               text: 'Photo Library',
-              onPress: () => this.launchImageLibrary(options).then(resolve),
+              onPress: () => {
+                console.log('ImagePickerService: Photo Library selected');
+                this.launchImageLibrary(options).then(resolve);
+              },
             },
             {
               text: 'Cancel',
               style: 'cancel',
-              onPress: () => resolve(null),
+              onPress: () => {
+                console.log('ImagePickerService: Cancelled');
+                resolve(null);
+              },
             },
           ]
         );
@@ -120,6 +132,7 @@ class ImagePickerService {
 
   private static createWebFileInput(type: 'camera' | 'gallery'): Promise<ImagePickerResult | null> {
     return new Promise((resolve) => {
+      console.log('ImagePickerService: Creating web file input for', type);
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
@@ -129,10 +142,13 @@ class ImagePickerService {
       }
 
       input.onchange = (event: any) => {
+        console.log('ImagePickerService: File input changed');
         const file = event.target.files[0];
         if (file) {
+          console.log('ImagePickerService: File selected:', file.name, file.type, file.size);
           const reader = new FileReader();
           reader.onload = (e: any) => {
+            console.log('ImagePickerService: File read successfully');
             resolve({
               uri: e.target.result,
               width: 300,
@@ -142,13 +158,23 @@ class ImagePickerService {
               fileSize: file.size,
             });
           };
+          reader.onerror = (error) => {
+            console.error('ImagePickerService: Error reading file:', error);
+            resolve(null);
+          };
           reader.readAsDataURL(file);
         } else {
+          console.log('ImagePickerService: No file selected');
           resolve(null);
         }
       };
 
-      input.oncancel = () => resolve(null);
+      input.oncancel = () => {
+        console.log('ImagePickerService: File input cancelled');
+        resolve(null);
+      };
+      
+      console.log('ImagePickerService: Clicking file input');
       input.click();
     });
   }
