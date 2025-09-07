@@ -576,7 +576,12 @@ const ProfileScreen: React.FC = () => {
                 size={100} 
                 isActive={true}
                 avatar={user.avatar}
-                onAvatarPress={() => setShowEditProfile(true)}
+                onAvatarChange={(uri) => {
+                  if (user) {
+                    setUser({ ...user, avatar: uri });
+                    // You can also save to backend here
+                  }
+                }}
                 onPress={() => Alert.alert('Sport Ring', 'Sport ring tapped!')}
               />
             </View>

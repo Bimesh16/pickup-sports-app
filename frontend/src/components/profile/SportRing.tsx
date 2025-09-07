@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet, Image, TouchableOpacity, Text, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import ImagePickerService from '@/components/common/ImagePicker';
 
 interface SportRingProps {
   sport: string;
@@ -8,7 +9,7 @@ interface SportRingProps {
   isActive?: boolean;
   onPress?: () => void;
   avatar?: string;
-  onAvatarPress?: () => void;
+  onAvatarChange?: (uri: string) => void;
 }
 
 const SPORT_COLORS = {
@@ -29,7 +30,7 @@ const SportRing: React.FC<SportRingProps> = ({
   isActive = false, 
   onPress,
   avatar,
-  onAvatarPress
+  onAvatarChange
 }) => {
   const glowAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -91,9 +92,21 @@ const SportRing: React.FC<SportRingProps> = ({
     }
   };
 
-  const handleAvatarPress = () => {
-    if (onAvatarPress) {
-      onAvatarPress();
+  const handleAvatarPress = async () => {
+    try {
+      const result = await ImagePickerService.showImagePicker({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+        mediaTypes: 'Images',
+      });
+
+      if (result && onAvatarChange) {
+        onAvatarChange(result.uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to select image');
     }
   };
 
