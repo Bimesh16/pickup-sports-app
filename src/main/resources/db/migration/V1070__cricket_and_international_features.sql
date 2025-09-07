@@ -432,12 +432,12 @@ timestamp = NOW();
 -- =============================================
 
 -- Insert sample cricket games (if venues exist)
-INSERT INTO game (sport, location, time, skill_level, latitude, longitude, user_id, status, game_type, description, min_players, max_players, capacity, price_per_player, total_cost, duration_minutes, rules, equipment_required, created_at, updated_at)
+INSERT INTO game (sport, location, time, skill_level, latitude, longitude, user_id, status, game_type, description, min_players, max_players, price_per_player, total_cost, duration_minutes, rules, equipment_required, created_at, updated_at)
 SELECT 
     'Cricket', 
     'Cricket Ground Central Park', 
     (CURRENT_TIMESTAMP + INTERVAL '2 days' + INTERVAL '14 hours')::timestamptz,
-    'Intermediate',
+    'INTERMEDIATE',
     40.7829, 
     -73.9654,
     u.id,
@@ -446,21 +446,22 @@ SELECT
     'T20 cricket match at Central Park. All skill levels welcome! Proper pitch and equipment provided.',
     16,
     22,
-    22,
     25.00,
     550.00,
     180,
     'T20 cricket rules, 20 overs per side, powerplay restrictions apply',
-    'Cricket whites or colored clothing, own bat preferred, all other equipment provided'
+    'Cricket whites or colored clothing, own bat preferred, all other equipment provided',
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 FROM (SELECT id FROM app_user LIMIT 1) u
 WHERE EXISTS (SELECT 1 FROM app_user);
 
-INSERT INTO game (sport, location, time, skill_level, latitude, longitude, user_id, status, game_type, description, min_players, max_players, capacity, price_per_player, total_cost, duration_minutes, rules, equipment_required, created_at, updated_at)
+INSERT INTO game (sport, location, time, skill_level, latitude, longitude, user_id, status, game_type, description, min_players, max_players, price_per_player, total_cost, duration_minutes, rules, equipment_required, created_at, updated_at)
 SELECT 
     'Cricket', 
     'Local Cricket Club', 
     (CURRENT_TIMESTAMP + INTERVAL '5 days' + INTERVAL '10 hours')::timestamptz,
-    'Advanced',
+    'ADVANCED',
     28.6139, 
     77.2090,
     u.id,
@@ -469,12 +470,13 @@ SELECT
     'Competitive ODI-style cricket match. Advanced players only. Professional setup with scorer and umpire.',
     18,
     22,
-    22,
     15.00,
     330.00,
     300,
     'ODI format cricket, 30 overs per side due to time constraints, competitive play',
-    'Cricket whites, own bat and gloves, all protective gear provided'
+    'Cricket whites, own bat and gloves, all protective gear provided',
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 FROM (SELECT id FROM app_user ORDER BY id OFFSET 1 LIMIT 1) u
 WHERE EXISTS (SELECT 1 FROM app_user);
 
