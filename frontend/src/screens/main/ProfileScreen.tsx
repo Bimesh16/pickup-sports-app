@@ -681,15 +681,6 @@ const ProfileScreen: React.FC = () => {
           />
         </LinearGradient>
 
-        {/* My Sports Profile */}
-        <MySportsProfile
-          sports={sportsProfiles}
-          onAddSport={handleAddSport}
-          onEditSport={handleEditSport}
-          onRemoveSport={handleRemoveSport}
-        />
-
-
         {/* Bio Section */}
         <View style={[styles.bioSection, highContrast && { backgroundColor: '#0A0A0A' }]}>
           <View style={styles.bioHeader}>
@@ -724,6 +715,14 @@ const ProfileScreen: React.FC = () => {
             </Text>
           )}
         </View>
+
+        {/* My Sports Profile */}
+        <MySportsProfile
+          sports={sportsProfiles}
+          onAddSport={handleAddSport}
+          onEditSport={handleEditSport}
+          onRemoveSport={handleRemoveSport}
+        />
 
         {/* Upcoming Games */}
         <View style={styles.section}>

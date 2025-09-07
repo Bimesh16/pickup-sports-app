@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Animated, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
+import { View, Animated, StyleSheet, Image, TouchableOpacity, Text, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface SportRingProps {
@@ -91,6 +91,12 @@ const SportRing: React.FC<SportRingProps> = ({
     }
   };
 
+  const handleAvatarPress = () => {
+    if (onAvatarPress) {
+      onAvatarPress();
+    }
+  };
+
   const glowOpacity = glowAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0.3, 0.8],
@@ -152,7 +158,7 @@ const SportRing: React.FC<SportRingProps> = ({
             borderRadius: (size - 8) / 2,
           },
         ]}
-        onPress={onAvatarPress}
+        onPress={handleAvatarPress}
         activeOpacity={0.8}
       >
         {avatar ? (
