@@ -49,4 +49,31 @@ public interface GameService {
      * Deletes a game.
      */
     void deleteGame(Long gameId);
+
+    /**
+     * Gets featured games with high participation or special status.
+     */
+    List<GameSummaryDTO> getFeaturedGames();
+
+    /**
+     * Gets games created or joined by the current user.
+     */
+    List<GameSummaryDTO> getMyGames();
+
+    /**
+     * Advanced game search with multiple filters.
+     */
+    List<GameSummaryDTO> searchGamesAdvanced(String sport, String skillLevel, 
+                                           String location, Double minCost, 
+                                           Double maxCost, int page, int size);
+
+    /**
+     * Join an existing game.
+     */
+    GameSummaryDTO joinGame(Long gameId);
+
+    /**
+     * Leave a game you previously joined.
+     */
+    void leaveGame(Long gameId);
 }

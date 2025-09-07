@@ -140,6 +140,64 @@ public class GameController {
         return ResponseEntity.noContent().build();
     }
 
+    // ==================== New Dashboard and Game Management APIs ====================
+
+    @GetMapping("/featured")
+    @Operation(summary = "Get featured games", 
+               description = "Returns featured games with high participation or special status")
+    public ResponseEntity<List<GameSummaryDTO>> getFeaturedGames() {
+        log.info("Getting featured games");
+        List<GameSummaryDTO> games = gameService.getFeaturedGames();
+        return ResponseEntity.ok(games);
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Get user's games", 
+               description = "Returns games created or joined by the current user")
+    public ResponseEntity<List<GameSummaryDTO>> getMyGames() {
+        log.info("Getting user's games");
+        List<GameSummaryDTO> games = gameService.getMyGames();
+        return ResponseEntity.ok(games);
+    }
+
+    @GetMapping("/search/advanced")
+    @Operation(summary = "Advanced game search", 
+               description = "Search games with multiple filters")
+    public ResponseEntity<List<GameSummaryDTO>> searchGamesAdvanced(
+            @RequestParam(required = false) String sport,
+            @RequestParam(required = false) String skillLevel,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) Double minCost,
+            @RequestParam(required = false) Double maxCost,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        log.info("Advanced game search: sport={}, skillLevel={}, location={}, minCost={}, maxCost={}", 
+                sport, skillLevel, location, minCost, maxCost);
+        
+        List<GameSummaryDTO> games = gameService.searchGamesAdvanced(
+                sport, skillLevel, location, minCost, maxCost, page, size);
+        return ResponseEntity.ok(games);
+    }
+
+    @PostMapping("/{gameId}/join")
+    @Operation(summary = "Join a game", 
+               description = "Join an existing game")
+    public ResponseEntity<GameSummaryDTO> joinGame(@PathVariable Long gameId) {
+        log.info("Joining game: {}", gameId);
+        GameSummaryDTO game = gameService.joinGame(gameId);
+        return ResponseEntity.ok(game);
+    }
+
+    @PostMapping("/{gameId}/leave")
+    @Operation(summary = "Leave a game", 
+               description = "Leave a game you previously joined")
+    public ResponseEntity<Void> leaveGame(@PathVariable Long gameId) {
+        log.info("Leaving game: {}", gameId);
+        gameService.leaveGame(gameId);
+        return ResponseEntity.ok().build();
+    }
+
     // ==================== Country-Specific Routing ====================
 
     /**

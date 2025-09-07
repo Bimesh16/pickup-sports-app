@@ -434,4 +434,67 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
         List<Game> findByVenueIdAndTimeOverlap(@Param("venueId") Long venueId,
                                                @Param("startTime") OffsetDateTime startTime,
                                            @Param("endTime") OffsetDateTime endTime);
+
+    // New methods for Dashboard and Game Management APIs
+    
+    /**
+     * Find upcoming games for a user (games they created or joined)
+     */
+    @Query("""
+        SELECT DISTINCT g FROM Game g 
+        LEFT JOIN g.participants p 
+        WHERE (g.user.id = :userId OR p.userId = :userId) 
+        AND g.time > :now 
+        ORDER BY g.time
+        """)
+    List<Game> findUpcomingGamesByUserId(@Param("userId") String userId, @Param("now") java.time.LocalDateTime now);
+
+    /**
+     * Find featured games (games with high participation or special status)
+     */
+    @Query("""
+        SELECT g FROM Game g 
+        WHERE g.status = 'PUBLISHED' 
+        AND g.time > :now 
+        AND (g.featured = true OR SIZE(g.participants) >= 5)
+        ORDER BY g.time
+        """)
+    List<Game> findFeaturedGames(@Param("now") java.time.LocalDateTime now);
+
+    /**
+     * Find nearby games within radius
+     */
+    @Query("""
+        SELECT g FROM Game g 
+        WHERE g.status = 'PUBLISHED' 
+        AND g.time > :now
+        AND (6371 * 2 * ASIN(SQRT(POWER(SIN(RADIANS(g.latitude - :lat) / 2), 2) +
+            COS(RADIANS(:lat)) * COS(RADIANS(g.latitude)) * 
+            POWER(SIN(RADIANS(g.longitude - :lng) / 2), 2)))) <= :radiusKm
+        ORDER BY g.time
+        """)
+    List<Game> findNearbyGames(@Param("lat") double lat, @Param("lng") double lng, 
+                              @Param("radiusKm") double radiusKm, @Param("now") java.time.LocalDateTime now);
+
+    /**
+     * Advanced game search with multiple filters
+     */
+    @Query("""
+        SELECT g FROM Game g 
+        WHERE g.status = 'PUBLISHED' 
+        AND g.time > :now
+        AND (:sport IS NULL OR g.sport = :sport)
+        AND (:skillLevel IS NULL OR g.skillLevel = :skillLevel)
+        AND (:location IS NULL OR LOWER(g.location) LIKE LOWER(CONCAT('%', :location, '%')))
+        AND (:minCost IS NULL OR g.cost >= :minCost)
+        AND (:maxCost IS NULL OR g.cost <= :maxCost)
+        ORDER BY g.time
+        """)
+    Page<Game> searchGamesAdvanced(@Param("sport") String sport, 
+                                  @Param("skillLevel") String skillLevel,
+                                  @Param("location") String location,
+                                  @Param("minCost") Double minCost,
+                                  @Param("maxCost") Double maxCost,
+                                  @Param("now") java.time.LocalDateTime now,
+                                  Pageable pageable);
 }

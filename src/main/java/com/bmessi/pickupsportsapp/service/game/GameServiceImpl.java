@@ -167,4 +167,68 @@ public class GameServiceImpl implements GameService {
         if (request.equipmentProvided() != null) game.setEquipmentProvided(request.equipmentProvided());
         if (request.equipmentRequired() != null) game.setEquipmentRequired(request.equipmentRequired());
     }
+
+    // ==================== New Dashboard and Game Management Methods ====================
+
+    @Override
+    public List<GameSummaryDTO> getFeaturedGames() {
+        log.info("Getting featured games");
+        
+        List<Game> games = gameRepository.findFeaturedGames(java.time.LocalDateTime.now());
+        
+        return games.stream()
+                .map(this::convertToGameSummaryDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<GameSummaryDTO> getMyGames() {
+        log.info("Getting user's games");
+        
+        // This would need to get the current user ID from security context
+        // For now, return empty list as we need to implement user context
+        return List.of();
+    }
+
+    @Override
+    public List<GameSummaryDTO> searchGamesAdvanced(String sport, String skillLevel, 
+                                                   String location, Double minCost, 
+                                                   Double maxCost, int page, int size) {
+        log.info("Advanced game search: sport={}, skillLevel={}, location={}, minCost={}, maxCost={}", 
+                sport, skillLevel, location, minCost, maxCost);
+        
+        var gamePage = gameRepository.searchGamesAdvanced(
+                sport, skillLevel, location, minCost, maxCost, 
+                java.time.LocalDateTime.now(),
+                org.springframework.data.domain.PageRequest.of(page, size));
+        
+        return gamePage.getContent().stream()
+                .map(this::convertToGameSummaryDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public GameSummaryDTO joinGame(Long gameId) {
+        log.info("Joining game: {}", gameId);
+        
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found: " + gameId));
+        
+        // TODO: Implement actual join logic with GameParticipant
+        // For now, just return the game summary
+        
+        return convertToGameSummaryDTO(game);
+    }
+
+    @Override
+    public void leaveGame(Long gameId) {
+        log.info("Leaving game: {}", gameId);
+        
+        if (!gameRepository.existsById(gameId)) {
+            throw new RuntimeException("Game not found: " + gameId);
+        }
+        
+        // TODO: Implement actual leave logic with GameParticipant
+        // For now, just log the action
+    }
 }
