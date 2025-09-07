@@ -9,6 +9,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
@@ -90,10 +91,26 @@ public class User {
     @Column(name = "username", nullable = false, unique = true, length = 50)
     private String username;
 
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
+    @Size(max = 100, message = "Email must not exceed 100 characters")
+    @Column(name = "email", nullable = false, unique = true, length = 100)
+    private String email;
+
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters")
     @Column(name = "password", nullable = false, length = 128)
     private String password;
+
+    @NotBlank(message = "First name is required")
+    @Size(min = 1, max = 50, message = "First name must be between 1 and 50 characters")
+    @Column(name = "first_name", nullable = false, length = 50)
+    private String firstName;
+
+    @NotBlank(message = "Last name is required")
+    @Size(min = 1, max = 50, message = "Last name must be between 1 and 50 characters")
+    @Column(name = "last_name", nullable = false, length = 50)
+    private String lastName;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
@@ -171,6 +188,29 @@ public class User {
     @Pattern(regexp = "^[+]?[0-9\\s\\-\\(\\)]+$", message = "Phone number must contain only numbers, spaces, hyphens, and parentheses")
     @Column(name = "phone", length = 20)
     private String phone;
+
+    @Size(max = 20, message = "Gender must not exceed 20 characters")
+    @Column(name = "gender", length = 20)
+    private String gender;
+
+    @Size(max = 50, message = "Nationality must not exceed 50 characters")
+    @Column(name = "nationality", length = 50)
+    private String nationality;
+
+    @Column(name = "birth_date")
+    private java.time.LocalDate birthDate;
+
+    @Size(max = 50, message = "Country must not exceed 50 characters")
+    @Column(name = "country", length = 50)
+    private String country;
+
+    @Size(max = 50, message = "City must not exceed 50 characters")
+    @Column(name = "city", length = 50)
+    private String city;
+
+    @Size(max = 20, message = "Default cricket format must not exceed 20 characters")
+    @Column(name = "default_cricket_format", length = 20)
+    private String defaultCricketFormat;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

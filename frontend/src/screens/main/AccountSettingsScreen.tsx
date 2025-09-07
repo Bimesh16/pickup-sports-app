@@ -22,12 +22,13 @@ import { useImagePicker } from '@/components/common/ImagePickerComponent';
 
 interface UserProfile {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   username: string;
   email: string;
   phone?: string;
   bio?: string;
-  avatar?: string;
+  avatarUrl?: string;
   preferredSport?: string;
   skillLevel?: string;
   age?: number;
@@ -38,7 +39,7 @@ interface UserProfile {
   gender?: string;
   nationality?: string;
   birthDate?: string;
-  isEmailVerified?: boolean;
+  isVerified?: boolean;
   defaultCricketFormat?: string;
 }
 
@@ -67,12 +68,13 @@ const AccountSettingsScreen: React.FC = () => {
   // State management
   const [profile, setProfile] = useState<UserProfile>({
     id: user?.id || '',
-    name: user?.name || '',
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
     username: user?.username || '',
     email: user?.email || '',
     phone: user?.phone || '',
     bio: user?.bio || '',
-    avatar: user?.avatar || '',
+    avatarUrl: user?.avatarUrl || '',
     preferredSport: 'soccer',
     skillLevel: 'intermediate',
     age: 25,
@@ -80,7 +82,7 @@ const AccountSettingsScreen: React.FC = () => {
     country: 'Nepal',
     gender: 'male',
     nationality: 'Nepali',
-    isEmailVerified: false,
+    isVerified: false,
     defaultCricketFormat: 'T20',
   });
 
@@ -260,7 +262,7 @@ const AccountSettingsScreen: React.FC = () => {
   const handleAvatarUpload = () => {
     showImagePicker((result) => {
       if (result) {
-        setProfile(prev => ({ ...prev, avatar: result.uri }));
+        setProfile(prev => ({ ...prev, avatarUrl: result.uri }));
         // Here you would also upload to backend via PUT /profiles/me/avatar
         console.log('Avatar uploaded:', result.uri);
       }
@@ -322,8 +324,8 @@ const AccountSettingsScreen: React.FC = () => {
       {/* Avatar Section */}
       <View style={styles.avatarSection}>
         <TouchableOpacity onPress={handleAvatarUpload} style={styles.avatarContainer}>
-          {profile.avatar ? (
-            <Image source={{ uri: profile.avatar }} style={styles.avatar} />
+          {profile.avatarUrl ? (
+            <Image source={{ uri: profile.avatarUrl }} style={styles.avatar} />
           ) : (
             <View style={styles.avatarPlaceholder}>
               <Ionicons name="person" size={40} color={colors.textSecondary} />
@@ -338,12 +340,23 @@ const AccountSettingsScreen: React.FC = () => {
 
       {/* Basic Info */}
       <View style={styles.formGroup}>
-        <Text style={[styles.formLabel, highContrast && { color: '#fff' }]}>Full Name *</Text>
+        <Text style={[styles.formLabel, highContrast && { color: '#fff' }]}>First Name *</Text>
         <TextInput
           style={[styles.formInput, highContrast && { backgroundColor: '#0A0A0A', color: '#fff', borderColor: '#333' }]}
-          value={profile.name}
-          onChangeText={(text) => setProfile(prev => ({ ...prev, name: text }))}
-          placeholder="Enter your full name"
+          value={profile.firstName}
+          onChangeText={(text) => setProfile(prev => ({ ...prev, firstName: text }))}
+          placeholder="Enter your first name"
+          placeholderTextColor={highContrast ? '#666' : colors.textSecondary}
+        />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={[styles.formLabel, highContrast && { color: '#fff' }]}>Last Name *</Text>
+        <TextInput
+          style={[styles.formInput, highContrast && { backgroundColor: '#0A0A0A', color: '#fff', borderColor: '#333' }]}
+          value={profile.lastName}
+          onChangeText={(text) => setProfile(prev => ({ ...prev, lastName: text }))}
+          placeholder="Enter your last name"
           placeholderTextColor={highContrast ? '#666' : colors.textSecondary}
         />
       </View>
@@ -504,7 +517,7 @@ const AccountSettingsScreen: React.FC = () => {
             <Text style={styles.changeButtonText}>Change</Text>
           </TouchableOpacity>
         </View>
-        {!profile.isEmailVerified && (
+        {!profile.isVerified && (
           <View style={styles.verificationContainer}>
             <Ionicons name="warning" size={16} color="#F59E0B" />
             <Text style={[styles.verificationText, highContrast && { color: '#E5E7EB' }]}>
@@ -608,11 +621,11 @@ const AccountSettingsScreen: React.FC = () => {
           <View style={styles.securityText}>
             <Text style={[styles.securityTitle, highContrast && { color: '#fff' }]}>Email Verification</Text>
             <Text style={[styles.securitySubtitle, highContrast && { color: '#E5E7EB' }]}>
-              {profile.isEmailVerified ? 'Verified' : 'Not verified'}
+              {profile.isVerified ? 'Verified' : 'Not verified'}
             </Text>
           </View>
         </View>
-        {!profile.isEmailVerified && (
+        {!profile.isVerified && (
           <TouchableOpacity 
             style={styles.changeButton}
             onPress={handleResendVerification}

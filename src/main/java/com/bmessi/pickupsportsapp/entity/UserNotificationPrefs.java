@@ -53,6 +53,35 @@ public class UserNotificationPrefs {
     @Builder.Default
     private boolean pushOnCancel = true;
 
+    // Additional notification categories
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean gameInvites = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean gameUpdates = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean achievements = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean socialActivity = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean marketing = false;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean pushNotifications = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean emailNotifications = true;
+
     // Digest preferences
     @Column(nullable = false)
     @Builder.Default
@@ -92,6 +121,13 @@ public class UserNotificationPrefs {
                 .pushOnRsvp(true)
                 .pushOnCreate(true)
                 .pushOnCancel(true)
+                .gameInvites(true)
+                .gameUpdates(true)
+                .achievements(true)
+                .socialActivity(true)
+                .marketing(false)
+                .pushNotifications(true)
+                .emailNotifications(true)
                 .build();
     }
 }
