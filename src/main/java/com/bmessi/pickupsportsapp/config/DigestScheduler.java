@@ -15,6 +15,7 @@ import java.util.*;
 
 @Component
 @RequiredArgsConstructor
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "digest.enabled", havingValue = "true", matchIfMissing = false)
 public class DigestScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(DigestScheduler.class);

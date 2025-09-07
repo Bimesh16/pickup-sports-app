@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "email.service.enabled", havingValue = "true", matchIfMissing = false)
 public class EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
