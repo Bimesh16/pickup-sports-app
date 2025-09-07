@@ -125,7 +125,11 @@ const SettingsScreen: React.FC = () => {
             icon="person-outline"
             title="Account Settings"
             subtitle="Manage your profile and personal information"
-            onPress={() => setShowAccountModal(true)}
+            onPress={() => {
+              // Navigate to AccountSettingsScreen
+              // This would typically use navigation.navigate('AccountSettings')
+              Alert.alert('Account Settings', 'Account settings will open in a new screen');
+            }}
           />
           
           <SettingItem
