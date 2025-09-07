@@ -1,20 +1,31 @@
 package com.bmessi.pickupsportsapp.dto.ai;
 
-import com.bmessi.pickupsportsapp.dto.game.GameSummaryDTO;
-import com.bmessi.pickupsportsapp.entity.ai.GameRecommendation;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Map;
 
-/**
- * DTO for game recommendations.
- */
-public record GameRecommendationDTO(
-        Long id,
-        GameSummaryDTO recommendedGame,
-        BigDecimal recommendationScore,
-        String reason,
-        GameRecommendation.RecommendationStatus status,
-        String aiModelVersion,
-        OffsetDateTime createdAt
-) {}
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class GameRecommendationDTO {
+    private Long gameId;
+    private String title;
+    private String description;
+    private String sport;
+    private String skillLevel;
+    private String location;
+    private OffsetDateTime dateTime;
+    private Integer currentPlayers;
+    private Integer maxPlayers;
+    private BigDecimal cost;
+    private Double confidenceScore;
+    private String reason;
+    private String recommendationType;
+    private Map<String, Object> metadata;
+}

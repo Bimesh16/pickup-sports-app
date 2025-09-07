@@ -1,20 +1,31 @@
 package com.bmessi.pickupsportsapp.dto.ai;
 
-import com.bmessi.pickupsportsapp.dto.venue.VenueResponse;
-import com.bmessi.pickupsportsapp.entity.ai.VenueRecommendation;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map;
 
-/**
- * DTO for venue recommendations.
- */
-public record VenueRecommendationDTO(
-        Long id,
-        VenueResponse recommendedVenue,
-        BigDecimal recommendationScore,
-        String reason,
-        VenueRecommendation.RecommendationStatus status,
-        String aiModelVersion,
-        OffsetDateTime createdAt
-) {}
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class VenueRecommendationDTO {
+    private Long venueId;
+    private String name;
+    private String address;
+    private Double latitude;
+    private Double longitude;
+    private String description;
+    private Double rating;
+    private BigDecimal cost;
+    private List<String> amenities;
+    private List<String> photos;
+    private Double confidenceScore;
+    private String reason;
+    private String recommendationType;
+    private Map<String, Object> metadata;
+}
