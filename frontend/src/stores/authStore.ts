@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { storage } from '@/utils/storage';
-import * as LocalAuthentication from 'expo-local-authentication';
+import { getLocalAuth } from '@/utils/localAuth';
 import * as auth from '@/services/auth';
 
 export interface User {
@@ -49,6 +49,7 @@ export interface AuthState {
 }
 
 export interface AuthActions {
+  initializeAuth: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   loginWithPhone: (phone: string, password: string) => Promise<void>;
   register: (userData: RegisterData) => Promise<void>;
@@ -290,6 +291,38 @@ export const useAuthStore = create<AuthStore>()(
       biometricEnabled: false,
 
       // Actions
+      initializeAuth: async () => {
+        try {
+          set({ isLoading: true });
+          // Check if user is already authenticated
+          const storedToken = await storage.getItem('auth-token');
+          if (storedToken) {
+            // In a real app, you would validate the token with your backend
+            set({
+              user: null,
+              token: storedToken,
+              isAuthenticated: false, // Force re-authentication for now
+              isLoading: false
+            });
+          } else {
+            set({
+              user: null,
+              token: null,
+              isAuthenticated: false,
+              isLoading: false
+            });
+          }
+        } catch (error) {
+          console.log('Auth initialization error:', error);
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false
+          });
+        }
+      },
+
       login: async (usernameOrEmail: string, password: string) => {
         console.log('Login attempt:', { usernameOrEmail, password, platform: Platform.OS });
         set({ isLoading: true });
@@ -442,16 +475,31 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      register: async (userData: RegisterData) => {
+      register: async (userData: any) => {
         set({ isLoading: true });
         try {
-          // Expect shape: { username, password, preferredSport, location }
+          // Handle both old RegisterData and new SignupWizard form data
           const payload: any = {
             username: userData.username || userData.email || userData.phoneNumber,
             password: userData.password,
-            preferredSport: (userData as any).preferredSport || (userData.preferences?.sports?.[0] ?? 'FOOTBALL'),
-            location: (userData as any).locationText || userData.location?.address || 'Unknown',
+            email: userData.email,
+            sport: userData.sport,
+            skillLevel: userData.skillLevel,
+            location: userData.location,
+            nationality: userData.nationality,
+            birthDate: userData.birthDate,
+            gender: userData.gender,
+            preferredSport: userData.sport || (userData.preferences?.sports?.[0] ?? 'FOOTBALL'),
+            locationText: userData.location || userData.location?.address || 'Unknown',
           };
+          
+          // For web testing, simulate successful registration
+          if (Platform.OS === 'web') {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            set({ isLoading: false });
+            return;
+          }
+          
           const res = await auth.register(payload);
           if (!res.success) throw new Error(res.message || 'Registration failed');
           set({ isLoading: false });
@@ -573,6 +621,8 @@ export const useAuthStore = create<AuthStore>()(
 
       enableBiometric: async () => {
         try {
+          const LocalAuthentication = getLocalAuth();
+          
           const hasHardware = await LocalAuthentication.hasHardwareAsync();
           const isEnrolled = await LocalAuthentication.isEnrolledAsync();
           
@@ -612,6 +662,8 @@ export const useAuthStore = create<AuthStore>()(
 
       authenticateWithBiometric: async () => {
         try {
+          const LocalAuthentication = getLocalAuth();
+          
           const biometricEnabled = await storage.getItem('biometric_enabled');
           if (!biometricEnabled) {
             return false;

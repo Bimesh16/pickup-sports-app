@@ -2,22 +2,27 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as LocalAuthentication from 'expo-local-authentication';
-import { NepalColors, FontSizes, Spacing } from '../../constants/theme';
+import { getLocalAuth } from '@/utils/localAuth';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { InteractiveButton } from './InteractiveButton';
 
 interface BiometricAuthProps {
-  onSuccess: () => void;
+  onSuccess: () => Promise<void>;
   onError: (error: string) => void;
 }
 
-export default function BiometricAuth({ onSuccess, onError }: BiometricAuthProps) {
+const BiometricAuth: React.FC<BiometricAuthProps> = ({ onSuccess, onError }) => {
+  const { colors, isDark } = useTheme();
+  const { currentLanguage } = useLanguage();
   const [isAvailable, setIsAvailable] = useState(false);
-  const [biometricType, setBiometricType] = useState<LocalAuthentication.AuthenticationType[]>([]);
+  const [biometricType, setBiometricType] = useState<string>('');
 
   useEffect(() => {
     checkBiometricAvailability();
@@ -25,19 +30,27 @@ export default function BiometricAuth({ onSuccess, onError }: BiometricAuthProps
 
   const checkBiometricAvailability = async () => {
     try {
+      const LocalAuthentication = getLocalAuth();
+      
       const hasHardware = await LocalAuthentication.hasHardwareAsync();
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
       const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
 
       if (hasHardware && isEnrolled) {
         setIsAvailable(true);
-        setBiometricType(supportedTypes);
-      } else {
-        setIsAvailable(false);
+        
+        if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+          setBiometricType('Face ID');
+        } else if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+          setBiometricType('Touch ID');
+        } else if (supportedTypes.includes(LocalAuthentication.AuthenticationType.IRIS)) {
+          setBiometricType('Iris');
+        } else {
+          setBiometricType('Biometric');
+        }
       }
     } catch (error) {
-      console.error('Error checking biometric availability:', error);
-      setIsAvailable(false);
+      console.log('Biometric availability check error:', error);
     }
   };
 
@@ -48,14 +61,18 @@ export default function BiometricAuth({ onSuccess, onError }: BiometricAuthProps
     }
 
     try {
+      const LocalAuthentication = getLocalAuth();
+      
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Authenticate to continue',
-        cancelLabel: 'Cancel',
-        disableDeviceFallback: false,
+        promptMessage: currentLanguage === 'ne' 
+          ? 'बायोमेट्रिक प्रमाणीकरण' 
+          : 'Biometric Authentication',
+        cancelLabel: currentLanguage === 'ne' ? 'रद्द गर्नुहोस्' : 'Cancel',
+        fallbackLabel: currentLanguage === 'ne' ? 'पासवर्ड प्रयोग गर्नुहोस्' : 'Use Password',
       });
 
       if (result.success) {
-        onSuccess();
+        await onSuccess();
       } else {
         onError('Authentication failed');
       }
@@ -64,64 +81,47 @@ export default function BiometricAuth({ onSuccess, onError }: BiometricAuthProps
     }
   };
 
-  const getBiometricIcon = () => {
-    if (biometricType.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
-      return 'scan';
-    } else if (biometricType.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
-      return 'finger-print';
-    } else if (biometricType.includes(LocalAuthentication.AuthenticationType.IRIS)) {
-      return 'eye';
-    }
-    return 'shield-checkmark';
-  };
-
-  const getBiometricText = () => {
-    if (biometricType.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
-      return 'Face ID';
-    } else if (biometricType.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
-      return 'Touch ID';
-    } else if (biometricType.includes(LocalAuthentication.AuthenticationType.IRIS)) {
-      return 'Iris';
-    }
-    return 'Biometric';
-  };
-
   if (!isAvailable) {
     return null;
   }
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.biometricButton} onPress={handleBiometricAuth}>
-        <Ionicons name={getBiometricIcon()} size={24} color={NepalColors.primary} />
-        <Text style={styles.biometricText}>
-          Use {getBiometricText()}
-        </Text>
-      </TouchableOpacity>
+      <InteractiveButton
+        title={
+          currentLanguage === 'ne' 
+            ? `${biometricType} प्रयोग गर्नुहोस्` 
+            : `Use ${biometricType}`
+        }
+        onPress={handleBiometricAuth}
+        variant="outline"
+        size="medium"
+        style={styles.biometricButton}
+        icon={
+          <Ionicons
+            name={
+              biometricType === 'Face ID' 
+                ? 'scan-outline' 
+                : biometricType === 'Touch ID'
+                ? 'finger-print-outline'
+                : 'shield-checkmark-outline'
+            }
+            size={20}
+            color={colors.primary}
+          />
+        }
+      />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    marginVertical: Spacing.md,
+    marginVertical: 10,
   },
   biometricButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  biometricText: {
-    color: 'white',
-    fontSize: FontSizes.base,
-    fontWeight: '600',
-    marginLeft: Spacing.sm,
+    marginBottom: 10,
   },
 });
 
+export { BiometricAuth };

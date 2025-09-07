@@ -10,18 +10,21 @@ import { NepalTheme } from '@/constants/theme';
 import RootNavigator from '@/navigation/RootNavigator';
 import { LoadingScreen } from '@/screens/LoadingScreen';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useUIStore } from '@/stores/uiStore';
 import { I18nManager } from 'react-native';
 
-export default function App() {
-  const { isLoading: authLoading } = useAuthStore();
+const AppContent: React.FC = () => {
+  const { isLoading: authLoading, initializeAuth } = useAuthStore();
   const { rtlEnabled, highContrast } = useUIStore();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // App initialization - auth is handled by Zustand persist
+        // Initialize authentication
+        await initializeAuth();
         console.log('App initialized');
       } catch (error) {
         console.error('App initialization error:', error);
@@ -29,17 +32,17 @@ export default function App() {
     };
 
     initializeApp();
-  }, []);
+  }, [initializeAuth]);
 
   // Note: changing RTL at runtime may require app reload; we set allowRTL
   I18nManager.allowRTL(rtlEnabled);
 
-  const theme = React.useMemo(() => {
-    if (!highContrast) return NepalTheme;
+  const finalTheme = React.useMemo(() => {
+    if (!highContrast) return theme;
     return {
-      ...NepalTheme,
+      ...theme,
       colors: {
-        ...NepalTheme.colors,
+        ...theme.colors,
         primary: '#FFD700',
         secondary: '#FFFFFF',
         background: '#000000',
@@ -49,8 +52,8 @@ export default function App() {
         onPrimary: '#000000',
         onSecondary: '#000000',
       },
-    } as typeof NepalTheme;
-  }, [highContrast]);
+    } as typeof theme;
+  }, [theme, highContrast]);
 
   const isLoading = authLoading;
 
@@ -62,7 +65,7 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <LanguageProvider>
-          <PaperProvider theme={theme}>
+          <PaperProvider theme={finalTheme}>
             <ErrorBoundary>
               <NavigationContainer>
                 <RootNavigator />
@@ -73,5 +76,13 @@ export default function App() {
       </SafeAreaProvider>
       <StatusBar style="auto" />
     </GestureHandlerRootView>
+  );
+};
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }

@@ -1,0 +1,580 @@
+[
+  {
+    "id": "TC_BE_001",
+    "title": "User Registration API Endpoint",
+    "description": "Test user registration endpoint with valid and invalid data, email validation, and password strength requirements",
+    "category": "functional",
+    "priority": "High",
+    "endpoint": "POST /auth/register",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send POST request to /auth/register with valid user data (email, password, name)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response status is 201 Created and user is created in database"
+      },
+      {
+        "type": "action",
+        "description": "Send POST request with invalid email format"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response status is 400 Bad Request with validation error"
+      },
+      {
+        "type": "action",
+        "description": "Send POST request with weak password"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response status is 400 Bad Request with password strength error"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_002",
+    "title": "User Authentication and JWT Token Generation",
+    "description": "Test user login endpoint, JWT token generation, and token validation",
+    "category": "security",
+    "priority": "High",
+    "endpoint": "POST /auth/login",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send POST request to /auth/login with valid credentials"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response status is 200 OK and JWT token is returned"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify JWT token contains correct claims (sub, iat, exp, roles)"
+      },
+      {
+        "type": "action",
+        "description": "Use JWT token to access protected endpoint"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify protected endpoint returns 200 OK with valid token"
+      },
+      {
+        "type": "action",
+        "description": "Use expired or invalid JWT token"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify protected endpoint returns 401 Unauthorized"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_003",
+    "title": "Game CRUD Operations",
+    "description": "Test complete CRUD operations for games including creation, retrieval, update, and deletion",
+    "category": "functional",
+    "priority": "High",
+    "endpoint": "GET/POST/PUT/DELETE /games",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a new game via POST /games with valid game data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response status is 201 Created and game is stored in database"
+      },
+      {
+        "type": "action",
+        "description": "Retrieve the created game via GET /games/{id}"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response status is 200 OK and game data matches created data"
+      },
+      {
+        "type": "action",
+        "description": "Update the game via PUT /games/{id} with modified data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response status is 200 OK and game is updated in database"
+      },
+      {
+        "type": "action",
+        "description": "Delete the game via DELETE /games/{id}"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response status is 204 No Content and game is removed from database"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_004",
+    "title": "Game Search and Filtering",
+    "description": "Test game search functionality with various filters including location, sport type, skill level, and date range",
+    "category": "functional",
+    "priority": "High",
+    "endpoint": "GET /games/search",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Search games by sport type (e.g., FOOTBALL)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response contains only games of specified sport type"
+      },
+      {
+        "type": "action",
+        "description": "Search games by location with radius filter"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response contains only games within specified radius"
+      },
+      {
+        "type": "action",
+        "description": "Search games by skill level (e.g., INTERMEDIATE)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response contains only games matching skill level"
+      },
+      {
+        "type": "action",
+        "description": "Search games by date range"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response contains only games within date range"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_005",
+    "title": "RSVP Management System",
+    "description": "Test RSVP creation, capacity management, waitlist functionality, and RSVP status updates",
+    "category": "functional",
+    "priority": "High",
+    "endpoint": "POST/GET/PUT /rsvp",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create RSVP for a game with available capacity"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify RSVP is created with CONFIRMED status"
+      },
+      {
+        "type": "action",
+        "description": "Create RSVP for a full game"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify RSVP is created with WAITLIST status"
+      },
+      {
+        "type": "action",
+        "description": "Cancel an existing RSVP"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify RSVP status changes to CANCELLED and next waitlist user is promoted"
+      },
+      {
+        "type": "action",
+        "description": "Retrieve all RSVPs for a specific game"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response contains all RSVPs with correct statuses"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_006",
+    "title": "Payment Processing Integration",
+    "description": "Test payment processing with various payment gateways and handle payment failures",
+    "category": "functional",
+    "priority": "High",
+    "endpoint": "POST /payments/process",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Process payment with Stripe gateway using valid test card"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify payment is processed successfully and payment record is created"
+      },
+      {
+        "type": "action",
+        "description": "Process payment with PayPal gateway using valid test credentials"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify payment is processed successfully via PayPal"
+      },
+      {
+        "type": "action",
+        "description": "Process payment with invalid card details"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify payment fails with appropriate error message"
+      },
+      {
+        "type": "action",
+        "description": "Process refund for a successful payment"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify refund is processed and payment status is updated"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_007",
+    "title": "Real-time Chat WebSocket",
+    "description": "Test WebSocket connection, message broadcasting, and real-time chat functionality",
+    "category": "functional",
+    "priority": "High",
+    "endpoint": "WS /ws/chat",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Establish WebSocket connection to /ws/chat with valid JWT token"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify WebSocket connection is established successfully"
+      },
+      {
+        "type": "action",
+        "description": "Send chat message through WebSocket"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify message is broadcast to all connected clients in the same game"
+      },
+      {
+        "type": "action",
+        "description": "Send message to specific user via direct message"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify message is delivered only to the intended recipient"
+      },
+      {
+        "type": "action",
+        "description": "Disconnect WebSocket connection"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify connection is closed gracefully"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_008",
+    "title": "Cricket Scoring System",
+    "description": "Test cricket match creation, ball-by-ball scoring, and live scorecard updates",
+    "category": "functional",
+    "priority": "Medium",
+    "endpoint": "POST/GET/PUT /cricket/matches",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a new cricket match with T20 format"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify match is created with correct format and initial state"
+      },
+      {
+        "type": "action",
+        "description": "Record ball-by-ball events (runs, wickets, extras)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify live scorecard updates correctly after each ball"
+      },
+      {
+        "type": "action",
+        "description": "Complete an innings and start the next innings"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify innings transition is handled correctly"
+      },
+      {
+        "type": "action",
+        "description": "Complete the match and generate final statistics"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify final scorecard and player statistics are accurate"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_009",
+    "title": "AI Recommendation Engine",
+    "description": "Test AI-powered game recommendations based on user preferences and history",
+    "category": "functional",
+    "priority": "Medium",
+    "endpoint": "GET /recommendations",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Request recommendations for a user with established preferences"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify recommendations are relevant to user's sport preferences and skill level"
+      },
+      {
+        "type": "action",
+        "description": "Request recommendations for a new user with minimal history"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify recommendations are based on location and general preferences"
+      },
+      {
+        "type": "action",
+        "description": "Update user preferences and request new recommendations"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify recommendations adapt to updated preferences"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_010",
+    "title": "Rate Limiting and Security",
+    "description": "Test rate limiting, CORS configuration, and security headers",
+    "category": "security",
+    "priority": "High",
+    "endpoint": "All endpoints",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send multiple rapid requests to exceed rate limit"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify requests are throttled or blocked with 429 Too Many Requests"
+      },
+      {
+        "type": "action",
+        "description": "Send cross-origin request from allowed domain"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify CORS headers are present and request is allowed"
+      },
+      {
+        "type": "action",
+        "description": "Send cross-origin request from disallowed domain"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify request is blocked with appropriate CORS error"
+      },
+      {
+        "type": "action",
+        "description": "Inspect response headers for security headers"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify security headers (CSP, X-Content-Type-Options, etc.) are present"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_011",
+    "title": "Database Transaction Management",
+    "description": "Test database transactions, rollback scenarios, and data consistency",
+    "category": "functional",
+    "priority": "High",
+    "endpoint": "Various endpoints",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a game with RSVP in a single transaction"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify both game and RSVP are created successfully"
+      },
+      {
+        "type": "action",
+        "description": "Simulate database error during game creation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify transaction is rolled back and no partial data is saved"
+      },
+      {
+        "type": "action",
+        "description": "Test concurrent RSVP creation for the same game"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify data consistency is maintained with proper locking"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_012",
+    "title": "Notification System",
+    "description": "Test notification creation, delivery, and management",
+    "category": "functional",
+    "priority": "Medium",
+    "endpoint": "POST/GET /notifications",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create notification for game invitation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify notification is created and queued for delivery"
+      },
+      {
+        "type": "action",
+        "description": "Retrieve notifications for a specific user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user receives their notifications"
+      },
+      {
+        "type": "action",
+        "description": "Mark notification as read"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify notification status is updated to read"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_013",
+    "title": "Health Check and Monitoring",
+    "description": "Test health check endpoints and monitoring metrics",
+    "category": "functional",
+    "priority": "Medium",
+    "endpoint": "GET /actuator/health",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Access health check endpoint"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify health status is UP when all services are running"
+      },
+      {
+        "type": "action",
+        "description": "Access Prometheus metrics endpoint"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify metrics are exposed in Prometheus format"
+      },
+      {
+        "type": "action",
+        "description": "Simulate database connection failure"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify health check reflects DOWN status for database"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_014",
+    "title": "API Documentation and OpenAPI",
+    "description": "Test API documentation generation and OpenAPI specification",
+    "category": "functional",
+    "priority": "Low",
+    "endpoint": "GET /v3/api-docs, GET /swagger-ui",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Access OpenAPI specification endpoint"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify OpenAPI spec is generated and contains all endpoints"
+      },
+      {
+        "type": "action",
+        "description": "Access Swagger UI interface"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify Swagger UI loads and displays all API endpoints"
+      },
+      {
+        "type": "action",
+        "description": "Test API endpoint from Swagger UI"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify endpoint can be tested successfully from Swagger UI"
+      }
+    ]
+  },
+  {
+    "id": "TC_BE_015",
+    "title": "Error Handling and Exception Management",
+    "description": "Test error handling for various exception scenarios and proper error responses",
+    "category": "error handling",
+    "priority": "High",
+    "endpoint": "Various endpoints",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send request with malformed JSON"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response is 400 Bad Request with clear error message"
+      },
+      {
+        "type": "action",
+        "description": "Access non-existent endpoint"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response is 404 Not Found"
+      },
+      {
+        "type": "action",
+        "description": "Send request without required authentication"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response is 401 Unauthorized"
+      },
+      {
+        "type": "action",
+        "description": "Send request with insufficient permissions"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response is 403 Forbidden"
+      }
+    ]
+  }
+]

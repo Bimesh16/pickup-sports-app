@@ -1,0 +1,638 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Registration with Email",
+    "description": "Verify that a new user can successfully register using a valid email, password, and sport preferences.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the registration screen."
+      },
+      {
+        "type": "action",
+        "description": "Enter a valid email address, a strong password, and select sport preferences."
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify registration success message or auto-login."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a confirmation email is sent to the registered address."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Login with Correct JWT Issuance",
+    "description": "Ensure that a user can login using valid credentials and receives a valid JWT token.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login screen."
+      },
+      {
+        "type": "action",
+        "description": "Enter valid username/email and password."
+      },
+      {
+        "type": "action",
+        "description": "Click the login button."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login is successful and JWT token is received."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify JWT token contains correct claims and expiry."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "User Login Failure with Invalid Credentials",
+    "description": "Ensure login fails when incorrect username/email or password is submitted.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login screen."
+      },
+      {
+        "type": "action",
+        "description": "Enter invalid username/email or password."
+      },
+      {
+        "type": "action",
+        "description": "Click login button."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login fails and proper error message is shown."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Discover Games Using Location-Based Search",
+    "description": "Verify users can search for games by location with filtering by sport type, skill level, and date.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the game discovery screen."
+      },
+      {
+        "type": "action",
+        "description": "Enter or allow current location access."
+      },
+      {
+        "type": "action",
+        "description": "Apply filters for sport, skill level, date, and game formats."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify games list updates to show relevant games within proximity and matching filters."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify map view properly shows game locations."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Create New Game as Host with Recurrence",
+    "description": "Test that a host user can create a new game with settings including sport type, capacity, price, and recurring schedule.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as a host user."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to create game screen."
+      },
+      {
+        "type": "action",
+        "description": "Enter all required details: sport type, venue, date/time, capacity, pricing, and recurrence pattern."
+      },
+      {
+        "type": "action",
+        "description": "Submit the game creation form."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify game is created and appears in discovery search."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify recurrence creates multiple linked events on the schedule."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Join Game and Make Payment Through Stripe",
+    "description": "Verify a user can RSVP to join a game and complete payment securely via Stripe gateway.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Discover and select a game requiring payment."
+      },
+      {
+        "type": "action",
+        "description": "Click to join and initiate payment process."
+      },
+      {
+        "type": "action",
+        "description": "Enter valid Stripe payment details and submit."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify payment is processed successfully."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify RSVP status updates to confirmed."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user receives confirmation notification."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Handle Payment Failure and Refunds",
+    "description": "Verify system correctly handles payment failures during game joining and supports refund processing.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to join a paid game with invalid payment details or declined transaction."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify payment failure is detected and rollback occurs."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is alerted to payment failure with appropriate message."
+      },
+      {
+        "type": "action",
+        "description": "Trigger a refund request for a paid game cancellation."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify refund is processed securely and payment status updates."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user receives refund confirmation notification."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Real-time Chat Messaging Between Players",
+    "description": "Verify that users can send and receive real-time messages and group chats via WebSocket with low latency.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as user A and open a chat with user B."
+      },
+      {
+        "type": "action",
+        "description": "Send a text message to user B."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify message is delivered instantly to user B."
+      },
+      {
+        "type": "action",
+        "description": "User B replies back."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user A receives reply message instantly."
+      },
+      {
+        "type": "action",
+        "description": "Create a group chat and send messages."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all group members receive messages in real-time."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Post, Like, and Comment on Social Feed",
+    "description": "Ensure users can create posts with photos/videos, like posts, and add comments with instant updates.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to social feed screen."
+      },
+      {
+        "type": "action",
+        "description": "Create a new post including text and photo/video."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new post appears in feed immediately."
+      },
+      {
+        "type": "action",
+        "description": "Like a post and verify like count updates."
+      },
+      {
+        "type": "action",
+        "description": "Add a comment to a post."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify comment appears correctly attached to the post."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Venue Listing Creation and Booking Workflow",
+    "description": "Verify venue managers can create venue listings, set pricing, receive bookings, and view analytics dashboards.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as venue manager."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to venue management screen."
+      },
+      {
+        "type": "action",
+        "description": "Create a new venue listing with detailed info and pricing."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify venue appears in venue search."
+      },
+      {
+        "type": "action",
+        "description": "Receive a booking request and approve it."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify booking status updates appropriately."
+      },
+      {
+        "type": "action",
+        "description": "View analytics dashboard data on venue usage and bookings."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify analytics display accurate statistics."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Notification Delivery for Game Invitations and Reminders",
+    "description": "Verify that users receive timely push notifications and email summaries for game invites, RSVP reminders, cancellations, and social interactions.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Trigger game invitation notification by inviting a user to a game."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the invited user receives push notification on mobile and an email summary."
+      },
+      {
+        "type": "action",
+        "description": "Trigger RSVP reminder notification before game start time."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify reminder notifications are delivered in-app and via email."
+      },
+      {
+        "type": "action",
+        "description": "Trigger game cancellation notification."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify affected users receive cancellation notifications promptly."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "AI-powered Personalized Game Recommendation Accuracy",
+    "description": "Verify that AI recommendation engine suggests relevant games based on user profile, preferences, location, and history.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as a user with sports preferences and playing history."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the recommendations section."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify displayed game recommendations align with user preferences, skill level, and location."
+      },
+      {
+        "type": "action",
+        "description": "Change user preferences and trigger recommendation refresh."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify recommendations update accordingly."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "User Profile Management and Statistics Display",
+    "description": "Ensure that user profiles display correct statistics, achievements, sport preferences, and editable information.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to user profile screen."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify profile shows accurate game stats, achievements, and preferred sports."
+      },
+      {
+        "type": "action",
+        "description": "Edit profile details such as bio, sport preferences, and skill level."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify changes persist and appear correctly."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Location-Based Game Discovery with Geographic Filtering",
+    "description": "Test geographic search filters including proximity radius and map-based selection to find games or venues.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to location picker or map view."
+      },
+      {
+        "type": "action",
+        "description": "Set a proximity radius filter and/or select geographic regions on map."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify games and venues displayed are within selected geographic constraints."
+      },
+      {
+        "type": "action",
+        "description": "Change location filters dynamically."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify search results update in real-time."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Rate Limiting and Security Headers Enforcement",
+    "description": "Ensure API rate limiting works to prevent abuse and that security headers (CORS, CSP) are properly set.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send rapid repeated API requests exceeding rate limits."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify requests are blocked or throttled with appropriate error responses."
+      },
+      {
+        "type": "action",
+        "description": "Make cross-origin requests to test CORS policy enforcement."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify allowed origins are accepted and disallowed origins are blocked."
+      },
+      {
+        "type": "action",
+        "description": "Inspect HTTP response headers for security headers (e.g., Content-Security-Policy, X-Content-Type-Options)."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify proper security headers are present on all responses."
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "CRUD Operations for Games with Edge Cases",
+    "description": "Verify creation, update, retrieval, and deletion of games with edge cases such as max capacity, invalid inputs, and recurrence handling.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a new game with boundary values for capacity and date."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify game is stored correctly with proper validation."
+      },
+      {
+        "type": "action",
+        "description": "Update game details with invalid sport type or date in the past."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify system rejects invalid updates with error messages."
+      },
+      {
+        "type": "action",
+        "description": "Retrieve game details and verify real-time player counts and RSVP statuses."
+      },
+      {
+        "type": "action",
+        "description": "Delete an existing game."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify game is removed and dependent data updates accordingly."
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Cross-Platform UI Consistency on Mobile Devices",
+    "description": "Verify that UI screens, components, and flows behave consistently and responsively on major Android and iOS devices following Nepal-inspired design themes.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Launch the app on Android (various screen sizes) and iOS devices."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI components match design style and color theme."
+      },
+      {
+        "type": "action",
+        "description": "Navigate through core flows: login, game discovery, social feed, chat, profile."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no layout breakage or element misplacement across devices."
+      },
+      {
+        "type": "action",
+        "description": "Test UI responsiveness to orientation changes and accessibility settings."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify correct adaptive UI behavior."
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Monitoring and Analytics Data Accuracy",
+    "description": "Confirm that Prometheus metrics, Grafana dashboards, and health checks report accurate system status and performance data.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Simulate normal and peak load conditions on the application."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify Prometheus metrics reflect request rates, error rates, and system resource usage."
+      },
+      {
+        "type": "action",
+        "description": "Access Grafana dashboards to review graphs and alerts."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify dashboard metrics update in near real-time and alerts trigger correctly."
+      },
+      {
+        "type": "action",
+        "description": "Invoke system health check endpoints."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify health checks return appropriate status for all microservices."
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Cricket Scoring System Ball-by-Ball Tracking",
+    "description": "Validate the cricket integration handles ball-by-ball events, updates live scorecards, player stats, and supports multiple cricket formats.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a new cricket match with relevant format settings."
+      },
+      {
+        "type": "action",
+        "description": "Record ball-by-ball events including runs, extras, wickets."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify live scorecard updates accurately after each ball."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify individual player performance statistics update correctly."
+      },
+      {
+        "type": "action",
+        "description": "Test end of innings and end of match statistics aggregation."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the final scorecard and analytics are correct."
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "User Logout and Token Revocation",
+    "description": "Verify that users can securely logout and that their JWT tokens are revoked or invalidated upon logout.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and obtain JWT token."
+      },
+      {
+        "type": "action",
+        "description": "Perform logout action from the app."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user session is terminated and token is invalidated."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access secured endpoints with the revoked token."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied due to invalid token."
+      }
+    ]
+  }
+]

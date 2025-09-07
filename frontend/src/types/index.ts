@@ -100,17 +100,10 @@ export interface Game {
 
 // Navigation Types
 export type AuthStackParamList = {
-  SimpleAuth: undefined;
-  ModernAuth: undefined;
   Welcome: undefined;
   Login: undefined;
   Register: undefined;
-  SignIn: undefined;
-  SignUp: undefined;
-  VerifyEmail: { email: string } | undefined;
-  VerifyPhone: { phone: string } | undefined;
   ForgotPassword: undefined;
-  ResetPassword: { token: string } | undefined;
 };
 
 export type MainTabParamList = {
