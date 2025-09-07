@@ -119,7 +119,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 {locale === 'nepal' ? 'प्रोफाइल सम्पादन गर्नुहोस्' : 'Edit Profile'}
               </Text>
             </TouchableOpacity>
-          </div>
+          </View>
+        </View>
 
         {/* Stats Section */}
         <View style={styles.section}>
