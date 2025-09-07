@@ -36,7 +36,6 @@ import { useUIStore } from '@/stores/uiStore';
 import { Snackbar } from 'react-native-paper';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuthStore } from '@/stores/authStore';
-import { storage } from '@/utils/storage';
 
 interface User {
   id: string;
@@ -105,7 +104,7 @@ const ProfileScreen: React.FC = () => {
   const [snack, setSnack] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
   const [selectedSport, setSelectedSport] = useState<string | null>('soccer');
   const [scoutingData, setScoutingData] = useState<any>(null);
-  const { t, setLanguage, currentLanguage } = useLanguage();
+  const { t, setLanguage } = useLanguage();
   
   // Ensure English is set as default language
   useEffect(() => {
@@ -122,7 +121,7 @@ const ProfileScreen: React.FC = () => {
     };
     forceEnglish();
   }, [setLanguage]);
-  const { highContrast, rtlEnabled, toggleHighContrast, toggleRTL } = useUIStore();
+  const { highContrast, rtlEnabled } = useUIStore();
   const { logout } = useAuthStore();
 
   // Animation refs
@@ -241,6 +240,10 @@ const ProfileScreen: React.FC = () => {
             username: p.username ?? 'user',
             email: p.email ?? '',
             phone: p.phone ?? p.phoneNumber,
+            gender: p.gender,
+            nationality: p.nationality,
+            birthDate: p.birthDate,
+            country: p.country ?? p.location,
             bio: p.bio ?? '',
             avatar: p.avatarUrl,
             stats: {
@@ -325,6 +328,10 @@ const ProfileScreen: React.FC = () => {
           username: pp.username ?? 'user',
           email: pp.email ?? '',
           phone: pp.phone ?? pp.phoneNumber,
+          gender: pp.gender,
+          nationality: pp.nationality,
+          birthDate: pp.birthDate,
+          country: pp.country ?? pp.location,
           bio: pp.bio ?? '',
           avatar: pp.avatarUrl,
           stats: {
@@ -440,6 +447,10 @@ const ProfileScreen: React.FC = () => {
           username: p.username ?? 'user',
           email: p.email ?? '',
           phone: p.phone ?? p.phoneNumber,
+          gender: p.gender,
+          nationality: p.nationality,
+          birthDate: p.birthDate,
+          country: p.country ?? p.location,
           bio: p.bio ?? '',
           avatar: p.avatarUrl,
           stats: {
@@ -533,8 +544,8 @@ const ProfileScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshAll} />}
       >
-        {/* Header with Dark Theme */}
-        <LinearGradient colors={['#0B1220', '#101828']} style={styles.header}>
+        {/* Header with Nepal Theme */}
+        <LinearGradient colors={['#E51A1A', '#003F87']} style={styles.header}>
           {/* Top Action Buttons */}
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.headerIcon} onPress={() => setShowSettings(true)}>
@@ -690,6 +701,7 @@ const ProfileScreen: React.FC = () => {
 
           {/* Sport Filter Pills */}
           <SportFilterPills
+            sports={[]}
             selectedSport={selectedSport}
             onSportSelect={setSelectedSport}
           />
@@ -1069,6 +1081,12 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingHorizontal: 20,
   },
+  headerContent: {
+    marginBottom: 20,
+  },
+  statsContainer: {
+    marginTop: 20,
+  },
   headerIcons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1241,7 +1259,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
-    ...colors.shadows?.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   bioHeader: {
     flexDirection: 'row',
@@ -1302,7 +1324,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
-    ...colors.shadows?.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1371,7 +1397,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
-    ...colors.shadows?.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   quickActionsGrid: {
     flexDirection: 'row',
@@ -1413,12 +1443,6 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 20,
     marginTop: 8,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
   },
   viewAllText: {
     fontSize: 14,
@@ -1538,7 +1562,11 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '80%',
-    ...colors.shadows?.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1612,10 +1640,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     backgroundColor: colors.background,
   },
-  bioInput: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -1652,7 +1676,11 @@ const styles = StyleSheet.create({
     width: '85%',
     maxWidth: 400,
     alignItems: 'center',
-    ...colors.shadows?.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   logoutIconContainer: {
     width: 80,
