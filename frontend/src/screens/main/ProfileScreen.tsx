@@ -729,26 +729,12 @@ const ProfileScreen: React.FC = () => {
         <View style={[styles.bioSection, { marginHorizontal: 20, marginVertical: 8 }]}>
           <TouchableOpacity 
             style={[styles.bioButton, styles.bioSaveButton]}
-            onPress={async () => {
-              console.log('Test button pressed');
-              try {
-                const ImagePickerService = await import('@/components/common/ImagePicker');
-                const result = await ImagePickerService.default.showImagePicker({
-                  allowsEditing: true,
-                  aspect: [1, 1],
-                  quality: 0.8,
-                  mediaTypes: 'Images',
-                });
-                console.log('Test result:', result);
-                if (result && user) {
-                  setUser({ ...user, avatar: result.uri });
-                }
-              } catch (error) {
-                console.error('Test error:', error);
-              }
+            onPress={() => {
+              console.log('Test button pressed - this should now work with the modal');
+              // The SportRing now handles image picking with the modal
             }}
           >
-            <Text style={styles.bioButtonText}>Test Image Picker</Text>
+            <Text style={styles.bioButtonText}>Test Image Picker (Use SportRing)</Text>
           </TouchableOpacity>
         </View>
 

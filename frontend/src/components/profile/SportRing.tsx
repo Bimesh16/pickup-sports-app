@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet, Image, TouchableOpacity, Text, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import ImagePickerService from '@/components/common/ImagePicker';
+import { useImagePicker } from '@/components/common/ImagePickerComponent';
 
 interface SportRingProps {
   sport: string;
@@ -35,6 +35,7 @@ const SportRing: React.FC<SportRingProps> = ({
   const glowAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const orbitAnim = useRef(new Animated.Value(0)).current;
+  const { showImagePicker, ImagePickerModal } = useImagePicker();
 
   const sportColor = SPORT_COLORS[sport.toLowerCase() as keyof typeof SPORT_COLORS] || SPORT_COLORS.default;
 
@@ -92,16 +93,9 @@ const SportRing: React.FC<SportRingProps> = ({
     }
   };
 
-  const handleAvatarPress = async () => {
-    try {
-      console.log('SportRing: handleAvatarPress called');
-      const result = await ImagePickerService.showImagePicker({
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-        mediaTypes: 'Images',
-      });
-
+  const handleAvatarPress = () => {
+    console.log('SportRing: handleAvatarPress called');
+    showImagePicker((result) => {
       console.log('SportRing: Image picker result:', result);
       if (result && onAvatarChange) {
         console.log('SportRing: Calling onAvatarChange with URI:', result.uri);
@@ -109,10 +103,12 @@ const SportRing: React.FC<SportRingProps> = ({
       } else {
         console.log('SportRing: No result or onAvatarChange not provided');
       }
-    } catch (error) {
-      console.error('SportRing: Error picking image:', error);
-      Alert.alert('Error', 'Failed to select image');
-    }
+    }, {
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+      mediaTypes: 'Images',
+    });
   };
 
   const glowOpacity = glowAnim.interpolate({
@@ -126,17 +122,18 @@ const SportRing: React.FC<SportRingProps> = ({
   });
 
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        { 
-          width: size, 
-          height: size,
-          transform: [{ scale: pulseAnim }]
-        }
-      ]}
-      onTouchEnd={handlePress}
-    >
+    <>
+      <Animated.View 
+        style={[
+          styles.container,
+          { 
+            width: size, 
+            height: size,
+            transform: [{ scale: pulseAnim }]
+          }
+        ]}
+        onTouchEnd={handlePress}
+      >
       {/* Outer glow ring */}
       <Animated.View
         style={[
@@ -199,7 +196,9 @@ const SportRing: React.FC<SportRingProps> = ({
           </View>
         )}
       </TouchableOpacity>
-    </Animated.View>
+      </Animated.View>
+      <ImagePickerModal />
+    </>
   );
 };
 

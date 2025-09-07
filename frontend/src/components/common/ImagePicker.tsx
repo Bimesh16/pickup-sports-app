@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, Platform } from 'react-native';
+import ImagePickerModal from './ImagePickerModal';
 
 interface ImagePickerOptions {
   allowsEditing?: boolean;
