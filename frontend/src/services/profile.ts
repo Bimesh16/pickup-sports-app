@@ -99,16 +99,58 @@ export async function getDashboardSummary() {
       ok: true,
       status: 200,
       data: {
-        totalGames: 15,
-        upcomingGames: 3,
-        completedGames: 12,
-        winRate: 53.3,
-        totalHours: 45.5,
-        favoriteSport: 'FUTSAL',
+        userStats: {
+          totalGamesPlayed: 15,
+          totalGamesWon: 8,
+          totalGamesLost: 5,
+          totalGamesDrawn: 2,
+          currentStreak: 3,
+          longestStreak: 7,
+          winRate: 53.3,
+          averageRating: 4.2,
+          totalHours: 45.5,
+          favoriteSport: 'FUTSAL'
+        },
+        upcomingGames: [
+          {
+            id: 'game-1',
+            title: 'Evening Futsal League',
+            sport: 'FUTSAL',
+            dateTime: '2024-01-20T18:00:00Z',
+            location: 'Kathmandu Sports Complex',
+            currentPlayers: 7,
+            maxPlayers: 10,
+            cost: 200,
+            skillLevel: 'INTERMEDIATE',
+            status: 'UPCOMING'
+          },
+          {
+            id: 'game-2',
+            title: 'Morning Basketball',
+            sport: 'BASKETBALL',
+            dateTime: '2024-01-18T08:00:00Z',
+            location: 'Basketball Court',
+            currentPlayers: 8,
+            maxPlayers: 10,
+            cost: 150,
+            skillLevel: 'BEGINNER',
+            status: 'UPCOMING'
+          }
+        ],
         recentActivity: [
           { type: 'game_joined', message: 'Joined Evening Futsal League', date: '2024-01-15' },
           { type: 'game_won', message: 'Won Basketball Match', date: '2024-01-14' },
           { type: 'achievement', message: 'Completed 10 games milestone', date: '2024-01-13' }
+        ],
+        achievements: [
+          { id: 'first_game', title: 'First Game', description: 'Played your first game', unlocked: true, date: '2024-01-01' },
+          { id: 'win_streak', title: 'Win Streak', description: 'Won 5 games in a row', unlocked: true, date: '2024-01-10' },
+          { id: 'social_player', title: 'Social Player', description: 'Played with 20 different players', unlocked: false, progress: 15 }
+        ],
+        recommendations: [
+          { type: 'game', title: 'Recommended: Evening Cricket', reason: 'Based on your location and skill level' },
+          { type: 'player', title: 'Connect with John Doe', reason: 'Similar playing style and schedule' },
+          { type: 'venue', title: 'Try Pokhara Sports Complex', reason: 'Great facilities for your favorite sports' }
         ]
       }
     };

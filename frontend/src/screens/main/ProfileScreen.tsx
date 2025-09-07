@@ -613,19 +613,19 @@ const ProfileScreen: React.FC = () => {
             {/* W-D-L Chips Row */}
             <View style={styles.statsChipsRow}>
               <StatChip 
-                value={user.stats?.totalGamesWon || 0} 
+                value={dashboard?.userStats?.totalGamesWon || user.stats?.totalGamesWon || 0} 
                 label="Wins" 
                 color="#22C55E" 
                 size="large"
               />
               <StatChip 
-                value={user.stats?.totalGamesDrawn || 0} 
+                value={dashboard?.userStats?.totalGamesDrawn || user.stats?.totalGamesDrawn || 0} 
                 label="Draws" 
                 color="#F59E0B" 
                 size="large"
               />
               <StatChip 
-                value={user.stats?.totalGamesLost || 0} 
+                value={dashboard?.userStats?.totalGamesLost || user.stats?.totalGamesLost || 0} 
                 label="Losses" 
                 color="#EF4444" 
                 size="large"
@@ -635,7 +635,7 @@ const ProfileScreen: React.FC = () => {
             {/* Win Rate Progress Ring */}
             <View style={styles.progressRingContainer}>
               <ProgressRing 
-                percentage={user.stats?.winRate || 0}
+                percentage={dashboard?.userStats?.winRate || user.stats?.winRate || 0}
                 size={120}
                 color="#22D3EE"
                 backgroundColor="#30363D"
@@ -647,13 +647,13 @@ const ProfileScreen: React.FC = () => {
               <View style={[styles.streakBadge, { backgroundColor: '#F59E0B20', borderColor: '#F59E0B' }]}>
                 <Ionicons name="flame" size={16} color="#F59E0B" />
                 <Text style={[styles.streakBadgeText, { color: '#F59E0B' }]}>
-                  {user.stats?.currentStreak || 0} Current
+                  {dashboard?.userStats?.currentStreak || user.stats?.currentStreak || 0} Current
                 </Text>
               </View>
               <View style={[styles.streakBadge, { backgroundColor: '#3B82F620', borderColor: '#3B82F6' }]}>
                 <Ionicons name="trophy" size={16} color="#3B82F6" />
                 <Text style={[styles.streakBadgeText, { color: '#3B82F6' }]}>
-                  {user.stats?.longestStreak || 0} Best
+                  {dashboard?.userStats?.longestStreak || user.stats?.longestStreak || 0} Best
                 </Text>
               </View>
             </View>
