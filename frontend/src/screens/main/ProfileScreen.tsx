@@ -21,13 +21,13 @@ import SportRing from '@/components/profile/SportRing';
 import StatChip from '@/components/profile/StatChip';
 import ProgressRing from '@/components/profile/ProgressRing';
 import SportFilterPills from '@/components/profile/SportFilterPills';
-import ScoutingReport from '@/components/profile/ScoutingReport';
+import MySportsProfile from '@/components/profile/MySportsProfile';
 import Shimmer from '@/components/common/Shimmer';
 import { storage } from '@/utils/storage';
 import { getMyProfile, getDashboardSummary, getMyGames } from '@/services/profile';
 // import ScoutingReportEditor from '@/components/profile/ScoutingReportEditor';
 // import MultiSportProfile from '@/components/profile/MultiSportProfile';
-// import ScoutingReport from '@/components/profile/ScoutingReport';
+// import MySportsProfile from '@/components/profile/MySportsProfile';
 // import AchievementSystem from '@/components/profile/AchievementSystem';
 // import PerformanceInsights from '@/components/profile/PerformanceInsights';
 import EditProfileModal from '@/components/profile/EditProfileModal';
@@ -103,7 +103,7 @@ const ProfileScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [snack, setSnack] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
   const [selectedSport, setSelectedSport] = useState<string | null>('soccer');
-  const [scoutingData, setScoutingData] = useState<any>(null);
+  const [sportsProfiles, setSportsProfiles] = useState<any[]>([]);
   const { t, setLanguage } = useLanguage();
   
   // Ensure English is set as default language
@@ -195,6 +195,21 @@ const ProfileScreen: React.FC = () => {
     return age;
   };
 
+  // Sports Profile Management
+  const handleAddSport = (sport: any) => {
+    setSportsProfiles(prev => [...prev, sport]);
+  };
+
+  const handleEditSport = (id: string, updatedSport: any) => {
+    setSportsProfiles(prev => 
+      prev.map(sport => sport.id === id ? updatedSport : sport)
+    );
+  };
+
+  const handleRemoveSport = (id: string) => {
+    setSportsProfiles(prev => prev.filter(sport => sport.id !== id));
+  };
+
   // Animated Stat Component
   const AnimatedStat = ({ animValue, label, color, icon, suffix = '' }: {
     animValue: Animated.Value;
@@ -272,21 +287,6 @@ const ProfileScreen: React.FC = () => {
           }, 100);
           
 
-          // Mock scouting data
-          setScoutingData({
-            sport: 'soccer',
-            nickname: 'Threadz',
-            position: 'CM',
-            playStyle: ['press-resistant', 'one-touch passer'],
-            superpower: 'through-balls',
-            format: '7v7 weeknights',
-            availability: 'weeknights',
-            funFact: 'tracks assists',
-            skillLevel: 'INTERMEDIATE',
-            preferredFoot: 'Right',
-            travelRadius: 15,
-            openToInvites: true
-          });
         }
       } finally {
         if (mounted) setLoadingProfile(false);
@@ -681,24 +681,13 @@ const ProfileScreen: React.FC = () => {
           />
         </LinearGradient>
 
-        {/* Scouting Report */}
-        {scoutingData && (
-          <ScoutingReport
-            sport={scoutingData.sport}
-            nickname={scoutingData.nickname}
-            position={scoutingData.position}
-            playStyle={scoutingData.playStyle}
-            superpower={scoutingData.superpower}
-            format={scoutingData.format}
-            availability={scoutingData.availability}
-            funFact={scoutingData.funFact}
-            skillLevel={scoutingData.skillLevel}
-            preferredFoot={scoutingData.preferredFoot}
-            travelRadius={scoutingData.travelRadius}
-            openToInvites={scoutingData.openToInvites}
-            onEdit={() => Alert.alert('Edit Scouting Report', 'Edit functionality coming soon!')}
-          />
-        )}
+        {/* My Sports Profile */}
+        <MySportsProfile
+          sports={sportsProfiles}
+          onAddSport={handleAddSport}
+          onEditSport={handleEditSport}
+          onRemoveSport={handleRemoveSport}
+        />
 
 
         {/* Bio Section */}
