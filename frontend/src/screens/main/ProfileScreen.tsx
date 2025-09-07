@@ -166,17 +166,17 @@ const ProfileScreen: React.FC = () => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 800,
+        duration: 600,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 800,
+        duration: 600,
         useNativeDriver: true,
       }),
       Animated.timing(scaleAnim, {
         toValue: 1,
-        duration: 800,
+        duration: 600,
         useNativeDriver: true,
       }),
     ]).start();
@@ -548,10 +548,22 @@ const ProfileScreen: React.FC = () => {
         <LinearGradient colors={['#E51A1A', '#003F87']} style={styles.header}>
           {/* Top Action Buttons */}
           <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.headerIcon} onPress={() => setShowSettings(true)}>
+            <TouchableOpacity 
+              style={styles.headerIcon} 
+              onPress={() => setShowSettings(true)}
+              accessibilityLabel="Settings"
+              accessibilityRole="button"
+              accessibilityHint="Opens settings modal"
+            >
               <Ionicons name="settings-outline" size={24} color="white" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.headerIcon} onPress={handleLogout}>
+            <TouchableOpacity 
+              style={styles.headerIcon} 
+              onPress={handleLogout}
+              accessibilityLabel="Logout"
+              accessibilityRole="button"
+              accessibilityHint="Signs out of the app"
+            >
               <Ionicons name="log-out-outline" size={24} color="white" />
             </TouchableOpacity>
           </View>
@@ -589,10 +601,16 @@ const ProfileScreen: React.FC = () => {
                   <Ionicons name="flag-outline" size={14} color="#A3E635" />
                   <Text style={styles.userDetailText}>{user.nationality || user.country || 'Nepal'}</Text>
                 </View>
-                <TouchableOpacity style={styles.editProfileButton} onPress={() => setShowEditProfile(true)}>
-                  <Ionicons name="create-outline" size={14} color="#FB7185" />
-                  <Text style={styles.editProfileText}>Edit Profile</Text>
-                </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.editProfileButton} 
+                onPress={() => setShowEditProfile(true)}
+                accessibilityLabel="Edit Profile"
+                accessibilityRole="button"
+                accessibilityHint="Opens edit profile modal"
+              >
+                <Ionicons name="create-outline" size={14} color="#FB7185" />
+                <Text style={styles.editProfileText}>Edit Profile</Text>
+              </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -1738,6 +1756,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
     gap: 8,
     flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
   userDetailChip: {
     flexDirection: 'row',
