@@ -737,7 +737,7 @@ const ProfileScreen: React.FC = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('profile.upcomingGames')}</Text>
-            <TouchableOpacity onPress={handleFindGames}>
+            <TouchableOpacity onPress={() => Alert.alert('Explore', 'Explore games coming soon!')}>
               <Text style={styles.sectionLink}>{t('profile.explore')}</Text>
             </TouchableOpacity>
           </View>
@@ -801,9 +801,9 @@ const ProfileScreen: React.FC = () => {
         {/* {user.stats && (
           <PerformanceInsights
             userStats={user.stats}
-            onFindGames={handleFindGames}
-            onCreateGame={handleCreateGame}
-            onFindPractice={handleFindPractice}
+            onFindGames={() => Alert.alert('Find Games', 'Find games coming soon!')}
+            onCreateGame={() => Alert.alert('Create Game', 'Create game coming soon!')}
+            onFindPractice={() => Alert.alert('Find Practice', 'Find practice coming soon!')}
           />
         )} */}
       </ScrollView>
