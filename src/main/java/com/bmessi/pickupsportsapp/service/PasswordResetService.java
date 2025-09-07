@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "email.service.enabled", havingValue = "true", matchIfMissing = false)
 public class PasswordResetService {
 
     private static final SecureRandom RNG = new SecureRandom();
