@@ -3,6 +3,7 @@ package com.bmessi.pickupsportsapp.config;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,7 +22,7 @@ public class DigestScheduler {
     private static final Logger log = LoggerFactory.getLogger(DigestScheduler.class);
 
     private final JdbcTemplate jdbc;
-    private final EmailService email;
+    private final Optional<EmailService> email;
 
     // Daily at 07:00 UTC by default
     @Scheduled(cron = "${digest.daily.cron:0 0 7 * * *}")
@@ -46,7 +47,11 @@ public class DigestScheduler {
                 List<Map<String, String>> items = fetchUpcomingGames(username, daily ? 1 : 7);
                 if (items.isEmpty()) continue;
                 try {
-                    email.sendDigestEmail(username, items, java.util.Locale.getDefault());
+                    email.ifPresent(es -> {
+                        try {
+                            es.sendDigestEmail(username, items, java.util.Locale.getDefault());
+                        } catch (Exception ignore) {}
+                    });
                 } catch (Exception e) {
                     log.warn("Failed sending digest to {}: {}", username, e.getMessage());
                 }

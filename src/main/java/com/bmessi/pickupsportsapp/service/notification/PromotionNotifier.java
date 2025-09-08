@@ -17,6 +17,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "notification.service.enabled", havingValue = "true", matchIfMissing = false)
 public class PromotionNotifier {
 
     private final NotificationService notificationService;
