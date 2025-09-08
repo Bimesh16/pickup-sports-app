@@ -6,30 +6,40 @@ import com.bmessi.pickupsportsapp.service.EmailService;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthFlowController {
 
     // Optional DI-provided Redis rate limiter (present when configured)
-    private final java.util.Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> redisRateLimiter;
+    private final Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> redisRateLimiter;
 
     private static final Logger log = LoggerFactory.getLogger(AuthFlowController.class);
 
-    private final VerificationService verificationService;
-    private final PasswordResetService passwordResetService;
-    private final EmailService emailService; // reserved for future flows (e.g., resend)
+    private final Optional<VerificationService> verificationService;
+    private final Optional<PasswordResetService> passwordResetService;
+    private final Optional<EmailService> emailService;
+
+    public AuthFlowController(Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> redisRateLimiter,
+                             @Autowired(required = false) VerificationService verificationService,
+                             @Autowired(required = false) PasswordResetService passwordResetService,
+                             @Autowired(required = false) EmailService emailService) {
+        this.redisRateLimiter = redisRateLimiter;
+        this.verificationService = Optional.ofNullable(verificationService);
+        this.passwordResetService = Optional.ofNullable(passwordResetService);
+        this.emailService = Optional.ofNullable(emailService);
+    }
 
     // Verify email using a one-time token (from email link)
     @PostMapping("/verify")
@@ -45,7 +55,16 @@ public class AuthFlowController {
                 ));
             }
         } catch (Exception ignore) {}
-        boolean ok = verificationService.consume(request.token());
+        if (verificationService.isEmpty()) {
+            return ResponseEntity.status(503)
+                    .headers(noStore())
+                    .body(Map.of(
+                            "error", "service_unavailable",
+                            "message", "Email verification service is not available",
+                            "timestamp", System.currentTimeMillis()
+                    ));
+        }
+        boolean ok = verificationService.get().consume(request.token());
         if (!ok) {
             return ResponseEntity.status(400)
                     .headers(noStore())
@@ -86,8 +105,10 @@ public class AuthFlowController {
                 ));
             }
         } catch (Exception ignore) {}
-        String ip = extractClientIp(httpRequest);
-        passwordResetService.requestReset(request.username(), ip);
+        if (passwordResetService.isPresent()) {
+            String ip = extractClientIp(httpRequest);
+            passwordResetService.get().requestReset(request.username(), ip);
+        }
         return ResponseEntity.ok()
                 .headers(noStore())
                 .body(Map.of(
@@ -110,7 +131,17 @@ public class AuthFlowController {
                     ));
         }
 
-        boolean ok = passwordResetService.resetPassword(request.token(), request.newPassword());
+        if (passwordResetService.isEmpty()) {
+            return ResponseEntity.status(503)
+                    .headers(noStore())
+                    .body(Map.of(
+                            "error", "service_unavailable",
+                            "message", "Password reset service is not available",
+                            "timestamp", System.currentTimeMillis()
+                    ));
+        }
+
+        boolean ok = passwordResetService.get().resetPassword(request.token(), request.newPassword());
         if (!ok) {
             return ResponseEntity.status(400)
                     .headers(noStore())

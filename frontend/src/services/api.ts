@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 // Get the backend URL based on environment
 const getBaseURL = () => {
   // In development, use the Replit domain
-  const domain = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://workspace-username.repl.co';
+  const domain = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://173ee670-ee0c-4f6c-ab16-cfe40372013d-00-303077772r6mw.picard.replit.dev';
   return `${domain}/api`;
 };
 

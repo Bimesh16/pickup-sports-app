@@ -11,6 +11,7 @@ import com.bmessi.pickupsportsapp.security.SecurityAuditService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +29,7 @@ public class ChangeEmailService {
     private final EmailChangeTokenRepository tokenRepo;
     private final UserRepository userRepo;
     private final VerifiedUserRepository verifiedRepo;
-    private final EmailService emailService;
+    private final Optional<EmailService> emailService;
     private final AuthFlowProperties props;
     private final SecurityAuditService audit;
 
@@ -57,7 +58,11 @@ public class ChangeEmailService {
         if (base.endsWith("/")) base = base.substring(0, base.length() - 1);
         String link = base + "/auth/change-email/confirm?token=" + token;
         try {
-            emailService.sendChangeEmailVerification(newEmail, link);
+            emailService.ifPresent(es -> {
+                try {
+                    es.sendChangeEmailVerification(newEmail, link);
+                } catch (Exception ignore) {}
+            });
             audit.emailChangeRequested(username, newEmail);
         } catch (Exception ignore) {}
     }

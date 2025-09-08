@@ -25,6 +25,7 @@ import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { DECORATIVE } from '../../constants/theme';
+import { useAuth } from '../../hooks/useAuth';
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,6 +35,7 @@ interface LoginScreenProps {
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const { theme, locale } = useTheme();
+  const { login, isLoginLoading, isAuthenticated } = useAuth();
   
   // Form state
   const [email, setEmail] = useState('');
@@ -65,22 +67,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       return;
     }
 
-    setLoading(true);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Use real authentication
+      await login({ email, password });
       
-      // Navigate to main app
-      navigation.navigate('Main');
-    } catch (error) {
+      // Navigation will be handled automatically by RootNavigator based on auth state
+    } catch (error: any) {
       Alert.alert(
         locale === 'nepal' ? 'त्रुटि' : 'Error',
-        locale === 'nepal' ? 'लगइन असफल भयो' : 'Login failed'
+        error.response?.data?.message || (locale === 'nepal' ? 'लगइन असफल भयो' : 'Login failed')
       );
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -109,9 +107,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     };
   });
 
-  const gradientColors = locale === 'nepal' 
-    ? DECORATIVE.GRADIENTS.NEPAL_SUNSET
-    : DECORATIVE.GRADIENTS.GLOBAL_OCEAN;
+  const gradientColors = (locale === 'nepal' 
+    ? DECORATIVE.GRADIENTS.NEPAL_SUNSET 
+    : DECORATIVE.GRADIENTS.GLOBAL_OCEAN) as unknown as readonly [string, string, ...string[]];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -212,9 +210,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               {/* Login Button */}
               <Animated.View style={buttonStyle}>
                 <TouchableOpacity 
-                  style={[styles.loginButton, { opacity: loading ? 0.7 : 1 }]}
+                  style={[styles.loginButton, { opacity: isLoginLoading ? 0.7 : 1 }]}
                   onPress={handleLogin}
-                  disabled={loading}
+                  disabled={isLoginLoading}
                   onPressIn={() => {
                     buttonScale.value = withTiming(0.98, { duration: 100 });
                   }}
@@ -229,7 +227,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                     end={{ x: 1, y: 0 }}
                   >
                     <Text style={styles.loginButtonText}>
-                      {loading 
+                      {isLoginLoading 
                         ? (locale === 'nepal' ? 'लग इन गर्दै...' : 'Signing In...') 
                         : (locale === 'nepal' ? 'लग इन' : 'Sign In')
                       }

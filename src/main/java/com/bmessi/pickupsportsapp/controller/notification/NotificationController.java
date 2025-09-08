@@ -25,6 +25,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "notification.service.enabled", havingValue = "true", matchIfMissing = false)
 public class NotificationController {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationController.class);

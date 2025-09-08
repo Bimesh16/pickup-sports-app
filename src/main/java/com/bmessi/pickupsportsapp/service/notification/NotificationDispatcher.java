@@ -15,6 +15,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "notification.service.enabled", havingValue = "true", matchIfMissing = false)
 public class NotificationDispatcher {
 
     private final NotificationService notificationService;

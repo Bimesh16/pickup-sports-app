@@ -66,22 +66,23 @@ export const useAuth = () => {
     queryKey: ['userProfile'],
     queryFn: () => userAPI.getProfile(),
     enabled: authState.isAuthenticated,
-    onSuccess: (response) => {
+  });
+
+  // Handle user profile updates
+  useEffect(() => {
+    if (userProfile) {
       setAuthState(prev => ({
         ...prev,
-        user: response.data,
+        user: userProfile.data,
       }));
-    },
-    onError: () => {
-      logout();
-    },
-  });
+    }
+  }, [userProfile]);
 
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       authAPI.login(email, password),
-    onSuccess: async (response) => {
+    onSuccess: async (response: any) => {
       const { token, user } = response.data;
       
       // Store token
@@ -106,7 +107,7 @@ export const useAuth = () => {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: (userData: any) => authAPI.register(userData),
-    onSuccess: async (response) => {
+    onSuccess: async (response: any) => {
       const { token, user } = response.data;
       
       // Store token
