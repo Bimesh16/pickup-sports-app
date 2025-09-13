@@ -1,11 +1,11 @@
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import { storage } from './storage';
 
 // Get the backend URL based on environment
 const getBaseURL = () => {
   // In development, use the Replit domain
-  const domain = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://173ee670-ee0c-4f6c-ab16-cfe40372013d-00-303077772r6mw.picard.replit.dev';
-  return `${domain}/api`;
+  const domain = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+  return domain;
 };
 
 // Create axios instance
@@ -21,7 +21,7 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     try {
-      const token = await SecureStore.getItemAsync('authToken');
+      const token = await storage.getItemAsync('authToken');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -42,7 +42,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear stored token and redirect to login
       try {
-        await SecureStore.deleteItemAsync('authToken');
+        await storage.deleteItemAsync('authToken');
         // Navigate to auth screen - this would be handled by navigation context
       } catch (e) {
         console.log('Error clearing auth token:', e);
@@ -55,10 +55,10 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: (email: string, password: string) =>
-    api.post('/auth/login', { email, password }),
+    api.post('/auth/login', { username: email, password }),
   
   register: (userData: any) =>
-    api.post('/users/register', userData),
+    api.post('/api/v1/users/register', userData),
   
   forgotPassword: (email: string) =>
     api.post('/auth/forgot', { email }),
@@ -73,82 +73,82 @@ export const authAPI = {
 // Games API
 export const gamesAPI = {
   getGames: (params?: any) =>
-    api.get('/games', { params }),
+    api.get('/api/v1/games', { params }),
   
   getGame: (gameId: string) =>
-    api.get(`/games/${gameId}`),
+    api.get(`/api/v1/games/${gameId}`),
   
   createGame: (gameData: any) =>
-    api.post('/games', gameData),
+    api.post('/api/v1/games', gameData),
   
   updateGame: (gameId: string, gameData: any) =>
-    api.put(`/games/${gameId}`, gameData),
+    api.put(`/api/v1/games/${gameId}`, gameData),
   
   joinGame: (gameId: string) =>
-    api.post(`/games/${gameId}/hold`),
+    api.post(`/api/v1/games/${gameId}/hold`),
   
   confirmGame: (gameId: string) =>
-    api.post(`/games/${gameId}/confirm`),
+    api.post(`/api/v1/games/${gameId}/confirm`),
   
   leaveGame: (gameId: string) =>
-    api.delete(`/games/${gameId}/participants`),
+    api.delete(`/api/v1/games/${gameId}/participants`),
 };
 
 // User API
 export const userAPI = {
   getProfile: () =>
-    api.get('/user/profile'),
+    api.get('/profiles/me'),
   
   updateProfile: (userData: any) =>
-    api.put('/user/profile', userData),
+    api.put('/profiles/me', userData),
   
   getStats: () =>
-    api.get('/stats'),
+    api.get('/api/v1/stats'),
   
   getUserGames: () =>
-    api.get('/user/games'),
+    api.get('/api/v1/user/games'),
 };
 
 // Venues API
 export const venuesAPI = {
   getVenues: (params?: any) =>
-    api.get('/venues', { params }),
+    api.get('/api/v1/venues', { params }),
   
   getVenue: (venueId: string) =>
-    api.get(`/venues/${venueId}`),
+    api.get(`/api/v1/venues/${venueId}`),
   
   createVenue: (venueData: any) =>
-    api.post('/venues', venueData),
+    api.post('/api/v1/venues', venueData),
 };
 
 // Sports API
 export const sportsAPI = {
   getSports: () =>
-    api.get('/sports'),
+    api.get('/api/v1/sports'),
   
   getSport: (sportId: string) =>
-    api.get(`/sports/${sportId}`),
+    api.get(`/api/v1/sports/${sportId}`),
 };
 
 // Notifications API
 export const notificationsAPI = {
   getNotifications: () =>
-    api.get('/notifications'),
+    api.get('/api/v1/notifications'),
   
   markAsRead: (notificationId: string) =>
-    api.put(`/notifications/${notificationId}/read`),
+    api.put(`/api/v1/notifications/${notificationId}/read`),
   
   markAllAsRead: () =>
-    api.put('/notifications/read-all'),
+    api.put('/api/v1/notifications/read-all'),
 };
 
 // Chat API
 export const chatAPI = {
   getGameChat: (gameId: string) =>
-    api.get(`/games/${gameId}/chat`),
+    api.get(`/api/v1/games/${gameId}/chat`),
   
   sendMessage: (gameId: string, message: string) =>
-    api.post(`/games/${gameId}/chat`, { message }),
+    api.post(`/api/v1/games/${gameId}/chat`, { message }),
 };
 
 export default api;

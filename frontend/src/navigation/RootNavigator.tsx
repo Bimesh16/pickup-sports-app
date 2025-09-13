@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import * as SecureStore from 'expo-secure-store';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../hooks/useAuth';
 
 // Import navigators
 import AuthStackNavigator from './AuthStackNavigator';
@@ -21,24 +21,12 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 const RootNavigator: React.FC = () => {
   const { theme } = useTheme();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { isAuthenticated, isLoading } = useAuth();
 
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const token = await SecureStore.getItemAsync('authToken');
-      setIsAuthenticated(!!token);
-    } catch (error) {
-      console.log('Error checking auth status:', error);
-      setIsAuthenticated(false);
-    }
-  };
+  console.log('RootNavigator - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
 
   // Show loading state while checking authentication
-  if (isAuthenticated === null) {
+  if (isLoading) {
     return null; // You can add a loading screen here
   }
 
@@ -46,23 +34,8 @@ const RootNavigator: React.FC = () => {
     prefixes: ['pickupsports://'],
     config: {
       screens: {
-        Auth: {
-          screens: {
-            Welcome: 'welcome',
-            Login: 'login',
-            Signup: 'signup',
-            ForgotPassword: 'forgot-password',
-          },
-        },
-        Main: {
-          screens: {
-            Home: 'home',
-            Explore: 'explore',
-            Create: 'create',
-            Chat: 'chat',
-            Profile: 'profile',
-          },
-        },
+        Auth: 'auth',
+        Main: 'main',
         GameDetails: 'game/:gameId',
         Profile: 'user/:userId',
         EditProfile: 'edit-profile',
@@ -76,7 +49,7 @@ const RootNavigator: React.FC = () => {
     <NavigationContainer
       linking={linking}
       theme={{
-        dark: theme === theme, // Will be properly implemented
+        dark: false, // Will be properly implemented based on theme
         colors: {
           primary: theme.colors.primary,
           background: theme.colors.background,
@@ -84,6 +57,24 @@ const RootNavigator: React.FC = () => {
           text: theme.colors.text,
           border: theme.colors.border,
           notification: theme.colors.primary,
+        },
+        fonts: {
+          regular: {
+            fontFamily: 'System',
+            fontWeight: '400',
+          },
+          medium: {
+            fontFamily: 'System',
+            fontWeight: '500',
+          },
+          bold: {
+            fontFamily: 'System',
+            fontWeight: '700',
+          },
+          heavy: {
+            fontFamily: 'System',
+            fontWeight: '800',
+          },
         },
       }}
     >
@@ -117,7 +108,6 @@ const RootNavigator: React.FC = () => {
               component={GameDetailsScreen}
               options={{
                 headerShown: true,
-                headerBackTitleVisible: false,
                 headerStyle: {
                   backgroundColor: theme.colors.background,
                   elevation: 0,
@@ -133,7 +123,6 @@ const RootNavigator: React.FC = () => {
               options={{
                 headerShown: true,
                 headerTitle: 'Edit Profile',
-                headerBackTitleVisible: false,
                 headerStyle: {
                   backgroundColor: theme.colors.background,
                   elevation: 0,
@@ -149,7 +138,6 @@ const RootNavigator: React.FC = () => {
               options={{
                 headerShown: true,
                 headerTitle: 'Settings',
-                headerBackTitleVisible: false,
                 headerStyle: {
                   backgroundColor: theme.colors.background,
                   elevation: 0,
@@ -165,7 +153,6 @@ const RootNavigator: React.FC = () => {
               options={{
                 headerShown: true,
                 headerTitle: 'Notifications',
-                headerBackTitleVisible: false,
                 headerStyle: {
                   backgroundColor: theme.colors.background,
                   elevation: 0,

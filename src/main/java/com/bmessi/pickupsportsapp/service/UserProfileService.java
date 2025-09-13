@@ -19,7 +19,7 @@ public class UserProfileService {
     private final UserRepository userRepository;
     private final AvatarStorageService avatarStorageService;
 
-    @Cacheable("user-profiles")
+    // @Cacheable("user-profiles") // Temporarily disabled due to serialization issue
     @Transactional(readOnly = true)
     public UserProfileDTO getProfileByUsername(String username) {
         User user = userRepository.findOptionalByUsername(username)
@@ -27,7 +27,7 @@ public class UserProfileService {
         return toDto(user);
     }
 
-    @Cacheable("user-profiles")
+    // @Cacheable("user-profiles") // Temporarily disabled due to serialization issue
     @Transactional(readOnly = true)
     public UserProfileDTO getProfileById(Long id) {
         User user = userRepository.findById(id)

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Appearance, ColorSchemeName } from 'react-native';
 import { Theme, LOCALE_THEMES } from '../constants/theme';
-import * as SecureStore from 'expo-secure-store';
+import { storage } from '../services/storage';
 
 interface ThemeContextType {
   theme: Theme;
@@ -28,9 +28,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   useEffect(() => {
     const loadPreferences = async () => {
       try {
-        const savedTheme = await SecureStore.getItemAsync('theme');
-        const savedLocale = await SecureStore.getItemAsync('locale');
-        const savedAdaptive = await SecureStore.getItemAsync('adaptiveMode');
+        const savedTheme = await storage.getItemAsync('theme');
+        const savedLocale = await storage.getItemAsync('locale');
+        const savedAdaptive = await storage.getItemAsync('adaptiveMode');
 
         if (savedTheme) {
           setIsDark(savedTheme === 'dark');
@@ -68,7 +68,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     const newIsDark = !isDark;
     setIsDark(newIsDark);
     try {
-      await SecureStore.setItemAsync('theme', newIsDark ? 'dark' : 'light');
+      await storage.setItemAsync('theme', newIsDark ? 'dark' : 'light');
     } catch (error) {
       console.log('Error saving theme preference:', error);
     }
@@ -77,7 +77,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const setLocale = async (newLocale: 'nepal' | 'global') => {
     setLocaleState(newLocale);
     try {
-      await SecureStore.setItemAsync('locale', newLocale);
+      await storage.setItemAsync('locale', newLocale);
     } catch (error) {
       console.log('Error saving locale preference:', error);
     }
@@ -86,7 +86,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const setAdaptiveMode = async (enabled: boolean) => {
     setAdaptiveModeState(enabled);
     try {
-      await SecureStore.setItemAsync('adaptiveMode', enabled.toString());
+      await storage.setItemAsync('adaptiveMode', enabled.toString());
     } catch (error) {
       console.log('Error saving adaptive mode preference:', error);
     }

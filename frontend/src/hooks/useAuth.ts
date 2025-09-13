@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as SecureStore from 'expo-secure-store';
+import { storage } from '../services/storage';
 import { authAPI, userAPI } from '../services/api';
 
 interface User {
@@ -33,7 +33,7 @@ export const useAuth = () => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const token = await SecureStore.getItemAsync('authToken');
+        const token = await storage.getItemAsync('authToken');
         if (token) {
           setAuthState(prev => ({
             ...prev,
@@ -41,8 +41,6 @@ export const useAuth = () => {
             isAuthenticated: true,
             isLoading: false,
           }));
-          // Fetch user profile
-          fetchUserProfile();
         } else {
           setAuthState(prev => ({
             ...prev,
@@ -64,13 +62,17 @@ export const useAuth = () => {
   // Fetch user profile
   const { data: userProfile, refetch: fetchUserProfile } = useQuery({
     queryKey: ['userProfile'],
-    queryFn: () => userAPI.getProfile(),
+    queryFn: () => {
+      console.log('Fetching user profile...');
+      return userAPI.getProfile();
+    },
     enabled: authState.isAuthenticated,
   });
 
   // Handle user profile updates
   useEffect(() => {
     if (userProfile) {
+      console.log('User profile received:', userProfile);
       setAuthState(prev => ({
         ...prev,
         user: userProfile.data,
@@ -83,17 +85,20 @@ export const useAuth = () => {
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       authAPI.login(email, password),
     onSuccess: async (response: any) => {
-      const { token, user } = response.data;
+      console.log('Login successful, response:', response);
+      const { accessToken, refreshToken } = response.data;
       
       // Store token
-      await SecureStore.setItemAsync('authToken', token);
+      await storage.setItemAsync('authToken', accessToken);
+      console.log('Token stored successfully');
       
       setAuthState({
-        user,
-        token,
+        user: null, // User data will be fetched separately
+        token: accessToken,
         isLoading: false,
         isAuthenticated: true,
       });
+      console.log('Auth state updated, isAuthenticated: true');
       
       // Invalidate and refetch user queries
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
@@ -108,14 +113,14 @@ export const useAuth = () => {
   const registerMutation = useMutation({
     mutationFn: (userData: any) => authAPI.register(userData),
     onSuccess: async (response: any) => {
-      const { token, user } = response.data;
+      const { accessToken, refreshToken } = response.data;
       
       // Store token
-      await SecureStore.setItemAsync('authToken', token);
+      await storage.setItemAsync('authToken', accessToken);
       
       setAuthState({
-        user,
-        token,
+        user: null, // User data will be fetched separately
+        token: accessToken,
         isLoading: false,
         isAuthenticated: true,
       });
@@ -140,7 +145,7 @@ export const useAuth = () => {
   // Logout function
   const logout = async () => {
     try {
-      await SecureStore.deleteItemAsync('authToken');
+      await storage.deleteItemAsync('authToken');
       
       setAuthState({
         user: null,
