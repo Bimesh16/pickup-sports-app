@@ -1,0 +1,356 @@
+// src/pages/Profile.tsx - User Profile Management
+
+import React, { useState } from 'react';
+import { useAuth } from '@hooks/useAuth';
+import { Button, Input, Card, Avatar, Badge } from '@components/ui';
+import { theme } from '@styles/theme';
+import { validateForm } from '@lib/validation';
+
+export function Profile() {
+  const { user, logout } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    bio: user?.bio || '',
+    phoneNumber: user?.phoneNumber || '',
+    location: user?.location || '',
+    socialMedia: {
+      instagram: user?.socialMedia?.instagram || '',
+      tiktok: user?.socialMedia?.tiktok || '',
+      facebook: user?.socialMedia?.facebook || '',
+      twitter: user?.socialMedia?.twitter || ''
+    }
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSave = async () => {
+    setErrors({});
+    
+    // Validate form
+    const validation = validateForm({ ...formData, username: user?.username || '', email: user?.email || '', password: 'dummy' });
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Here you would call the API to update the profile
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Mock API call
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      bio: user?.bio || '',
+      phoneNumber: user?.phoneNumber || '',
+      location: user?.location || '',
+      socialMedia: {
+        instagram: user?.socialMedia?.instagram || '',
+        tiktok: user?.socialMedia?.tiktok || '',
+        facebook: user?.socialMedia?.facebook || '',
+        twitter: user?.socialMedia?.twitter || ''
+      }
+    });
+    setErrors({});
+    setIsEditing(false);
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: theme.gradients.mountain,
+      padding: theme.spacing.lg
+    }}>
+      <div style={{
+        maxWidth: '800px',
+        margin: '0 auto'
+      }}>
+        {/* Header */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: theme.spacing.xl,
+          color: 'white'
+        }}>
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            margin: '0 0 8px 0',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}>
+            Profile Settings
+          </h1>
+          <p style={{
+            fontSize: '16px',
+            opacity: 0.9,
+            margin: 0
+          }}>
+            Manage your account information
+          </p>
+        </div>
+
+        {/* Profile Card */}
+        <Card style={{
+          padding: theme.spacing.xl,
+          marginBottom: theme.spacing.lg
+        }}>
+          {/* Profile Header */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: theme.spacing.xl,
+            paddingBottom: theme.spacing.lg,
+            borderBottom: `1px solid ${theme.colors.border}`
+          }}>
+            <Avatar
+              src={user?.avatarUrl}
+              size="lg"
+              style={{ marginRight: theme.spacing.md }}
+            />
+            <div style={{ flex: 1 }}>
+              <h2 style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                margin: '0 0 4px 0',
+                color: theme.colors.text
+              }}>
+                {user?.firstName} {user?.lastName}
+              </h2>
+              <p style={{
+                fontSize: '16px',
+                color: theme.colors.muted,
+                margin: '0 0 8px 0'
+              }}>
+                @{user?.username}
+              </p>
+              <div style={{ display: 'flex', gap: theme.spacing.sm }}>
+                <Badge variant="success">
+                  {user?.skillLevel || 'BEGINNER'}
+                </Badge>
+                {user?.isVerified && (
+                  <Badge variant="primary">
+                    ✓ Verified
+                  </Badge>
+                )}
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </Button>
+          </div>
+
+          {/* Profile Form */}
+          <div style={{ display: 'grid', gap: theme.spacing.lg }}>
+            {/* Basic Information */}
+            <div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: '0 0 16px 0',
+                color: theme.colors.text
+              }}>
+                Basic Information
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md }}>
+                <Input
+                  label="First Name"
+                  value={isEditing ? formData.firstName : user?.firstName || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                  disabled={!isEditing}
+                  error={errors.firstName}
+                />
+                <Input
+                  label="Last Name"
+                  value={isEditing ? formData.lastName : user?.lastName || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                  disabled={!isEditing}
+                  error={errors.lastName}
+                />
+              </div>
+              <div style={{ marginTop: theme.spacing.md }}>
+                <Input
+                  label="Bio"
+                  value={isEditing ? formData.bio : user?.bio || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                  disabled={!isEditing}
+                  placeholder="Tell us about yourself..."
+                  error={errors.bio}
+                />
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: '0 0 16px 0',
+                color: theme.colors.text
+              }}>
+                Contact Information
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md }}>
+                <Input
+                  label="Phone Number"
+                  value={isEditing ? formData.phoneNumber : user?.phoneNumber || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                  disabled={!isEditing}
+                  placeholder="+977 98XXXXXXXX"
+                  error={errors.phoneNumber}
+                />
+                <Input
+                  label="Location"
+                  value={isEditing ? formData.location : user?.location || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                  disabled={!isEditing}
+                  placeholder="Kathmandu, Nepal"
+                  error={errors.location}
+                />
+              </div>
+            </div>
+
+            {/* Social Media */}
+            <div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: '0 0 16px 0',
+                color: theme.colors.text
+              }}>
+                Social Media
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md }}>
+                <Input
+                  label="Instagram"
+                  value={isEditing ? formData.socialMedia.instagram : user?.socialMedia?.instagram || ''}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    socialMedia: { ...prev.socialMedia, instagram: e.target.value }
+                  }))}
+                  disabled={!isEditing}
+                  placeholder="@username"
+                  leftIcon="📷"
+                  error={errors.instagram}
+                />
+                <Input
+                  label="TikTok"
+                  value={isEditing ? formData.socialMedia.tiktok : user?.socialMedia?.tiktok || ''}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    socialMedia: { ...prev.socialMedia, tiktok: e.target.value }
+                  }))}
+                  disabled={!isEditing}
+                  placeholder="@username"
+                  leftIcon="🎵"
+                  error={errors.tiktok}
+                />
+                <Input
+                  label="Facebook"
+                  value={isEditing ? formData.socialMedia.facebook : user?.socialMedia?.facebook || ''}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    socialMedia: { ...prev.socialMedia, facebook: e.target.value }
+                  }))}
+                  disabled={!isEditing}
+                  placeholder="username"
+                  leftIcon="👥"
+                  error={errors.facebook}
+                />
+                <Input
+                  label="Twitter"
+                  value={isEditing ? formData.socialMedia.twitter : user?.socialMedia?.twitter || ''}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    socialMedia: { ...prev.socialMedia, twitter: e.target.value }
+                  }))}
+                  disabled={!isEditing}
+                  placeholder="@username"
+                  leftIcon="🐦"
+                  error={errors.twitter}
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            {isEditing && (
+              <div style={{
+                display: 'flex',
+                gap: theme.spacing.md,
+                justifyContent: 'flex-end',
+                paddingTop: theme.spacing.lg,
+                borderTop: `1px solid ${theme.colors.border}`
+              }}>
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleSave}
+                  isLoading={isLoading}
+                >
+                  Save Changes
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Account Actions */}
+        <Card style={{
+          padding: theme.spacing.lg,
+          textAlign: 'center'
+        }}>
+          <h3 style={{
+            fontSize: '18px',
+            fontWeight: '600',
+            margin: '0 0 16px 0',
+            color: theme.colors.text
+          }}>
+            Account Actions
+          </h3>
+          <div style={{
+            display: 'flex',
+            gap: theme.spacing.md,
+            justifyContent: 'center',
+            flexWrap: 'wrap'
+          }}>
+            <Button
+              variant="outline"
+              onClick={() => {/* Change password */}}
+            >
+              Change Password
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {/* Privacy settings */}}
+            >
+              Privacy Settings
+            </Button>
+            <Button
+              variant="danger"
+              onClick={logout}
+            >
+              Sign Out
+            </Button>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}

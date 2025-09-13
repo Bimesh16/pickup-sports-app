@@ -1,7 +1,9 @@
 import React from 'react';
 import type { GameSummaryDTO } from '@types/api';
+import { Card, Badge } from '@components/ui';
+import { theme } from '@styles/theme';
 
-export function GameCard({ g }: { g: GameSummaryDTO }) {
+export function GameCard({ g, onClick }: { g: GameSummaryDTO; onClick?: () => void }) {
   const formatTime = (timeString: string) => {
     const date = new Date(timeString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -26,21 +28,23 @@ export function GameCard({ g }: { g: GameSummaryDTO }) {
   };
 
   return (
-    <div style={{ 
-      border: '1px solid #e5e7eb', 
-      borderRadius: 12, 
-      padding: 16,
-      backgroundColor: '#ffffff',
-      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-      transition: 'box-shadow 0.2s ease-in-out',
-      cursor: 'pointer'
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
-    }}>
+    <div 
+      onClick={onClick}
+      style={{ 
+        border: '1px solid #e5e7eb', 
+        borderRadius: 12, 
+        padding: 16,
+        backgroundColor: '#ffffff',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        transition: 'box-shadow 0.2s ease-in-out',
+        cursor: 'pointer'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+      }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ 

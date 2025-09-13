@@ -2,7 +2,10 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { nearbyGames, trendingGames } from '@api/games';
 import { GameCard } from '@components/GameCard';
-import { useAuth } from '../hooks/useAuth';
+import { Button, Card, Input, Badge } from '@components/ui';
+import { useAuth } from '@hooks/useAuth';
+import { theme } from '@styles/theme';
+import { NEPAL_LOCATIONS, SKILL_LEVELS, POPULAR_SPORTS_NEPAL } from '@constants/nepal';
 
 export function NearbyGames() {
   const { logout } = useAuth();
