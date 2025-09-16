@@ -15,11 +15,15 @@
     "paths": {
       "@api/*": ["src/api/*"],
       "@types/*": ["src/types/*"],
+      "@app-types/*": ["src/types/*"],
       "@lib/*": ["src/lib/*"],
       "@pages/*": ["src/pages/*"],
-      "@components/*": ["src/components/*"]
+      "@components/*": ["src/components/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@styles/*": ["src/styles/*"],
+      "@constants/*": ["src/constants/*"],
+      "@context/*": ["src/context/*"]
     }
   },
   "include": ["src"]
 }
-

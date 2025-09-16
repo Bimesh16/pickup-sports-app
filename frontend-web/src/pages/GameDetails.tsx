@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@hooks/useAuth';
 import { Button, Card, Badge, Avatar, Modal } from '@components/ui';
 import { theme } from '@styles/theme';
-import type { Game } from '@types/api';
+import type { Game } from '@app-types/api';
 
 interface GameDetailsProps {
   game: Game;
@@ -324,4 +324,3 @@ interface GameDetailsProps {
   onLeave: (gameId: number) => void;
   onClose: () => void;
 }
-

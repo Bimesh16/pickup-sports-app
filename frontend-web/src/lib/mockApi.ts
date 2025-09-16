@@ -6,9 +6,19 @@ import type {
   CreateGameRequest, UpdateProfileRequest,
   ComprehensiveRecommendationsResponse, NepalFutsalParams,
   PopularFutsalArea, SystemMetrics, PaginatedResponse
-} from '@types/api';
+} from '@app-types/api';
 
 import { NEPAL_LOCATIONS, POPULAR_SPORTS_NEPAL, KATHMANDU_AREAS } from '@constants/nepal';
+
+class MockHttpError extends Error {
+  status: number;
+  body: any;
+  constructor(status: number, body: any) {
+    super(typeof body === 'string' ? body : body?.message || `Mock HTTP ${status}`);
+    this.status = status;
+    this.body = body;
+  }
+}
 
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -262,11 +272,18 @@ const mockAuthResponses = {
 let currentUser: User | null = null;
 
 export class MockApiService {
+  static async checkUsername(username: string): Promise<{ available: boolean }> {
+    await delay(150);
+    const pattern = /^[a-zA-Z0-9_]{3,20}$/;
+    if (!pattern.test(username)) return { available: false };
+    const exists = mockUsers.some(u => u.username.toLowerCase() === username.toLowerCase());
+    return { available: !exists };
+  }
   // Authentication
-  static async login(request: LoginRequest): Promise<TokenPairResponse> {
+  static async login(request: LoginRequest & { captchaToken?: string }): Promise<TokenPairResponse | { mfaRequired: boolean; challenge: string; methods: string[] }> {
     await delay(500);
     
-    const { username, password } = request;
+    const { username, password, captchaToken } = request;
     
     // Demo credentials for easy testing
     const validCredentials = [
@@ -276,6 +293,18 @@ export class MockApiService {
       { username: 'john@example.com', password: 'password123' }
     ];
     
+    // Special flows for demoing CAPTCHA and MFA
+    if (username === 'needcaptcha@example.com') {
+      // Require a captchaToken to proceed
+      if (!captchaToken || captchaToken.toLowerCase() !== 'ok') {
+        // Signal 429 with captchaRequired
+        throw new MockHttpError(429, { error: 'too_many_requests', captchaRequired: true, message: 'Please complete CAPTCHA' });
+      }
+    }
+    if (username === 'needmfa@example.com') {
+      return { mfaRequired: true, challenge: 'mock-challenge-123456', methods: ['TOTP'] };
+    }
+
     const isValid = validCredentials.some(cred => 
       cred.username === username && cred.password === password
     );
@@ -300,7 +329,28 @@ export class MockApiService {
     throw new Error('Invalid username or password');
   }
 
-  static async register(request: RegisterRequest): Promise<TokenPairResponse> {
+  static async verifyMfa(request: { challenge: string; code: string }): Promise<TokenPairResponse> {
+    await delay(400);
+    const { challenge, code } = request || {} as any;
+    if (challenge !== 'mock-challenge-123456') {
+      throw new MockHttpError(400, { error: 'invalid_request', message: 'Invalid challenge' });
+    }
+    if (!code || !/^\d{6}$/.test(code)) {
+      throw new MockHttpError(400, { error: 'invalid_grant', message: 'Invalid code' });
+    }
+    if (code !== '123456' && code !== '000000') {
+      throw new MockHttpError(401, { error: 'invalid_grant', message: 'Incorrect code' });
+    }
+    const token = `mock-jwt-token-mfa-${Date.now()}`;
+    return {
+      accessToken: token,
+      refreshToken: `mock-refresh-token-mfa-${Date.now()}`,
+      tokenType: 'Bearer',
+      expiresInSeconds: 3600
+    };
+  }
+
+  static async register(request: RegisterRequest & { gender?: string; phoneNumber?: string; location?: string; preferences?: any; }): Promise<TokenPairResponse> {
     await delay(600);
     
     const { 
@@ -330,7 +380,7 @@ export class MockApiService {
       lastName,
       bio: '',
       skillLevel: 'BEGINNER',
-      gender: gender || 'PREFER_NOT_TO_SAY',
+      gender: (gender as any) || 'PREFER_NOT_TO_SAY',
       phoneNumber: phoneNumber || '',
       location: location || 'Kathmandu, Nepal',
       latitude: NEPAL_LOCATIONS.KATHMANDU.lat,
@@ -346,6 +396,8 @@ export class MockApiService {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
+    // persist simple preferences for demo
+    (newUser as any).preferences = request.preferences || {};
     
     mockUsers.push(newUser);
     currentUser = newUser;
@@ -378,6 +430,33 @@ export class MockApiService {
   static async logout(): Promise<void> {
     await delay(100);
     currentUser = null;
+  }
+
+  static async forgotPassword(request: { email?: string; phone?: string }) {
+    await delay(300);
+    if (!request.email && !request.phone) {
+      throw new Error('Provide email or phone');
+    }
+    // Generate a mock reset token
+    const resetToken = 'mock-reset-' + Math.random().toString(36).slice(2);
+    // In a real app, email/SMS would be sent. Here we return the token so UI can proceed.
+    return { message: 'If the account exists, reset instructions were sent.', resetToken };
+  }
+
+  static async resetPassword(request: { token: string; newPassword: string }) {
+    await delay(300);
+    if (!request.token || request.newPassword?.length < 6) {
+      throw new Error('Invalid token or weak password');
+    }
+    return { success: true, message: 'Password updated' };
+  }
+
+  static async forgotUsername(request: { email?: string; phone?: string }) {
+    await delay(300);
+    if (!request.email && !request.phone) {
+      throw new Error('Provide email or phone');
+    }
+    return { message: 'If the account exists, your username has been sent.' };
   }
 
   // Profile Management

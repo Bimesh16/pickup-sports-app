@@ -1,6 +1,7 @@
 // src/components/GameEntranceAuthFixed.tsx - Fixed Stadium Tunnel Auth Component
 
 import React, { useMemo, useState, useEffect } from "react";
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from "framer-motion";
 import { LogIn, UserPlus, Mail, Lock, User, ShieldCheck, Apple, Chrome } from "lucide-react";
 import { useAuth } from '@hooks/useAuth';
@@ -125,9 +126,8 @@ export default function GameEntranceAuthFixed({ countdownTo }: Props) {
                   }}
                 />
                 {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
-                <div className="mt-6 flex items-center justify-between">
-                  <button className={ghostBtn} onClick={() => setMode("register")}>New here? Create account</button>
-                  <a className={ghostBtn} href="#/forgot">Forgot password</a>
+                <div className="mt-6 flex items-center justify-start">
+                  <button className={ghostBtn} onClick={() => setMode("register")}>New here? Join the league</button>
                 </div>
               </FormShell>
             </motion.div>
@@ -262,6 +262,10 @@ function SignInForm({ onSubmit, isLoading }: { onSubmit: (payload: { username: s
             onChange={(e) => setUsername(e.target.value)} 
           />
         </div>
+      </div>
+      <div className="-mt-2 mb-2 flex items-center justify-between text-xs">
+        <Link className="text-white/80 hover:text-white underline underline-offset-2" to="/forgot-username">Forgot username?</Link>
+        <Link className="text-white/80 hover:text-white underline underline-offset-2" to="/forgot">Forgot password?</Link>
       </div>
       <div>
         <label className={labelBase} htmlFor="password">Password</label>
@@ -679,9 +683,8 @@ export default function GameEntranceAuthFixed({ countdownTo }: Props) {
                   }}
                 />
                 {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
-                <div className="mt-6 flex items-center justify-between">
-                  <button className={ghostBtn} onClick={() => setMode("register")}>New here? Create account</button>
-                  <a className={ghostBtn} href="#/forgot">Forgot password</a>
+                <div className="mt-6 flex items-center justify-start">
+                  <button className={ghostBtn} onClick={() => setMode("register")}>New here? Join the league</button>
                 </div>
               </FormShell>
             </motion.div>

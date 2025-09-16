@@ -131,7 +131,7 @@ export default function GameEntranceAuth({ onSignIn, onRegister, isLoading, coun
                 />
                 {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
                 <div className="mt-6 flex items-center justify-between">
-                  <button className={ghostBtn} onClick={() => setMode("register")}>New here? Create account</button>
+                  <button className={ghostBtn} onClick={() => setMode("register")}>New here? Join the league</button>
                   <a className={ghostBtn} href="#/forgot">Forgot password</a>
                 </div>
               </FormShell>

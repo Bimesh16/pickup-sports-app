@@ -1,10 +1,33 @@
 import React from 'react';
-import type { GameSummaryDTO } from '@types/api';
+import type { GameSummaryDTO } from '@app-types/api';
 import { Card, Badge } from '@components/ui';
 import { theme } from '@styles/theme';
 
-export function GameCard({ g, onClick }: { g: GameSummaryDTO; onClick?: () => void }) {
-  const formatTime = (timeString: string) => {
+export function GameCard({ g, onClick }: { g: GameSummaryDTO | undefined | null; onClick?: () => void }) {
+  if (!g) {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.warn('GameCard: received null/undefined game');
+    }
+    return null;
+  }
+  if (typeof g !== 'object') {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.warn('GameCard: expected object but received', g);
+    }
+    return null;
+  }
+  const missing: string[] = [];
+  if (!('sport' in g) || (g as any).sport == null) missing.push('sport');
+  if (!('time' in g) || (g as any).time == null) missing.push('time');
+  if (!('location' in g) || (g as any).location == null) missing.push('location');
+  if (missing.length && typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.warn('GameCard: incomplete game data', { missing, g });
+  }
+  const formatTime = (timeString?: string) => {
+    if (!timeString) return '';
     const date = new Date(timeString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
@@ -52,7 +75,7 @@ export function GameCard({ g, onClick }: { g: GameSummaryDTO; onClick?: () => vo
             fontWeight: '600', 
             color: '#1f2937' 
           }}>
-            {g.sport}
+            {g.sport ?? 'Game'}
           </span>
           {g.skillLevel && (
             <span style={{
@@ -82,7 +105,7 @@ export function GameCard({ g, onClick }: { g: GameSummaryDTO; onClick?: () => vo
         marginBottom: 8,
         fontWeight: '500'
       }}>
-        📍 {g.location}
+        📍 {g.location ?? 'Nearby'}
       </div>
       
       <div style={{ 
@@ -94,7 +117,7 @@ export function GameCard({ g, onClick }: { g: GameSummaryDTO; onClick?: () => vo
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span>
-            👥 {g.currentPlayers ?? 0}/{g.maxPlayers ?? '-'} players
+            👥 {(g.currentPlayers ?? 0)}/{g.maxPlayers ?? '-'} players
           </span>
           {g.creatorName && (
             <span>
@@ -105,8 +128,8 @@ export function GameCard({ g, onClick }: { g: GameSummaryDTO; onClick?: () => vo
         <span style={{
           padding: '2px 6px',
           borderRadius: 6,
-          backgroundColor: getStatusColor(g.status) + '20',
-          color: getStatusColor(g.status),
+          backgroundColor: getStatusColor(g.status ?? 'ACTIVE') + '20',
+          color: getStatusColor(g.status ?? 'ACTIVE'),
           fontWeight: '500',
           fontSize: 11
         }}>
@@ -116,4 +139,3 @@ export function GameCard({ g, onClick }: { g: GameSummaryDTO; onClick?: () => vo
     </div>
   );
 }
-

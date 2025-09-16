@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { User, Mail, Lock, Phone, MapPin, Camera, Shirt, Trophy, Star, Check, ArrowRight, ArrowLeft, Zap, Volume2, Instagram, Music, Chrome, Apple, Facebook } from "lucide-react";
 import { useAuth } from '@hooks/useAuth';
+import GenderSelector from './GenderSelector';
 import { validateForm } from '@lib/validation';
 
 // Modern Sporty Registration with Player Badge Design
@@ -297,7 +298,8 @@ function StadiumBackground() {
 function IdentitySection({ formData, setFormData, errors }: any) {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Stack name fields to improve readability across screen sizes */}
+      <div className="grid grid-cols-1 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             First Name
@@ -379,22 +381,7 @@ function SportSection({ formData, setFormData }: any) {
         <label className="block text-sm font-medium text-gray-700 mb-3">
           Gender (optional)
         </label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {GENDERS.map((gender) => (
-            <button
-              key={gender.id}
-              onClick={() => setFormData(prev => ({ ...prev, gender: gender.id }))}
-              className={`p-3 rounded-lg border-2 transition-all duration-200 ${
-                formData.gender === gender.id
-                  ? 'border-nepal-crimson bg-nepal-crimson/10 text-nepal-crimson'
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}
-            >
-              <div className="text-2xl mb-1">{gender.icon}</div>
-              <div className="text-xs font-medium">{gender.name}</div>
-            </button>
-          ))}
-        </div>
+        <GenderSelector size="sm" value={(formData.gender as any) || ''} onChange={(val) => setFormData(prev => ({ ...prev, gender: val }))} />
       </div>
 
       {/* Skill Level */}
@@ -948,22 +935,7 @@ function SportSection({ formData, setFormData }: any) {
         <label className="block text-sm font-medium text-gray-700 mb-3">
           Gender (optional)
         </label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {GENDERS.map((gender) => (
-            <button
-              key={gender.id}
-              onClick={() => setFormData(prev => ({ ...prev, gender: gender.id }))}
-              className={`p-3 rounded-lg border-2 transition-all duration-200 ${
-                formData.gender === gender.id
-                  ? 'border-nepal-crimson bg-nepal-crimson/10 text-nepal-crimson'
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}
-            >
-              <div className="text-2xl mb-1">{gender.icon}</div>
-              <div className="text-xs font-medium">{gender.name}</div>
-            </button>
-          ))}
-        </div>
+        <GenderSelector size="sm" value={(formData.gender as any) || ''} onChange={(val) => setFormData(prev => ({ ...prev, gender: val }))} />
       </div>
 
       {/* Skill Level */}

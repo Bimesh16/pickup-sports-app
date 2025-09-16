@@ -1,10 +1,16 @@
 // src/components/EnhancedGameEntranceAuth.tsx - Ultimate Stadium Entrance with Brand Personality
 
 import React, { useState, useEffect } from "react";
-import { LogIn, UserPlus, Mail, Lock, User, ShieldCheck, Apple, Chrome, Facebook, Instagram, Music, Eye, EyeOff, Zap, Trophy, Star, Shirt } from "lucide-react";
+import { Link, useLocation } from 'react-router-dom';
+import { LogIn, UserPlus, Mail, User, ShieldCheck, Apple, Chrome, Facebook, Instagram, Music, Zap, Trophy, Star, Shirt } from "lucide-react";
 import { useAuth } from '@hooks/useAuth';
+import { http, ApiError } from '@lib/http';
+import { logEvent } from '@lib/analytics';
 import { validateForm } from '@lib/validation';
 import UnifiedJoinTheLeague from './UnifiedJoinTheLeague';
+import LocationOnboardingModal from '@components/LocationOnboardingModal';
+import InputField from '@components/forms/InputField';
+import PasswordField from '@components/forms/PasswordField';
 
 // Enhanced Game Entrance Auth with full brand personality and gamification
 // Theme: Real Stadium Entrance with floodlights, animations, and sports culture
@@ -27,11 +33,26 @@ const ghostBtn =
 const sportDivider = "flex items-center justify-center gap-2 text-white/60 text-lg my-4";
 
 export default function EnhancedGameEntranceAuth({ countdownTo }: Props) {
-  const { login, register, socialLogin, isLoading } = useAuth();
+  const navigate = (path: string) => { try { history.pushState({}, '', path); window.dispatchEvent(new PopStateEvent('popstate')); } catch { window.location.href = path; } };
+  const { login, register, socialLogin, isLoading, setToken, refreshProfile } = useAuth();
   const [mode, setMode] = useState<"signin" | "register">("signin");
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<"en" | "ne">("en");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [resetToast, setResetToast] = useState(false);
+  const location = useLocation();
+  const [mfa, setMfa] = useState<{ open: boolean; challenge?: string; methods?: string[] }>({ open: false });
+  const [cooldown, setCooldown] = useState<number>(0);
+  const initialCooldown = React.useRef<number>(0);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
+  useEffect(() => {
+    if (location.search.includes('reset=1')) {
+      setResetToast(true);
+      const t = setTimeout(() => setResetToast(false), 3500);
+      return () => clearTimeout(t);
+    }
+  }, [location.search]);
 
   const translations = {
     en: {
@@ -42,7 +63,7 @@ export default function EnhancedGameEntranceAuth({ countdownTo }: Props) {
       backInGame: "Back in the game?",
       logInSubtitle: "Log in to see nearby games and teammates.",
       fillOutSubtitle: "Fill this out and step onto the field.",
-      newHere: "New here? Create account",
+      newHere: "New here? Join the league",
       forgotPassword: "Forgot password",
       alreadyRoster: "Already on the roster? Sign in",
       protectedBy: "Protected by Rate Limits",
@@ -57,7 +78,7 @@ export default function EnhancedGameEntranceAuth({ countdownTo }: Props) {
       backInGame: "खेलमा फर्किए?",
       logInSubtitle: "नजिकैका खेलहरू र साथीहरू हेर्न लगइन गर्नुहोस्।",
       fillOutSubtitle: "यो भरेर मैदानमा आउनुहोस्।",
-      newHere: "नयाँ? खाता बनाउनुहोस्",
+      newHere: "नयाँ? लीगमा सामेल हुनुहोस्",
       forgotPassword: "पासवर्ड बिर्सिए?",
       alreadyRoster: "पहिले नै रोस्टरमा? लगइन गर्नुहोस्",
       protectedBy: "दर सीमा द्वारा सुरक्षित",
@@ -70,6 +91,13 @@ export default function EnhancedGameEntranceAuth({ countdownTo }: Props) {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-nepal-blue via-slate-900 to-nepal-crimson text-white">
+      {resetToast && (
+        <div className="absolute inset-x-0 top-4 z-50 flex justify-center">
+          <div className="rounded-full bg-emerald-500/20 px-4 py-2 text-emerald-200 ring-1 ring-emerald-400/30 shadow">
+            Password updated. Welcome back — please sign in.
+          </div>
+        </div>
+      )}
       {/* Stadium Floodlights and Motion Lines */}
       <StadiumFloodlights />
       
@@ -110,6 +138,33 @@ export default function EnhancedGameEntranceAuth({ countdownTo }: Props) {
 
       {/* Center card */}
       <div className="relative z-10 mx-auto grid min-h-screen max-w-6xl grid-cols-1 items-center px-6 md:grid-cols-2 md:gap-10">
+        {mfa.open && (
+          <MfaModal
+            challenge={mfa.challenge}
+            methods={mfa.methods || ['TOTP']}
+            onClose={() => setMfa({ open: false })}
+            onVerify={async (code: string) => {
+              try {
+                const res = await http<any>('/auth/mfa/verify', {
+                  method: 'POST',
+                  body: JSON.stringify({ challenge: mfa.challenge, code })
+                }, false);
+                if (res?.accessToken) {
+                  // persist like login flow
+                  const token = res.accessToken as string;
+                  const refresh = res.refreshToken as string | undefined;
+                  setToken(token);
+                  if (refresh) localStorage.setItem('ps_refresh_token', refresh);
+                  await refreshProfile();
+                  setMfa({ open: false });
+                  navigate('/dashboard');
+                }
+              } catch (err) {
+                // swallow; modal shows its own error
+              }
+            }}
+          />
+        )}
         {/* Copy / Hero side */}
         <div className="hidden md:block">
           <h1 className="text-5xl font-black tracking-tight md:text-6xl leading-tight">
@@ -161,10 +216,28 @@ export default function EnhancedGameEntranceAuth({ countdownTo }: Props) {
         {/* Forms */}
         <div className="mx-auto w-full max-w-md">
           {mode === "register" ? (
-            <UnifiedJoinTheLeague 
-              onComplete={() => setMode("signin")}
-              onBack={() => setMode("signin")}
-            />
+            <>
+              <UnifiedJoinTheLeague 
+                onComplete={() => {
+                  try {
+                    const hasLoc = !!localStorage.getItem('ps_user_location');
+                    if (!hasLoc) { setShowLocationModal(true); return; }
+                  } catch {}
+                  navigate('/dashboard?welcome=1');
+                }}
+                onBack={() => setMode("signin")}
+              />
+              <LocationOnboardingModal
+                open={showLocationModal}
+                onClose={() => setShowLocationModal(false)}
+                onSave={(loc) => {
+                  try { localStorage.setItem('ps_user_location', JSON.stringify(loc)); } catch {}
+                  setShowLocationModal(false);
+                  navigate('/dashboard?welcome=1');
+                }}
+                enforce
+              />
+            </>
           ) : mode === "signin" ? (
             <FormShell
               title={t.backInGame}
@@ -172,23 +245,59 @@ export default function EnhancedGameEntranceAuth({ countdownTo }: Props) {
               badge="Game Entrance"
             >
               <SignInForm
-                isLoading={isLoading}
+                isLoading={isLoading || cooldown > 0}
+                cooldown={cooldown}
+                totalCooldown={initialCooldown.current || 60}
+                onJoin={() => setMode("register")}
                 onSubmit={async (payload) => {
                   setError(null);
                   try {
+                    logEvent('login_attempt', { username: payload.username });
                     await login(payload);
+                    try {
+                      const hasLoc = !!localStorage.getItem('ps_user_location');
+                      if (!hasLoc) { setShowLocationModal(true); return; }
+                    } catch {}
+                    logEvent('login_success', { username: payload.username });
                     setShowSuccess(true);
                     setTimeout(() => setShowSuccess(false), 3000);
                   } catch (e: any) {
-                    setError(e?.message || "That's an offside pass, try again! ⚽");
+                    if (e instanceof ApiError) {
+                      const status = e.status;
+                      const code = e.body?.code;
+                      if (code === 'mfa_required') {
+                        logEvent('mfa_prompted', { username: payload.username });
+                        setMfa({ open: true, challenge: e.body?.challenge, methods: e.body?.methods || ['TOTP'] });
+                        return;
+                      }
+                      if (status === 401) setError("That’s an offside pass, try again! ⚽");
+                      else if (status === 429) {
+                        const sec = typeof e.retryAfterSeconds === 'number' && e.retryAfterSeconds > 0 ? e.retryAfterSeconds : 60;
+                        setCooldown(sec);
+                        initialCooldown.current = sec;
+                        setError(`Time-out from the coach. Try again in ${sec}s.`);
+                        const iv = setInterval(() => {
+                          setCooldown(prev => {
+                            if (prev <= 1) { clearInterval(iv); setError(null); return 0; }
+                            setError(`Time-out from the coach. Try again in ${prev - 1}s.`);
+                            return prev - 1;
+                          });
+                        }, 1000);
+                      }
+                      else if (status >= 500) setError("Locker room maintenance. Please try later.");
+                      else setError(e.body?.message || "Couldn’t sign in—check your details.");
+                      logEvent('login_failure', { username: payload.username, status, code });
+                    } else if (typeof e?.message === 'string') {
+                      setError(e.message);
+                      logEvent('login_failure', { username: payload.username, message: e.message });
+                    } else {
+                      setError("Network misplay—check your connection and try again.");
+                      logEvent('login_failure', { username: payload.username, network: true });
+                    }
                   }
                 }}
               />
               {error && <p className="mt-3 text-sm text-nepal-crimson font-semibold">{error}</p>}
-              <div className="mt-6 flex items-center justify-between">
-                <button className={ghostBtn} onClick={() => setMode("register")}>{t.newHere}</button>
-                <button className={ghostBtn} onClick={() => alert("Forgot password feature coming soon! Contact support for now.")}>{t.forgotPassword}</button>
-              </div>
             </FormShell>
           ) : (
             <FormShell
@@ -217,6 +326,16 @@ export default function EnhancedGameEntranceAuth({ countdownTo }: Props) {
           )}
         </div>
       </div>
+      {/* First-run Location Modal */}
+      <LocationOnboardingModal
+        open={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onSave={(loc) => {
+          try { localStorage.setItem('ps_user_location', JSON.stringify(loc)); } catch {}
+          setShowLocationModal(false);
+          navigate('/dashboard?welcome=1');
+        }}
+      />
 
       {/* Success Animation */}
       {showSuccess && (
@@ -229,19 +348,76 @@ export default function EnhancedGameEntranceAuth({ countdownTo }: Props) {
         </div>
       )}
 
-      {/* Mini Scoreboard Footer */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-center justify-center gap-6 pb-6 text-xs text-white/60">
-        <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full backdrop-blur">
-          <span>⚽</span>
-          <span>{t.protectedBy}</span>
+      {/* Bottom utility bar */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
+        <div className="mx-auto max-w-6xl px-4 pb-4">
+          <div className="pointer-events-auto w-full rounded-2xl bg-black/30 backdrop-blur-md ring-1 ring-white/10">
+            <div className="flex flex-wrap items-center justify-center gap-3 px-3 py-2 text-[11px] text-white/90">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 ring-1 ring-white/10">
+                <span>🔒</span>
+                <span className="tracking-wide">Secure</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 ring-1 ring-white/10">
+                <span>🎯</span>
+                <span className="tracking-wide">Fair Play</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 ring-1 ring-white/10">
+                <span>⚡</span>
+                <span className="tracking-wide">Fast</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 ring-1 ring-white/10">
+                <span>🛡️</span>
+                <span className="tracking-wide">Protected</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full backdrop-blur">
-          <span>🛡️</span>
-          <span>{t.playFair}</span>
+      </div>
+    </div>
+  );
+}
+
+function MfaModal({ challenge, methods, onClose, onVerify }: { challenge?: string; methods: string[]; onClose: () => void; onVerify: (code: string) => Promise<void> }) {
+  const [code, setCode] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white/10 p-5 text-white ring-1 ring-white/20 backdrop-blur">
+        <h3 className="text-lg font-semibold">MFA Required</h3>
+        <p className="mt-1 text-sm text-white/70">Enter the 6-digit code from your authenticator app.</p>
+        <div className="mt-4 flex items-center gap-2">
+          <input
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={8}
+            placeholder="123456"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="flex-1 rounded-xl bg-white/90 px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm ring-1 ring-inset ring-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          />
+          <button
+            onClick={async () => {
+              setError(null);
+              if (!code.trim()) { setError('Code is required'); return; }
+              setLoading(true);
+              try {
+                await onVerify(code.trim());
+              } catch (e: any) {
+                setError(e?.message || 'Invalid code');
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading}
+            className="rounded-xl bg-emerald-400 px-4 py-2 font-semibold text-slate-900 ring-1 ring-white/20 hover:bg-emerald-300 disabled:opacity-50"
+          >
+            {loading ? 'Verifying…' : 'Verify'}
+          </button>
         </div>
-        <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full backdrop-blur">
-          <span>⏱️</span>
-          <span>{t.secureAuth}</span>
+        {error && <p className="mt-2 text-sm text-red-300">{error}</p>}
+        <div className="mt-4 text-right">
+          <button onClick={onClose} className="text-xs text-white/80 underline underline-offset-2 hover:text-white">Cancel</button>
         </div>
       </div>
     </div>
@@ -282,17 +458,17 @@ function StadiumFloodlights() {
       <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent,rgba(0,0,0,0.7))]" />
       <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,transparent,transparent_98px,rgba(255,255,255,0.05)_100px)] animate-pulse" />
       
-      {/* Floating sport icons */}
+      {/* Floating sport icons (very subtle) */}
       <div className="absolute inset-0 overflow-hidden">
-        {['⚽', '🏀', '🏐', '⚾', '🎾'].map((icon, i) => (
+        {['⚽', '🏀', '🏐', '🎾'].map((icon, i) => (
           <div
             key={i}
-            className="absolute text-4xl opacity-20 animate-bounce"
+            className="absolute text-4xl opacity-10 animate-bounce"
             style={{
               left: `${20 + i * 15}%`,
               top: `${30 + i * 10}%`,
-              animationDelay: `${i * 2}s`,
-              animationDuration: '4s'
+              animationDelay: `${i * 3}s`,
+              animationDuration: '8s'
             }}
           >
             {icon}
@@ -322,11 +498,20 @@ function FormShell({ title, subtitle, badge, children }: { title: string; subtit
   );
 }
 
-function SignInForm({ onSubmit, isLoading }: { onSubmit: (payload: { username: string; password: string }) => void | Promise<void>; isLoading: boolean }) {
+function SignInForm({ onSubmit, isLoading, onJoin, cooldown, totalCooldown = 60 }: { onSubmit: (payload: { username: string; password: string }) => void | Promise<void>; isLoading: boolean; onJoin?: () => void; cooldown?: number; totalCooldown?: number }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  
   const [errors, setErrors] = useState<{username?: string; password?: string}>({});
+  const userRef = React.useRef<HTMLInputElement>(null);
+  const passRef = React.useRef<HTMLInputElement>(null);
+  // Auto-focus username when cooldown ends
+  useEffect(() => {
+    if (typeof cooldown === 'number' && cooldown === 0) {
+      const el = document.getElementById('username') as HTMLInputElement | null;
+      if (el) el.focus();
+    }
+  }, [cooldown]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -334,95 +519,100 @@ function SignInForm({ onSubmit, isLoading }: { onSubmit: (payload: { username: s
     
     // Validation with sports language
     const newErrors: {username?: string; password?: string} = {};
-    if (!username.trim()) {
+    const uTrim = username.trim();
+    const pTrim = password.trim();
+    if (!uTrim) {
       newErrors.username = "Username is required to enter the field! ⚽";
     }
-    if (!password.trim()) {
+    if (uTrim && uTrim.includes('@')) {
+      const emailOk = /.+@.+\..+/.test(uTrim);
+      if (!emailOk) newErrors.username = "That email doesn’t look right. Try again.";
+    }
+    if (!pTrim) {
       newErrors.password = "Password is required to secure your account! 🛡️";
     }
     
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      if (newErrors.username) userRef.current?.focus();
+      else if (newErrors.password) passRef.current?.focus();
       return;
     }
     
-    await onSubmit({ username, password });
+    await onSubmit({ username: uTrim, password: pTrim });
   };
 
   const handleDemoMode = () => {
     setUsername("demo@example.com");
     setPassword("password123");
     setErrors({});
+    logEvent('login_demo_prefill');
   };
   
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className={labelBase} htmlFor="username">Username or Email</label>
-        <div className="mt-1 flex items-center gap-2">
-          <div className="rounded-xl bg-white/10 p-2 ring-1 ring-inset ring-white/10"><Mail className="h-4 w-4" /></div>
-          <input 
-            id="username" 
-            name="username" 
-            type="text" 
-            autoComplete="username" 
-            placeholder="demo@example.com or demo123" 
-            className={`${fieldBase} ${errors.username ? 'ring-2 ring-nepal-crimson animate-pulse' : ''}`}
-            value={username} 
-            onChange={(e) => {
-              setUsername(e.target.value);
-              if (errors.username) setErrors(prev => ({ ...prev, username: undefined }));
-            }} 
-          />
-        </div>
-        {errors.username && <p className="mt-1 text-xs text-nepal-crimson font-semibold">{errors.username}</p>}
-      </div>
-      <div>
-        <label className={labelBase} htmlFor="password">Password</label>
-        <div className="mt-1 flex items-center gap-2">
-          <div className="rounded-xl bg-white/10 p-2 ring-1 ring-inset ring-white/10"><Lock className="h-4 w-4" /></div>
-          <input 
-            id="password" 
-            name="password" 
-            type={showPassword ? "text" : "password"}
-            placeholder="password123" 
-            className={`${fieldBase} ${errors.password ? 'ring-2 ring-nepal-crimson animate-pulse' : ''}`}
-            value={password} 
-            onChange={(e) => {
-              setPassword(e.target.value);
-              if (errors.password) setErrors(prev => ({ ...prev, password: undefined }));
-            }} 
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="rounded-xl bg-white/10 p-2 ring-1 ring-inset ring-white/10 hover:bg-white/20 transition-colors"
-          >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        </div>
-        {errors.password && <p className="mt-1 text-xs text-nepal-crimson font-semibold">{errors.password}</p>}
-      </div>
+      <InputField
+        id="username"
+        label="Username or Email"
+        placeholder="demo@example.com or demo123"
+        value={username}
+        onChange={(e) => { setUsername(e.target.value); if (errors.username) setErrors(prev => ({ ...prev, username: undefined })); }}
+        autoComplete="username"
+        icon={<Mail className="h-4 w-4" />}
+        error={errors.username || null}
+      />
 
-      <div className="pt-2">
-        <button
-          type="submit"
-          disabled={isLoading}
-          className={`${pillBtn} w-full justify-center bg-nepal-crimson text-white hover:bg-nepal-crimson/90 focus:ring-nepal-crimson/50 text-lg py-4`}
+      <div className="-mt-2 mb-2 flex items-center justify-between text-xs">
+        <Link
+          to="/forgot-username"
+          className="text-white/80 hover:text-white underline underline-offset-2"
         >
-          <LogIn className="h-5 w-5" /> {isLoading ? "Signing in…" : "Step onto the field"}
+          Forgot username?
+        </Link>
+        <Link
+          to="/forgot"
+          className="text-white/80 hover:text-white underline underline-offset-2"
+        >
+          Forgot password?
+        </Link>
+      </div>
+      <PasswordField
+        id="password"
+        label="Password"
+        placeholder="password123"
+        value={password}
+        onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors(prev => ({ ...prev, password: undefined })); }}
+        error={errors.password || null}
+      />
+
+      <div className="pt-2 flex gap-3 items-center">
+        <button type="submit" disabled={isLoading} className="btn btn-primary flex-1 relative">
+          {isLoading ? "Signing in…" : "⚽ Step onto the Field"}
+          {typeof cooldown === 'number' && cooldown > 0 && (
+            <span
+              className="absolute -top-2 -right-2 grid place-items-center"
+              style={{ width: 28, height: 28 }}
+              title={`Rate limited — try again after ${cooldown}s`}
+              aria-label={`Rate limited — try again after ${cooldown} seconds`}
+            >
+              <svg viewBox="0 0 36 36" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
+                <circle cx="18" cy="18" r="16" stroke="#fde2e2" strokeWidth="4" fill="none" />
+                <circle cx="18" cy="18" r="16" stroke="#dc143c" strokeWidth="4" fill="none"
+                  strokeDasharray={`${(cooldown! / (totalCooldown || 60)) * 100} 100`} />
+              </svg>
+              <span className="rounded-full bg-white text-nepal-crimson text-[11px] font-bold px-1.5 py-0.5 ring-2 ring-nepal-crimson/30">{cooldown}s</span>
+            </span>
+          )}
+        </button>
+        <button type="button" onClick={() => onJoin && onJoin()} className="btn btn-outline flex-1">
+          Join the League
         </button>
       </div>
       
-      {/* Try Demo Mode Button */}
+      {/* Try Demo Match Button */}
       <div className="mt-4">
-        <button
-          type="button"
-          onClick={handleDemoMode}
-          className="w-full py-3 px-4 bg-gradient-to-r from-nepal-blue to-nepal-crimson text-white rounded-xl font-semibold hover:from-nepal-crimson hover:to-nepal-blue transition-all duration-300 transform hover:scale-105 shadow-lg"
-        >
-          <Zap className="h-4 w-4 inline mr-2" />
-          Try Demo Mode
+        <button type="button" onClick={handleDemoMode} className="btn btn-gradient w-full">
+          🎮 Try a Demo Match
         </button>
       </div>
 
@@ -450,7 +640,7 @@ function RegisterForm({ onSubmit, isLoading }: { onSubmit: (payload: any) => voi
     }
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showPassword, setShowPassword] = useState(false);
+  
 
   const getPasswordStrength = (password: string) => {
     let strength = 0;
@@ -480,122 +670,17 @@ function RegisterForm({ onSubmit, isLoading }: { onSubmit: (payload: any) => voi
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className={labelBase} htmlFor="firstName">First Name</label>
-          <div className="mt-1 flex items-center gap-2">
-            <div className="rounded-xl bg-white/10 p-2 ring-1 ring-inset ring-white/10"><User className="h-4 w-4" /></div>
-            <input 
-              id="firstName" 
-              name="firstName" 
-              required 
-              placeholder="Bimesh" 
-              className={`${fieldBase} ${errors.firstName ? 'ring-2 ring-nepal-crimson' : ''}`}
-              value={formData.firstName} 
-              onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))} 
-            />
-          </div>
-        </div>
-        <div>
-          <label className={labelBase} htmlFor="lastName">Last Name</label>
-          <input 
-            id="lastName" 
-            name="lastName" 
-            placeholder="Shrestha" 
-            className={fieldBase}
-            value={formData.lastName} 
-            onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))} 
-          />
-        </div>
+      {/* Stack first/last name vertically for better legibility */}
+      <div className="grid grid-cols-1 gap-3">
+        <InputField id="firstName" label="First Name" placeholder="Bimesh" value={formData.firstName} onChange={(e)=>setFormData(p=>({...p, firstName: e.target.value}))} icon={<User className="h-4 w-4" />} error={errors.firstName || null} />
+        <InputField id="lastName" label="Last Name" placeholder="Shrestha" value={formData.lastName} onChange={(e)=>setFormData(p=>({...p, lastName: e.target.value}))} />
       </div>
 
-      <div>
-        <label className={labelBase} htmlFor="username">Username</label>
-        <div className="mt-1 flex items-center gap-2">
-          <div className="rounded-xl bg-white/10 p-2 ring-1 ring-inset ring-white/10"><User className="h-4 w-4" /></div>
-          <input 
-            id="username" 
-            name="username" 
-            required 
-            placeholder="bimesh123" 
-            className={`${fieldBase} ${errors.username ? 'ring-2 ring-nepal-crimson' : ''}`}
-            value={formData.username} 
-            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))} 
-          />
-        </div>
-        {errors.username && <p className="mt-1 text-xs text-nepal-crimson">{errors.username}</p>}
-      </div>
+      <InputField id="username" label="Username" placeholder="bimesh123" value={formData.username} onChange={(e)=>setFormData(p=>({...p, username: e.target.value}))} icon={<User className="h-4 w-4" />} error={errors.username || null} />
 
-      <div>
-        <label className={labelBase} htmlFor="email">Email</label>
-        <div className="mt-1 flex items-center gap-2">
-          <div className="rounded-xl bg-white/10 p-2 ring-1 ring-inset ring-white/10"><Mail className="h-4 w-4" /></div>
-          <input 
-            id="email" 
-            name="email" 
-            type="email" 
-            autoComplete="email" 
-            required 
-            placeholder="you@club.com" 
-            className={`${fieldBase} ${errors.email ? 'ring-2 ring-nepal-crimson' : ''}`}
-            value={formData.email} 
-            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))} 
-          />
-        </div>
-        {errors.email && <p className="mt-1 text-xs text-nepal-crimson">{errors.email}</p>}
-      </div>
+      <InputField id="email" label="Email" type="email" placeholder="you@club.com" value={formData.email} onChange={(e)=>setFormData(p=>({...p, email: e.target.value}))} icon={<Mail className="h-4 w-4" />} error={errors.email || null} />
 
-      <div>
-        <label className={labelBase} htmlFor="password">Create a strong password</label>
-        <div className="mt-1 flex items-center gap-2">
-          <div className="rounded-xl bg-white/10 p-2 ring-1 ring-inset ring-white/10"><Lock className="h-4 w-4" /></div>
-          <input 
-            id="password" 
-            name="password" 
-            type={showPassword ? "text" : "password"}
-            required 
-            placeholder="••••••••" 
-            className={`${fieldBase} ${errors.password ? 'ring-2 ring-nepal-crimson' : ''}`}
-            value={formData.password} 
-            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))} 
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="rounded-xl bg-white/10 p-2 ring-1 ring-inset ring-white/10 hover:bg-white/20 transition-colors"
-          >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        </div>
-        
-        {/* Password Strength Meter */}
-        {formData.password && (
-          <div className="mt-2">
-            <div className="flex gap-1">
-              {Array.from({ length: 5 }, (_, i) => (
-                <div
-                  key={i}
-                  className={`h-1 flex-1 rounded ${
-                    i < passwordStrength 
-                      ? passwordStrength < 3 
-                        ? 'bg-red-500' 
-                        : passwordStrength < 4 
-                        ? 'bg-yellow-500' 
-                        : 'bg-green-500'
-                      : 'bg-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-            <p className="text-xs text-white/70 mt-1">
-              {passwordStrength < 3 ? 'Weak password' : passwordStrength < 4 ? 'Good password' : 'Strong password'} 
-              {passwordStrength >= 4 && <span className="text-green-400 ml-1">🏆</span>}
-            </p>
-          </div>
-        )}
-        
-        {errors.password && <p className="mt-1 text-xs text-nepal-crimson">{errors.password}</p>}
-      </div>
+      <PasswordField id="password" label="Create a strong password" placeholder="••••••••" value={formData.password} onChange={(e)=>setFormData(p=>({...p, password: e.target.value}))} showStrength />
 
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -714,41 +799,49 @@ function RegisterForm({ onSubmit, isLoading }: { onSubmit: (payload: any) => voi
 
 function SocialRow() {
   const { socialLogin } = useAuth();
+  const env: any = (import.meta as any).env || {};
+  const enabled = {
+    google: env.VITE_SOCIAL_GOOGLE !== 'false',
+    apple: env.VITE_SOCIAL_APPLE !== 'false',
+    facebook: env.VITE_SOCIAL_FACEBOOK !== 'false',
+    instagram: env.VITE_SOCIAL_INSTAGRAM !== 'false',
+    tiktok: env.VITE_SOCIAL_TIKTOK !== 'false'
+  };
   
   return (
     <div className="mt-5">
       <div className="mb-3 text-center text-xs uppercase tracking-wider text-white/50">or continue with</div>
       <div className="grid grid-cols-2 gap-2">
-        <button 
+        {enabled.google && <button 
           className={`${pillBtn} bg-white text-slate-900 hover:bg-slate-100 text-xs hover:animate-bounce`} 
           onClick={() => socialLogin('google')}
         >
           <Chrome className="h-3 w-3" /> Google
-        </button>
-        <button 
+        </button>}
+        {enabled.apple && <button 
           className={`${pillBtn} bg-white text-slate-900 hover:bg-slate-100 text-xs hover:animate-bounce`} 
           onClick={() => socialLogin('apple')}
         >
           <Apple className="h-3 w-3" /> Apple
-        </button>
-        <button 
+        </button>}
+        {enabled.facebook && <button 
           className={`${pillBtn} bg-blue-600 text-white hover:bg-blue-700 text-xs hover:animate-bounce`} 
           onClick={() => socialLogin('facebook')}
         >
           <Facebook className="h-3 w-3" /> Facebook
-        </button>
-        <button 
+        </button>}
+        {enabled.instagram && <button 
           className={`${pillBtn} bg-pink-500 text-white hover:bg-pink-600 text-xs hover:animate-bounce`} 
           onClick={() => socialLogin('instagram')}
         >
           <Instagram className="h-3 w-3" /> Instagram
-        </button>
-        <button 
+        </button>}
+        {enabled.tiktok && <button 
           className={`${pillBtn} bg-black text-white hover:bg-gray-800 text-xs col-span-2 hover:animate-bounce`} 
           onClick={() => socialLogin('tiktok')}
         >
           <Music className="h-3 w-3" /> TikTok
-        </button>
+        </button>}
       </div>
     </div>
   );

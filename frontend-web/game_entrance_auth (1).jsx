@@ -78,7 +78,7 @@ export default function GameEntranceAuth({ onSignIn, onRegister, onForgotPasswor
                 <SignInForm isLoading={!!isLoading} onSubmit={async (payload) => { setError(null); try { await onSignIn?.(payload); } catch (e: any) { setError(e?.message || "That move won’t score. Try again!"); } }} />
                 {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
                 <div className="mt-6 flex items-center justify-between">
-                  <button className={ghostBtn} onClick={() => setMode("register")}>New here? Create account</button>
+                  <button className={ghostBtn} onClick={() => setMode("register")}>New here? Join the league</button>
                   <button className={ghostBtn} onClick={() => setMode("forgot")}>Forgot password</button>
                 </div>
               </FormShell>

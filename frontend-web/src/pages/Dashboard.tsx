@@ -1,12 +1,17 @@
 // src/pages/Dashboard.tsx - Comprehensive Dashboard Component
 
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { Button, Card, Badge, Modal, GoogleMap, CreateGameForm, UserProfile } from '@components/ui';
+import LocationOnboardingModal from '@components/LocationOnboardingModal';
+import { useLocationContext } from '@context/LocationContext';
+import { GameCard } from '@components/GameCard';
+import SuggestedGames from '@components/SuggestedGames';
 import { theme } from '@styles/theme';
 import { NEPAL_LOCATIONS, POPULAR_SPORTS_NEPAL } from '@constants/nepal';
-import type { Game, Venue, Notification, DashboardTab, LocationData } from '@types/api';
+import type { Game, Venue, Notification, DashboardTab, LocationData } from '@app-types/api';
 import { Profile } from './Profile';
 import { Settings } from './Settings';
 import { GameDetails } from './GameDetails';
@@ -159,113 +164,7 @@ const mockApi = {
   }
 };
 
-// Game Card Component
-function GameCard({ game, onJoin, onClick }: { game: Game; onJoin: (gameId: number) => void; onClick?: () => void }) {
-  const formatTime = (timeString: string) => {
-    const date = new Date(timeString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ACTIVE': return 'success';
-      case 'FULL': return 'warning';
-      case 'CANCELLED': return 'error';
-      default: return 'default';
-    }
-  };
-
-  const getSkillLevelColor = (skillLevel?: string) => {
-    switch (skillLevel?.toLowerCase()) {
-      case 'beginner': return { backgroundColor: '#dbeafe', color: '#1e40af' };
-      case 'intermediate': return { backgroundColor: '#fef3c7', color: '#92400e' };
-      case 'advanced': return { backgroundColor: '#fee2e2', color: '#991b1b' };
-      default: return { backgroundColor: '#f3f4f6', color: '#374151' };
-    }
-  };
-
-  return (
-    <Card 
-      onClick={onClick}
-      style={{ 
-        padding: theme.spacing.lg, 
-        transition: 'all 0.3s ease',
-        borderLeft: `4px solid ${theme.colors.primary}`,
-        cursor: 'pointer'
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: theme.spacing.md }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-          <div style={{ fontSize: '24px' }}>
-            {POPULAR_SPORTS_NEPAL.find(s => s.name === game.sport)?.icon || '⚽'}
-          </div>
-          <div>
-            <h3 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>{game.sport}</h3>
-            {game.skillLevel && (
-              <span style={{
-                display: 'inline-flex',
-                padding: '2px 8px',
-                fontSize: '12px',
-                fontWeight: '500',
-                borderRadius: theme.radius.full,
-                ...getSkillLevelColor(game.skillLevel)
-              }}>
-                {game.skillLevel}
-              </span>
-            )}
-          </div>
-        </div>
-        <Badge variant={getStatusColor(game.status) as 'success' | 'warning' | 'error' | 'default'}>
-          {game.status}
-        </Badge>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm, marginBottom: theme.spacing.md }}>
-        <div style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: theme.colors.muted }}>
-          <span style={{ marginRight: theme.spacing.xs }}>📍</span>
-          {game.location}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: theme.colors.muted }}>
-          <span style={{ marginRight: theme.spacing.xs }}>⏰</span>
-          {formatTime(game.gameTime)}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: theme.colors.muted }}>
-          <span style={{ marginRight: theme.spacing.xs }}>👥</span>
-          {game.currentPlayers}/{game.maxPlayers} players
-        </div>
-        {game.pricePerPlayer && (
-          <div style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: theme.colors.muted }}>
-            <span style={{ marginRight: theme.spacing.xs }}>💰</span>
-            NPR {game.pricePerPlayer}
-          </div>
-        )}
-      </div>
-
-      {game.description && (
-        <p style={{ fontSize: '14px', color: theme.colors.muted, marginBottom: theme.spacing.md }}>{game.description}</p>
-      )}
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-          <img 
-            src={game.createdBy.avatarUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face'} 
-            alt={game.createdBy.username}
-            style={{ width: '32px', height: '32px', borderRadius: '50%' }}
-          />
-          <span style={{ fontSize: '14px', color: theme.colors.muted }}>{game.createdBy.username}</span>
-        </div>
-        
-        <Button
-          onClick={() => onJoin(game.id)}
-          disabled={game.status !== 'ACTIVE' || game.currentPlayers >= game.maxPlayers}
-          size="sm"
-        >
-          {game.status === 'FULL' ? 'Full' : 'Join Game'}
-        </Button>
-      </div>
-    </Card>
-  );
-}
+// (removed local GameCard; using shared component instead)
 
 // Notifications Component
 function NotificationsList() {
@@ -343,10 +242,17 @@ function NotificationsList() {
 // Main Dashboard Component
 export function Dashboard() {
   const { user, logout } = useAuth();
+  const location = useLocation();
+  const [welcomeToast, setWelcomeToast] = useState(false);
+  const [showWelcomeCard, setShowWelcomeCard] = useState(false);
+  const [showChecklist, setShowChecklist] = useState(false);
+  const [geoToast, setGeoToast] = useState<string | null>(null);
+  const [completedToast, setCompletedToast] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('games');
   const [showCreateGame, setShowCreateGame] = useState(false);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
-  const [userLocation, setUserLocation] = useState<LocationData>(NEPAL_LOCATIONS.KATHMANDU);
+  const { location: userLocation, setLocation: setUserLocation } = useLocationContext();
+  const [showLocationModal, setShowLocationModal] = useState<boolean>(false);
   const queryClient = useQueryClient();
 
   const { data: games = [], isLoading: gamesLoading, refetch: refetchGames } = useQuery({
@@ -385,24 +291,20 @@ export function Dashboard() {
     }
   });
 
-  // Get user's location
+  // Optionally hydrate from geolocation if none set (kept minimal since context already initializes)
   useEffect(() => {
-    if (navigator.geolocation) {
+    const hasLoc = !!localStorage.getItem('ps_user_location');
+    if (!hasLoc && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            name: 'Your Location'
-          });
+          setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude, name: 'Your Location' } as any);
         },
         () => {
-          // Default to Kathmandu if geolocation fails
-          setUserLocation(NEPAL_LOCATIONS.KATHMANDU);
+          setUserLocation(NEPAL_LOCATIONS.KATHMANDU as any);
         }
       );
     }
-  }, []);
+  }, [setUserLocation]);
 
   const handleCreateGame = (gameData: any) => {
     createGameMutation.mutate({
@@ -411,9 +313,88 @@ export function Dashboard() {
     });
   };
 
-  const handleJoinGame = (gameId: number) => {
-    joinGameMutation.mutate(gameId);
+  const handleJoinGame = async (gameId: number) => {
+    const useMock = String((import.meta as any).env?.VITE_USE_MOCK ?? 'true').toLowerCase() !== 'false';
+    if (useMock) {
+      joinGameMutation.mutate(gameId);
+    } else {
+      const base = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8080';
+      const token = localStorage.getItem('ps_token');
+      await fetch(`${base}/api/v1/games/${gameId}/join`, {
+        method: 'POST',
+        headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+      });
+      queryClient.invalidateQueries({ queryKey: ['games'] });
+    }
   };
+
+  function SuggestedGames({ preferred, onJoin }: { preferred?: string; onJoin: (id: number) => void }) {
+    const [items, setItems] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const useMock = String((import.meta as any).env?.VITE_USE_MOCK ?? 'true').toLowerCase() !== 'false';
+    useEffect(() => {
+      let mounted = true;
+      (async () => {
+        setLoading(true);
+        try {
+          if (useMock) {
+            const list = await mockApi.getGames({});
+            let recs = list;
+            if (preferred) {
+              recs = list.filter((g: any) => String(g.sport).toLowerCase() === String(preferred).toLowerCase());
+              if (recs.length === 0) recs = list.slice(0, 2);
+            } else {
+              recs = list.slice(0, 2);
+            }
+            if (mounted) setItems(recs.slice(0, 3));
+          } else {
+            const base = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8080';
+            const token = localStorage.getItem('ps_token');
+            const res = await fetch(`${base}/api/v1/ai/recommendations/games?limit=5`, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } });
+            if (res.ok) {
+              const data = await res.json();
+              // Map GameRecommendationDTO to simplified card items if needed
+              const mapped = Array.isArray(data) ? data.map((r: any) => ({ id: r.gameId || r.id || Math.random(), sport: r.sport || r.game?.sport || 'Game', location: r.location || r.venueName || 'Nearby', })) : [];
+              if (mounted) setItems(mapped.slice(0, 3));
+            } else {
+              // Fallback to empty
+              if (mounted) setItems([]);
+            }
+          }
+        } catch {
+          if (mounted) setItems([]);
+        }
+        setLoading(false);
+      })();
+      return () => { mounted = false; };
+    }, [preferred]);
+    if (loading) return <div style={{ color: '#64748b', fontSize: 12 }}>Loading suggestions…</div>;
+    return (
+      <>
+        {items.map((g) => {
+          const dto = {
+            id: g.id,
+            sport: g.sport || g.game?.sport || 'Game',
+            time: g.gameTime || g.time || g.game?.time || new Date().toISOString(),
+            location: g.location || g.venueName || 'Nearby',
+            currentPlayers: g.currentPlayers || g.players?.current || g.game?.currentPlayers || 0,
+            maxPlayers: g.maxPlayers || g.players?.max || g.game?.maxPlayers || undefined,
+            creatorName: g.createdBy?.username || g.organizer || undefined,
+            status: g.status || g.game?.status || 'ACTIVE'
+          } as any;
+          return (
+            <div key={dto.id} style={{ display: 'grid', gap: 8 }}>
+              <GameCard g={dto} onClick={() => setActiveTab('games')} />
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button onClick={() => setActiveTab('games')} style={{ padding: '6px 10px', borderRadius: 10, background: '#f1f5f9', color: '#0f172a', border: '1px solid #e2e8f0', fontWeight: 600 }}>View Details</button>
+                <button onClick={() => onJoin(g.id)} style={{ padding: '6px 10px', borderRadius: 10, background: '#dc143c', color: 'white', border: 'none', fontWeight: 600 }}>Join</button>
+              </div>
+            </div>
+          );
+        })}
+      </>
+    );
+  }
 
   const tabs: DashboardTab[] = [
     { id: 'games', label: 'Games', icon: '⚽' },
@@ -423,8 +404,94 @@ export function Dashboard() {
     { id: 'notifications', label: 'Notifications', icon: '🔔' }
   ];
 
+  useEffect(() => {
+    const dismissed = localStorage.getItem('ps_onboarding_dismissed') === '1';
+    const shouldShowChecklist = !dismissed && (!user?.avatarUrl || !user?.preferredSport);
+    // Show location onboarding if not set yet
+    const hasLoc = !!localStorage.getItem('ps_user_location');
+    if (!hasLoc) setShowLocationModal(true);
+    if (location.search.includes('welcome=1')) {
+      setWelcomeToast(true);
+      setShowWelcomeCard(true);
+      setShowChecklist(shouldShowChecklist);
+      const t = setTimeout(() => setWelcomeToast(false), 4000);
+      return () => clearTimeout(t);
+    } else {
+      setShowChecklist(shouldShowChecklist);
+    }
+  }, [location.search, user?.avatarUrl, user?.preferredSport]);
+
+  // Show a small completion toast when checklist becomes complete
+  useEffect(() => {
+    const complete = Boolean(user?.avatarUrl && user?.preferredSport);
+    if (complete && !localStorage.getItem('ps_onboarding_completed')) {
+      setCompletedToast('Nice! Your player profile looks ready.');
+      setTimeout(() => setCompletedToast(null), 3000);
+      localStorage.setItem('ps_onboarding_completed', '1');
+    }
+  }, [user?.avatarUrl, user?.preferredSport]);
+
   return (
     <div style={{ minHeight: '100vh', background: theme.gradients.sunset }}>
+      {showWelcomeCard && (
+        <div style={{ position: 'fixed', bottom: 88, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 900 }}>
+          <div style={{
+            background: 'rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(0,0,0,0.06)',
+            borderRadius: 16,
+            padding: '12px 16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            maxWidth: 720,
+            width: 'calc(100% - 32px)'
+          }}>
+            <div style={{ fontSize: 22 }}>🏆</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, color: '#0f172a' }}>Welcome to the League!</div>
+              <div style={{ fontSize: 13, color: '#475569' }}>Kick things off: find nearby games or complete your player badge.</div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => { setActiveTab('games'); setShowWelcomeCard(false); }} style={{ padding: '8px 12px', borderRadius: 12, background: '#dc143c', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Find Games</button>
+              <button onClick={() => { setActiveTab('profile'); setShowWelcomeCard(false); }} style={{ padding: '8px 12px', borderRadius: 12, background: 'white', color: '#0f172a', border: '1px solid #e2e8f0', fontWeight: 600, cursor: 'pointer' }}>Complete Profile</button>
+              <button onClick={() => setShowWelcomeCard(false)} style={{ padding: 8, borderRadius: 12, background: 'transparent', color: '#64748b', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Dismiss</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {welcomeToast && (
+        <div style={{ position: 'fixed', top: 16, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: 'rgba(16,185,129,0.15)', color: '#A7F3D0', border: '1px solid rgba(16,185,129,0.3)', padding: '8px 14px', borderRadius: 9999 }}>
+            Welcome to the league, {user?.username || 'player'}! 🎉
+          </div>
+        </div>
+      )}
+      <LocationOnboardingModal
+        open={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onSave={(loc) => {
+          setUserLocation(loc as any);
+          setShowLocationModal(false);
+          setGeoToast('Location set. Showing games near you.');
+          setTimeout(() => setGeoToast(null), 2000);
+        }}
+      />
+      {geoToast && (
+        <div style={{ position: 'fixed', top: 60, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: 'rgba(37,99,235,0.15)', color: '#93C5FD', border: '1px solid rgba(37,99,235,0.3)', padding: '8px 14px', borderRadius: 9999 }}>
+            {geoToast}
+          </div>
+        </div>
+      )}
+      {completedToast && (
+        <div style={{ position: 'fixed', top: 96, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: 'rgba(16,185,129,0.15)', color: '#A7F3D0', border: '1px solid rgba(16,185,129,0.3)', padding: '8px 14px', borderRadius: 9999 }}>
+            {completedToast}
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header style={{
         background: theme.gradients.primary,
@@ -497,8 +564,67 @@ export function Dashboard() {
         </div>
 
         {/* Tab Content */}
+        {showChecklist && (
+          <div style={{
+            padding: 16,
+            background: 'white',
+            border: '1px solid #e2e8f0',
+            borderRadius: 16,
+            boxShadow: theme.shadows.lg,
+            marginBottom: theme.spacing.xl
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div style={{ fontSize: 20 }}>📝</div>
+              <div style={{ fontWeight: 700, color: '#0f172a' }}>Finish setting up your player profile</div>
+            </div>
+            <ul style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, margin: 0, padding: 0, listStyle: 'none' }}>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#334155' }}>✅ Create your player tag</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#334155' }}>{user?.avatarUrl ? '✅' : '⭕'} Add your photo</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#334155' }}>{user?.preferredSport ? '✅' : '⭕'} Pick your preferred sport</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#334155' }}>✅ Set your contact info</li>
+            </ul>
+            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+              <button onClick={() => { setActiveTab('profile'); setShowChecklist(false); }} style={{ padding: '8px 12px', borderRadius: 12, background: '#dc143c', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Go to Profile</button>
+              <button onClick={() => { setShowChecklist(false); localStorage.setItem('ps_onboarding_dismissed', '1'); }} style={{ padding: '8px 12px', borderRadius: 12, background: 'white', color: '#0f172a', border: '1px solid #e2e8f0', fontWeight: 600, cursor: 'pointer' }}>Dismiss</button>
+              <button onClick={() => {
+                setActiveTab('games');
+                setShowChecklist(false);
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                      setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, name: 'Your Location' });
+                      setGeoToast('Centered to your location for nearby games.');
+                      setTimeout(() => setGeoToast(null), 2500);
+                    },
+                    () => {
+                      setGeoToast('Enable location to see nearby games faster.');
+                      setTimeout(() => setGeoToast(null), 3500);
+                    }
+                  );
+                } else {
+                  setGeoToast('Geolocation not supported in this browser.');
+                  setTimeout(() => setGeoToast(null), 3500);
+                }
+              }} style={{ padding: '8px 12px', borderRadius: 12, background: '#0ea5e9', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Find Nearby Games</button>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'games' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xl }}>
+            {/* Suggested for you */}
+            <div style={{ background: 'white', borderRadius: 16, border: '1px solid #e2e8f0', boxShadow: theme.shadows.md }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottom: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>🎯</span>
+                  <strong>Suggested for you</strong>
+                </div>
+                <button onClick={() => setActiveTab('games')} style={{ fontSize: 12, padding: '6px 10px', borderRadius: 9999, background: '#f1f5f9', border: '1px solid #e2e8f0' }}>Refresh</button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, padding: 16 }}>
+                <SuggestedGames preferred={(user as any)?.preferredSport} onJoin={handleJoinGame} />
+              </div>
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: 0 }}>Nearby Games</h2>
@@ -527,7 +653,7 @@ export function Dashboard() {
                   onChange={(e) => {
                     const [lat, lng] = e.target.value.split(',').map(Number);
                     const location = Object.values(NEPAL_LOCATIONS).find(loc => loc.lat === lat && loc.lng === lng);
-                    if (location) setUserLocation(location);
+                    if (location) setUserLocation(location as any);
                   }}
                   style={{
                     padding: `${theme.spacing.sm}px ${theme.spacing.md}px`,

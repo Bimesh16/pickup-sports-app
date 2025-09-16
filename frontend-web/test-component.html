@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Component</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #003893, #DC143C);
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .test-info {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .test-info h2 {
+            margin: 0 0 8px 0;
+            color: #0c4a6e;
+        }
+        .test-info p {
+            margin: 0;
+            color: #0369a1;
+        }
+        .button {
+            background: #DC143C;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 8px;
+        }
+        .button:hover {
+            background: #b91c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-info">
+            <h2>🧪 Component Test</h2>
+            <p>This is a test page to verify the registration component is working. The component should be visible below.</p>
+        </div>
+        
+        <div id="app-root">
+            <p>Loading React component...</p>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center;">
+            <button class="button" onclick="window.location.href='http://localhost:5173'">
+                ← Back to Main App
+            </button>
+        </div>
+    </div>
+</body>
+</html>

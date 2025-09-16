@@ -156,6 +156,28 @@ public class EmailService {
         log.info("Sent password reset email to {}", to);
     }
 
+    /**
+     * Sends a simple username reminder email immediately (bypassing queue).
+     */
+    @Retry(name = "mail", fallbackMethod = "fallbackUsernameReminderNow")
+    public void sendUsernameReminderEmailNow(String to, String username, java.util.Locale locale) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(String.format("%s <%s>", fromName, from));
+        message.setTo(to);
+        message.setSubject("Your Pickup Sports username");
+        message.setText(String.format(
+                "Hi,\n\nYour username is: %s\n\nIf you did not request this, you can ignore this email.\n\n— %s",
+                username, fromName
+        ));
+        mailSender.send(message);
+        log.info("Sent username reminder to {}", to);
+    }
+
+    @SuppressWarnings("unused")
+    private void fallbackUsernameReminderNow(String to, String username, java.util.Locale locale, Throwable t) {
+        log.error("Failed to send username reminder to {}: {}", to, t.getMessage());
+    }
+
     private String loadTemplate(String path) throws java.io.IOException {
         try (var is = this.getClass().getClassLoader().getResourceAsStream(path)) {
             if (is == null) return "";

@@ -2,19 +2,28 @@
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-const BASE = (import.meta as any).env?.VITE_API_BASE ?? '';
+// Backend base URL
+// To go real: set USE_MOCK=false and define VITE_API_BASE in a .env.local at frontend-web/
+// Example:
+//   VITE_API_BASE=https://api.your-backend.example.com
+// For convenience, we also include a fallback placeholder you can change later.
+const FALLBACK_BASE = 'http://localhost:8080';
+const BASE = (import.meta as any).env?.VITE_API_BASE || FALLBACK_BASE;
 
-// Set to false when you want to use real backend
-const USE_MOCK = true;
+// Toggle mock API via Vite env. Default to mock when unset.
+// Set VITE_USE_MOCK=false to hit a real backend.
+const USE_MOCK = String((import.meta as any).env?.VITE_USE_MOCK ?? 'true').toLowerCase() !== 'false';
 
 export class ApiError extends Error {
   status: number;
   body?: any;
+  retryAfterSeconds?: number;
   
-  constructor(status: number, body?: any) {
+  constructor(status: number, body?: any, retryAfterSeconds?: number) {
     super(body?.message || `HTTP ${status}`);
     this.status = status;
     this.body = body;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }
 
@@ -46,17 +55,21 @@ export async function http<T>(
   const ct = res.headers.get('content-type') || '';
   const data = ct.includes('application/json') ? await res.json() : await res.text();
   
-  if (!res.ok) throw new ApiError(res.status, data);
+  if (!res.ok) {
+    const ra = res.headers.get('retry-after');
+    const retryAfterSeconds = ra ? parseInt(ra, 10) : undefined;
+    throw new ApiError(res.status, data, Number.isFinite(retryAfterSeconds) ? retryAfterSeconds : undefined);
+  }
   
   return data as T;
 }
 
-// Mock request handler
-async function handleMockRequest<T>(
-  path: string, 
-  options: RequestInit = {}, 
-  withAuth = true
-): Promise<T> {
+  // Mock request handler
+  async function handleMockRequest<T>(
+    path: string, 
+    options: RequestInit = {}, 
+    withAuth = true
+  ): Promise<T> {
   const { MockApiService } = await import('./mockApi');
   const method = options.method || 'GET';
   
@@ -73,6 +86,11 @@ async function handleMockRequest<T>(
     if (path === '/auth/me' && method === 'GET') {
       return MockApiService.me() as T;
     }
+
+    if (path === '/auth/mfa/verify' && method === 'POST') {
+      const body = JSON.parse(options.body as string);
+      return MockApiService.verifyMfa(body) as T;
+    }
     
     if (path === '/users/register' && method === 'POST') {
       const body = JSON.parse(options.body as string);
@@ -81,6 +99,26 @@ async function handleMockRequest<T>(
 
     if (path === '/auth/logout' && method === 'POST') {
       return MockApiService.logout() as T;
+    }
+
+    // Forgot flows
+    if (path === '/auth/forgot-password' && method === 'POST') {
+      const body = JSON.parse(options.body as string);
+      return MockApiService.forgotPassword(body) as T;
+    }
+    if (path === '/auth/reset-password' && method === 'POST') {
+      const body = JSON.parse(options.body as string);
+      return MockApiService.resetPassword(body) as T;
+    }
+    if (path === '/auth/forgot-username' && method === 'POST') {
+      const body = JSON.parse(options.body as string);
+      return MockApiService.forgotUsername(body) as T;
+    }
+
+    if (path.startsWith('/users/check-username') && method === 'GET') {
+      const url = new URL(path, 'http://localhost');
+      const username = url.searchParams.get('username') || '';
+      return MockApiService.checkUsername(username) as T;
     }
 
     // Profile endpoints
@@ -198,7 +236,11 @@ async function handleMockRequest<T>(
     console.warn(`Mock endpoint not implemented: ${method} ${path}`);
     return {} as T;
 
-  } catch (error) {
+  } catch (error: any) {
+    if (error && typeof error === 'object' && 'status' in error && 'body' in error) {
+      // Propagate mock-provided HTTP error as ApiError
+      throw new ApiError(error.status, error.body);
+    }
     console.error('Mock API Error:', error);
     throw new ApiError(500, { message: 'Mock API Error: ' + (error as Error).message });
   }

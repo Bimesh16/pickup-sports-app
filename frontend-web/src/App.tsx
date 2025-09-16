@@ -1,10 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@hooks/useAuth';
-import { Dashboard } from '@pages/Dashboard';
+const Dashboard = React.lazy(() => import('@pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const LoginPage = React.lazy(() => import('@pages/Login'));
+const GameDetailsRoute = React.lazy(() => import('@pages/GameDetailsRoute'));
+const Register = React.lazy(() => import('@pages/Register'));
+const LocationOnboarding = React.lazy(() => import('@pages/LocationOnboarding'));
 import EnhancedGameEntranceAuth from '@components/EnhancedGameEntranceAuth';
+// Note: UnifiedJoinTheLeague is only imported for dev test route to enable tree-shaking in prod
+let UnifiedJoinTheLeague: any = null as any;
+if (import.meta.env.DEV) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  UnifiedJoinTheLeague = (await import('@components/UnifiedJoinTheLeague')).default;
+}
+import ForgotPassword from '@pages/ForgotPassword';
+import ForgotUsername from '@pages/ForgotUsername';
+import ResetPassword from '@pages/ResetPassword';
 import { GlobalStyles } from '@components/ui';
+import { LocationProvider } from '@context/LocationContext';
 import { theme } from '@styles/theme';
+import { http } from '@lib/http';
+import { ErrorBoundary } from '@components/ErrorBoundary';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -18,6 +35,7 @@ const queryClient = new QueryClient({
 
 function AppInner() {
   const { token, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -54,7 +72,76 @@ function AppInner() {
       minHeight: '100vh',
       backgroundColor: theme.colors.background
     }}>
-      {!token ? <EnhancedGameEntranceAuth /> : <Dashboard />}
+      <ErrorBoundary key={location.pathname}>
+      <Routes>
+        {/* Public routes */}
+        <Route
+          path="/"
+          element={token ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <LoginPage />
+            </Suspense>
+          )}
+        />
+        <Route
+          path="/login"
+          element={token ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <LoginPage />
+            </Suspense>
+          )}
+        />
+        <Route path="/forgot" element={<ForgotPassword />} />
+        <Route path="/forgot-username" element={<ForgotUsername />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Test-only route to mount registration flow for e2e (DEV only) */}
+        {import.meta.env.DEV && (
+          <Route path="/test-registration" element={<UnifiedJoinTheLeague />} />
+        )}
+        <Route
+          path="/register"
+          element={token ? <Navigate to="/dashboard" replace /> : (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <Register />
+            </Suspense>
+          )}
+        />
+        <Route
+          path="/onboarding/location"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <LocationOnboarding />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
+
+        {/* Protected routes */}
+        <Route
+          path="/dashboard"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <Dashboard />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
+        <Route
+          path="/games/:id"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <GameDetailsRoute />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to={token ? '/dashboard' : '/login'} replace />} />
+      </Routes>
+      </ErrorBoundary>
       <EnvBadge />
     </div>
   );
@@ -66,7 +153,9 @@ export default function App() {
       <GlobalStyles />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <AppInner />
+          <LocationProvider>
+            <AppInner />
+          </LocationProvider>
         </AuthProvider>
       </QueryClientProvider>
     </>
@@ -76,9 +165,9 @@ export default function App() {
 function EnvBadge() {
   const [env, setEnv] = React.useState<string>('');
   React.useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_BASE ?? ''}/config/flags`)
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(d => setEnv(d.env ?? ''))
+    // Use http helper so mock handles this in dev; avoid dev-proxy noise
+    http<{ env?: string }>('/config/flags')
+      .then(d => setEnv(d.env ?? 'mock'))
       .catch(() => setEnv('mock'));
   }, []);
   return (

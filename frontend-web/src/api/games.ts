@@ -1,5 +1,5 @@
 import { http } from '@lib/http';
-import type { GameSummaryDTO } from '@types/api';
+import type { GameSummaryDTO } from '@app-types/api';
 
 export async function nearbyGames(params: { latitude: number; longitude: number; radiusKm?: number; sport?: string; skillLevel?: string }) {
   const q = new URLSearchParams();
@@ -17,4 +17,3 @@ export async function trendingGames(params?: { latitude?: number; longitude?: nu
   if (params?.longitude != null) q.set('longitude', String(params.longitude));
   return http<GameSummaryDTO[]>(`/api/v1/games/trending?${q.toString()}`, { method: 'GET' });
 }
-

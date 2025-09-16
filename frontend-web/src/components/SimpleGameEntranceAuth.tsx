@@ -93,7 +93,7 @@ export default function SimpleGameEntranceAuth({ countdownTo }: Props) {
               />
               {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
               <div className="mt-6 flex items-center justify-between">
-                <button className={ghostBtn} onClick={() => setMode("register")}>New here? Create account</button>
+                <button className={ghostBtn} onClick={() => setMode("register")}>New here? Join the league</button>
                 <button className={ghostBtn} onClick={() => alert("Forgot password feature coming soon! Contact support for now.")}>Forgot password</button>
               </div>
             </FormShell>
@@ -648,7 +648,7 @@ export default function SimpleGameEntranceAuth({ countdownTo }: Props) {
               />
               {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
               <div className="mt-6 flex items-center justify-between">
-                <button className={ghostBtn} onClick={() => setMode("register")}>New here? Create account</button>
+                <button className={ghostBtn} onClick={() => setMode("register")}>New here? Join the league</button>
                 <button className={ghostBtn} onClick={() => alert("Forgot password feature coming soon! Contact support for now.")}>Forgot password</button>
               </div>
             </FormShell>

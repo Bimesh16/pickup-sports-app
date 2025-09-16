@@ -1,12 +1,18 @@
 // src/pages/Settings.tsx - App Settings and Preferences
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@hooks/useAuth';
 import { Button, Card, Input, Badge } from '@components/ui';
 import { theme } from '@styles/theme';
+import LocationOnboardingModal from '@components/LocationOnboardingModal';
+import { useLocationContext } from '@context/LocationContext';
 
 export function Settings() {
   const { user, logout } = useAuth();
+  const { location: ctxLocation, setLocation: setCtxLocation } = useLocationContext();
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; name: string } | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [settings, setSettings] = useState({
     notifications: {
       gameInvites: true,
@@ -32,6 +38,10 @@ export function Settings() {
     // Here you would save settings to the backend
     console.log('Saving settings:', settings);
   };
+
+  useEffect(() => {
+    setUserLocation(ctxLocation);
+  }, [ctxLocation]);
 
   return (
     <div style={{
@@ -242,6 +252,36 @@ export function Settings() {
           </div>
         </Card>
 
+        {/* Location */}
+        <Card style={{
+          padding: theme.spacing.xl,
+          marginBottom: theme.spacing.lg
+        }}>
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: '600',
+            margin: '0 0 16px 0',
+            color: theme.colors.text
+          }}>
+            📍 Location
+          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.md }}>
+            <div>
+              <div style={{ fontSize: 14, color: theme.colors.muted, marginBottom: 4 }}>Current Location</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: theme.colors.text }}>
+                {userLocation ? (
+                  <>
+                    {userLocation.name} ({userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)})
+                  </>
+                ) : (
+                  'Not set'
+                )}
+              </div>
+            </div>
+            <Button onClick={() => setShowLocationModal(true)}>Change Location</Button>
+          </div>
+        </Card>
+
         {/* Preferences */}
         <Card style={{
           padding: theme.spacing.xl,
@@ -363,8 +403,30 @@ export function Settings() {
             Save Settings
           </Button>
         </div>
+
+        {/* Inline toast */}
+        {toast && (
+          <div style={{ textAlign: 'center', marginBottom: theme.spacing.md }}>
+            <div style={{ display: 'inline-block', padding: '6px 12px', borderRadius: 9999, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#10b981' }}>
+              {toast}
+            </div>
+          </div>
+        )}
+
+        {/* Location Modal (non-enforced) */}
+        <LocationOnboardingModal
+          open={showLocationModal}
+          onClose={() => setShowLocationModal(false)}
+          onSave={(loc) => {
+            setUserLocation(loc);
+            setCtxLocation(loc);
+            setShowLocationModal(false);
+            setToast('Location updated');
+            setTimeout(() => setToast(null), 2000);
+          }}
+          enforce={false}
+        />
       </div>
     </div>
   );
 }
-

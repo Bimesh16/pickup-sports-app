@@ -1,4 +1,4 @@
-import type { GameSummaryDTO, UserDTO } from '@types/api';
+import type { GameSummaryDTO, UserDTO } from '@app-types/api';
 
 // Mock user data
 export const mockUsers: UserDTO[] = [

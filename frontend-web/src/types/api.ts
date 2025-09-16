@@ -287,21 +287,3 @@ export interface LocationData {
 // Legacy types for backward compatibility
 export type UserDTO = User;
 export type RsvpResultResponse = { joined: boolean; waitlisted: boolean; message: string };
-
-// Dashboard Tab
-export interface DashboardTab {
-  id: string;
-  label: string;
-  icon: string;
-}
-
-// Location Data
-export interface LocationData {
-  lat: number;
-  lng: number;
-  name: string;
-}
-
-// Legacy types for backward compatibility
-export type UserDTO = User;
-export type RsvpResultResponse = { joined: boolean; waitlisted: boolean; message: string };
