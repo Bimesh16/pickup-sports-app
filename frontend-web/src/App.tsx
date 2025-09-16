@@ -2,8 +2,8 @@ import React, { useEffect, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@hooks/useAuth';
-const Dashboard = React.lazy(() => import('@pages/Dashboard').then(m => ({ default: m.Dashboard })));
-const LoginPage = React.lazy(() => import('@pages/Login'));
+const Dashboard = React.lazy(() => import('@pages/Dashboard'));
+const LoginPage = React.lazy(() => import('@pages/MobileLogin'));
 const GameDetailsRoute = React.lazy(() => import('@pages/GameDetailsRoute'));
 const Register = React.lazy(() => import('@pages/Register'));
 const LocationOnboarding = React.lazy(() => import('@pages/LocationOnboarding'));
@@ -22,7 +22,13 @@ import ForgotPassword from '@pages/ForgotPassword';
 import ForgotUsername from '@pages/ForgotUsername';
 import ResetPassword from '@pages/ResetPassword';
 import { GlobalStyles } from '@components/ui';
+import TrustBar from '@components/TrustBar';
+import NotificationBanner from '@components/NotificationBanner';
+import OfflineIndicator from '@components/OfflineIndicator';
 import { LocationProvider } from '@context/LocationContext';
+import { ThemeProvider } from '@context/ThemeContext';
+import { AppStateProvider } from '@context/AppStateContext';
+import { WebSocketProvider } from '@context/WebSocketContext';
 import { theme } from '@styles/theme';
 import { http } from '@lib/http';
 import { ErrorBoundary } from '@components/ErrorBoundary';
@@ -166,7 +172,7 @@ function AppInner() {
 
         {/* Protected routes */}
         <Route
-          path="/dashboard"
+          path="/dashboard/*"
           element={token ? (
             <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
               <Dashboard />
@@ -187,6 +193,9 @@ function AppInner() {
       </Routes>
       </ErrorBoundary>
       <EnvBadge />
+      <OfflineIndicator />
+      <NotificationBanner onDismiss={(id) => console.log('Dismissed notification:', id)} />
+      <TrustBar />
     </div>
   );
 }
@@ -197,9 +206,15 @@ export default function App() {
       <GlobalStyles />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <LocationProvider>
-            <AppInner />
-          </LocationProvider>
+          <ThemeProvider>
+            <AppStateProvider>
+              <LocationProvider>
+                <WebSocketProvider>
+                  <AppInner />
+                </WebSocketProvider>
+              </LocationProvider>
+            </AppStateProvider>
+          </ThemeProvider>
         </AuthProvider>
       </QueryClientProvider>
     </>

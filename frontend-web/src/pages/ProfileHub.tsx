@@ -89,16 +89,11 @@ export default function ProfileHub(){
   }, [user?.avatarUrl, (user as any)?.isVerified, bio]);
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f8fafc' }}>
-      {/* Hero banner uses Nepal gradient only in header area to avoid warm bleed */}
-      <div style={{ position:'relative', height: 220 }} aria-hidden>
-        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, #1B263B 0%, #003893 60%, #E63946 140%)' }} />
-        {/* Subtle Himalayan silhouette + stadium beams */}
-        <div style={{ position:'absolute', inset:0, background:'repeating-linear-gradient(110deg, rgba(255,255,255,0.05) 0, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 8px)' }} />
-        {/* Scrim for legibility */}
-        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(0,0,0,0.32) 0%, rgba(0,0,0,0.12) 50%, transparent 100%)' }} />
-      </div>
-      <div style={{ maxWidth: 980, margin:'-140px auto 0 auto', padding: theme.spacing.lg }}>
+    <div className="app-shell">
+      
+      <div className="app-shell__inner">
+        <section className="profile-hero"></section>
+        <main className="profile-content safe-bottom">
         {toast && (
           <div style={{ position:'fixed', top:16, left:0, right:0, display:'flex', justifyContent:'center', zIndex:1000 }}>
             <div style={{ background: 'rgba(16,185,129,0.15)', color: '#A7F3D0', border: '1px solid rgba(16,185,129,0.3)', padding: '8px 14px', borderRadius: 9999 }}>{toast}</div>
@@ -343,7 +338,7 @@ export default function ProfileHub(){
           )}
         </Card>
         {confirm && (
-          <Modal open onClose={()=>setConfirm(null)}>
+          <Modal isOpen onClose={()=>setConfirm(null)}>
             <div style={{ padding: 16 }}>
               <h3 style={{ marginTop: 0 }}>Unsaved changes</h3>
               <p>You have unsaved changes. What would you like to do?</p>
@@ -366,9 +361,8 @@ export default function ProfileHub(){
             </div>
           </Modal>
         )}
-      </div>
-      {showInvite && (
-        <Modal open onClose={()=>setShowInvite(false)}>
+        {showInvite && (
+        <Modal isOpen onClose={()=>setShowInvite(false)}>
           <div style={{ padding:16 }}>
             <h3 style={{ marginTop:0 }}>Invite via link</h3>
             <p>Share this link to let others view your profile or add you in person.</p>
@@ -390,7 +384,7 @@ export default function ProfileHub(){
         </Modal>
       )}
       {paletteOpen && (
-        <Modal open onClose={()=>setPaletteOpen(false)}>
+        <Modal isOpen onClose={()=>setPaletteOpen(false)}>
           <div style={{ padding: 12 }}>
             <h3 style={{ marginTop:0 }}>Command Palette</h3>
             <div style={{ display:'grid', gap: 8 }}>
@@ -404,6 +398,8 @@ export default function ProfileHub(){
           </div>
         </Modal>
       )}
+        </main>
+      </div>
     </div>
   );
 }

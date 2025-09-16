@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { User, LoginRequest, RegisterRequest, TokenPairResponse } from '@app-types/api';
 import { http, ApiError } from '@lib/http';
+import { setAuthTokens, clearAuthTokens } from '@lib/apiClient';
 
 interface AuthContextType {
   user: User | null;
@@ -37,9 +38,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setTokenState(newToken);
     if (newToken) {
       localStorage.setItem(TOKEN_KEY, newToken);
+      setAuthTokens(newToken);
     } else {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
+      clearAuthTokens();
       setUser(null);
     }
   }, []);
@@ -85,11 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       setToken(response.accessToken);
-      
-      // Store refresh token for logout
-      if (response.refreshToken) {
-        localStorage.setItem('ps_refresh_token', response.refreshToken);
-      }
+      setAuthTokens(response.accessToken ?? null, response.refreshToken ?? undefined);
       
       // Fetch user profile after successful login
       await refreshProfile();
@@ -132,9 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setToken(response.accessToken);
-      if (response.refreshToken) {
-        localStorage.setItem('ps_refresh_token', response.refreshToken);
-      }
+      setAuthTokens(response.accessToken ?? null, response.refreshToken ?? undefined);
       try { await refreshProfile(); } catch {}
       return response;
     } catch (error) {
@@ -157,7 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new ApiError(403, response);
       }
       setToken(response.accessToken);
-      if (response.refreshToken) localStorage.setItem('ps_refresh_token', response.refreshToken);
+      setAuthTokens(response.accessToken ?? null, response.refreshToken ?? undefined);
       await refreshProfile();
       return response;
     } catch (error) {
@@ -202,7 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } finally {
       setToken(null);
-      localStorage.removeItem('ps_refresh_token');
+      clearAuthTokens();
       setIsLoading(false);
     }
   }, [setToken]);

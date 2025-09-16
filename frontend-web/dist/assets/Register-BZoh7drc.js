@@ -1,0 +1,1 @@
+import{j as e}from"./index-5gA1ZPbL.js";import{U as i}from"./UnifiedJoinTheLeague-Crs76dht.js";import"./user-BxzEEfUu.js";function n(){return e.jsx("div",{className:"min-h-screen",children:e.jsx(i,{})})}export{n as default};
