@@ -171,3 +171,81 @@ export function getCountryDefaultCenter(country: string): { lat: number; lng: nu
   if (list && list.length) return { lat: list[0].lat, lng: list[0].lng };
   return null;
 }
+
+// Optional: Nepal province groupings for nicer list sections
+export const NEPAL_PROVINCE_GROUPS: Record<string, Loc[]> = {
+  'Bagmati Province': [
+    { name: 'Kathmandu', lat: 27.7172, lng: 85.3240 },
+    { name: 'Lalitpur', lat: 27.6644, lng: 85.3188 },
+    { name: 'Bhaktapur', lat: 27.6710, lng: 85.4298 },
+    { name: 'Kirtipur', lat: 27.6676, lng: 85.2772 },
+    { name: 'Madhyapur Thimi', lat: 27.6806, lng: 85.3875 },
+    { name: 'Tokha', lat: 27.7530, lng: 85.3293 },
+    { name: 'Budhanilkantha', lat: 27.7637, lng: 85.3636 },
+    { name: 'Suryabinayak', lat: 27.6395, lng: 85.4274 },
+    { name: 'Banepa', lat: 27.6325, lng: 85.5210 },
+    { name: 'Dhulikhel', lat: 27.6208, lng: 85.5561 },
+    { name: 'Panauti', lat: 27.5847, lng: 85.5220 },
+    { name: 'Hetauda', lat: 27.4280, lng: 85.0322 },
+    { name: 'Bidur (Nuwakot)', lat: 27.9060, lng: 85.1636 },
+    { name: 'Sindhuli', lat: 27.2553, lng: 85.9711 },
+    { name: 'Bharatpur (Chitwan)', lat: 27.6768, lng: 84.4380 },
+    { name: 'Ratnanagar', lat: 27.6310, lng: 84.4836 },
+    { name: 'Narayanghat', lat: 27.6833, lng: 84.4333 },
+  ],
+  'Gandaki Province': [
+    { name: 'Pokhara', lat: 28.2096, lng: 83.9856 },
+    { name: 'Lekhnath', lat: 28.1769, lng: 84.0556 },
+    { name: 'Waling', lat: 27.9833, lng: 83.7667 },
+    { name: 'Baglung', lat: 28.2719, lng: 83.5897 },
+    { name: 'Beni', lat: 28.3518, lng: 83.5678 },
+    { name: 'Gorkha', lat: 28.2837, lng: 84.7390 },
+    { name: 'Damauli (Tanahun)', lat: 27.9871, lng: 84.2740 },
+    { name: 'Kawasoti', lat: 27.6262, lng: 84.1316 },
+  ],
+  'Lumbini Province': [
+    { name: 'Butwal', lat: 27.7000, lng: 83.4486 },
+    { name: 'Siddharthanagar (Bhairahawa)', lat: 27.5079, lng: 83.4499 },
+    { name: 'Parasi', lat: 27.5170, lng: 83.6750 },
+    { name: 'Tansen', lat: 27.8697, lng: 83.5460 },
+    { name: 'Lamahi', lat: 27.8667, lng: 82.3000 },
+    { name: 'Ghorahi', lat: 28.0396, lng: 82.4889 },
+    { name: 'Tulsipur', lat: 28.1301, lng: 82.2970 },
+  ],
+  'Madhesh Province': [
+    { name: 'Birgunj', lat: 27.0136, lng: 84.8770 },
+    { name: 'Kalaiya', lat: 27.0300, lng: 84.8833 },
+    { name: 'Jaleshwar', lat: 26.6470, lng: 85.8060 },
+    { name: 'Janakpur', lat: 26.7288, lng: 85.9245 },
+    { name: 'Malangwa', lat: 26.8566, lng: 85.5594 },
+    { name: 'Siraha', lat: 26.6548, lng: 86.2079 },
+  ],
+  'Koshi Province': [
+    { name: 'Itahari', lat: 26.6546, lng: 87.2718 },
+    { name: 'Dharan', lat: 26.8147, lng: 87.2847 },
+    { name: 'Biratnagar', lat: 26.4525, lng: 87.2718 },
+    { name: 'Rajbiraj', lat: 26.5333, lng: 86.7500 },
+    { name: 'Gaighat (Udayapur)', lat: 26.7968, lng: 86.6913 },
+    { name: 'Inaruwa', lat: 26.6062, lng: 87.1476 },
+    { name: 'Damak', lat: 26.6617, lng: 88.1700 },
+    { name: 'Bhadrapur', lat: 26.5440, lng: 88.0894 },
+    { name: 'Mechinagar (Kakarbhitta)', lat: 26.6431, lng: 88.1543 },
+    { name: 'Ilam', lat: 26.9094, lng: 87.9282 },
+    { name: 'Dhankuta', lat: 26.9836, lng: 87.3313 },
+    { name: 'Okhaldhunga', lat: 27.3130, lng: 86.4990 },
+  ],
+  'Karnali Province': [
+    // Fewer large cities; include representative hubs
+  ],
+  'Sudurpashchim Province': [
+    { name: 'Dhangadhi', lat: 28.7050, lng: 80.6010 },
+    { name: 'Tikapur', lat: 28.5186, lng: 81.1236 },
+    { name: 'Bhimdatta (Mahendranagar)', lat: 28.9630, lng: 80.1830 },
+  ],
+  'Banke/Bardiya (Lumbini-west)': [
+    { name: 'Nepalgunj', lat: 28.0500, lng: 81.6167 },
+    { name: 'Kohalpur', lat: 28.2000, lng: 81.6167 },
+    { name: 'Gulariya', lat: 28.2000, lng: 81.3333 },
+    { name: 'Bardiya (Rajapur)', lat: 28.5167, lng: 81.2167 },
+  ],
+};

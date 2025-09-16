@@ -7,6 +7,10 @@ const LoginPage = React.lazy(() => import('@pages/Login'));
 const GameDetailsRoute = React.lazy(() => import('@pages/GameDetailsRoute'));
 const Register = React.lazy(() => import('@pages/Register'));
 const LocationOnboarding = React.lazy(() => import('@pages/LocationOnboarding'));
+const PremiumTabsDemo = React.lazy(() => import('@pages/PremiumTabsDemo'));
+const ProfileHub = React.lazy(() => import('@pages/ProfileHub'));
+const NotificationsMatrix = React.lazy(() => import('@pages/NotificationsMatrix'));
+const SettingsAdvanced = React.lazy(() => import('@pages/SettingsAdvanced'));
 import EnhancedGameEntranceAuth from '@components/EnhancedGameEntranceAuth';
 // Note: UnifiedJoinTheLeague is only imported for dev test route to enable tree-shaking in prod
 let UnifiedJoinTheLeague: any = null as any;
@@ -116,6 +120,46 @@ function AppInner() {
           element={token ? (
             <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
               <LocationOnboarding />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
+        <Route
+          path="/tabs-demo"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <PremiumTabsDemo />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
+        <Route
+          path="/profile-hub"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <ProfileHub />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
+        <Route
+          path="/profile"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <ProfileHub />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
+        <Route
+          path="/notifications-matrix"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <NotificationsMatrix />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
+        <Route
+          path="/settings-advanced"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <SettingsAdvanced />
             </Suspense>
           ) : <Navigate to="/login" replace state={{ from: location }} />}
         />

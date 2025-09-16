@@ -102,16 +102,12 @@ const StepContact: React.FC<StepContactProps> = ({
   const highlight = (text: string) => {
     if (!countrySearch) return text;
     const q = countrySearch.trim();
-    const i = text.toLowerCase().indexOf(q.toLowerCase());
-    if (i === -1) return text;
-    const before = text.slice(0, i);
-    const match = text.slice(i, i + q.length);
-    const after = text.slice(i + q.length);
+    const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")})`, 'ig');
     return (
       <>
-        {before}
-        <span className="bg-yellow-200 text-gray-900 rounded px-0.5">{match}</span>
-        {after}
+        {text.split(re).map((part, i) => (
+          re.test(part) ? <strong key={i} className="text-gray-900">{part}</strong> : <span key={i}>{part}</span>
+        ))}
       </>
     ) as unknown as string;
   };
@@ -188,9 +184,9 @@ const StepContact: React.FC<StepContactProps> = ({
                         role="option"
                         data-testid={`country-option-${country.code.replace('+','p')}`}
                       >
-                        <span>{country.flag}</span>
-                        <span className="flex-1 truncate">{highlight(country.name)}</span>
-                        <span className="text-gray-500 text-xs">{country.code}</span>
+                        <span className="text-lg">{country.flag}</span>
+                        <span className="flex-1 truncate text-gray-900">{highlight(country.name)}</span>
+                        <span className="text-gray-700 text-xs font-medium">{country.code}</span>
                       </button>
                     ))
                   ) : (

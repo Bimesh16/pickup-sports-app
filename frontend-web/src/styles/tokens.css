@@ -1,0 +1,58 @@
+:root{
+  /* Nepal theme core */
+  --nepal-crimson: #DC143C;
+  --nepal-blue: #003893;
+  --nepal-white: #ffffff;
+
+  /* Surfaces & text */
+  --bg-surface: var(--nepal-white);
+  --bg-muted: #f8fafc;
+  --bg-contrast: #e2e8f0;
+  --text-strong: #0f172a;
+  --text-muted: #334155; /* darker for AA */
+  --border: #e5e7eb;
+
+  /* Accents */
+  --primary: var(--nepal-crimson);
+  --primary-blue: var(--nepal-blue);
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --ring: #7dd3fc; /* sky focus */
+}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg-surface: #0b1220;
+    --bg-muted: #0f172a;
+    --bg-contrast: #1f2937;
+    --text-strong: #e5e7eb;
+    --text-muted: #cbd5e1;
+    --border: #243043;
+    --primary: #ff4d6d; /* crimson tint for dark */
+    --primary-blue: #1d4ed8;
+    --success: #34d399;
+    --warning: #f59e0b;
+    --danger: #f87171;
+    --ring: #38bdf8;
+  }
+}
+
+.surface { background: var(--bg-surface); color: var(--text-strong); }
+.muted   { background: var(--bg-muted); }
+.contrast{ background: var(--bg-contrast); }
+.text-strong { color: var(--text-strong); }
+.text-muted  { color: var(--text-muted); }
+.bordered { border: 1px solid var(--border); }
+.btn-outline { border-color: var(--border); color: var(--text-strong); }
+.btn-outline:focus { outline-color: var(--ring); }
+
+/* Nepal background helpers */
+.nepal-bg {
+  /* Nepal jersey gradient: deep navy → royal blue → crimson */
+  background: linear-gradient(180deg, #1B263B 0%, #003893 55%, #E63946 120%);
+}
+.nepal-header {
+  background: linear-gradient(90deg, var(--primary-blue), var(--nepal-crimson));
+  color: var(--nepal-white);
+}

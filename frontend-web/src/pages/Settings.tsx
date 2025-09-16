@@ -1,6 +1,9 @@
 // src/pages/Settings.tsx - App Settings and Preferences
 
 import React, { useEffect, useState } from 'react';
+import '@styles/premium-ui.css';
+import HeroBand from '@components/HeroBand';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth';
 import { Button, Card, Input, Badge } from '@components/ui';
 import { theme } from '@styles/theme';
@@ -9,6 +12,7 @@ import { useLocationContext } from '@context/LocationContext';
 
 export function Settings() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { location: ctxLocation, setLocation: setCtxLocation } = useLocationContext();
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; name: string } | null>(null);
@@ -44,15 +48,9 @@ export function Settings() {
   }, [ctxLocation]);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: theme.gradients.mountain,
-      padding: theme.spacing.lg
-    }}>
-      <div style={{
-        maxWidth: '800px',
-        margin: '0 auto'
-      }}>
+    <div style={{ minHeight: '100vh', background:'#f8fafc' }}>
+      <HeroBand height={220} />
+      <div style={{ maxWidth: '800px', margin: '-140px auto 0 auto', padding: theme.spacing.lg }}>
         {/* Header */}
         <div style={{
           textAlign: 'center',
@@ -76,10 +74,32 @@ export function Settings() {
           </p>
         </div>
 
+        {/* Shortcuts */}
+        <Card style={{
+          padding: theme.spacing.xl,
+          marginBottom: theme.spacing.lg,
+          background:'#ffffff', border:'1px solid #e5e7eb', color:'#0f172a'
+        }}>
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: '600',
+            margin: '0 0 16px 0',
+            color: theme.colors.text
+          }}>
+            ⚡ Quick Actions
+          </h2>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <Button variant="outline" onClick={() => navigate('/settings-advanced')}>Open Advanced Settings</Button>
+            <Button variant="outline" onClick={() => navigate('/notifications-matrix')}>Notification Preferences</Button>
+            <Button variant="outline" onClick={() => navigate('/profile-hub')}>New Profile Hub</Button>
+          </div>
+        </Card>
+
         {/* Notification Settings */}
         <Card style={{
           padding: theme.spacing.xl,
-          marginBottom: theme.spacing.lg
+          marginBottom: theme.spacing.lg,
+          background:'#ffffff', border:'1px solid #e5e7eb', color:'#0f172a'
         }}>
           <h2 style={{
             fontSize: '20px',
@@ -167,7 +187,8 @@ export function Settings() {
         {/* Privacy Settings */}
         <Card style={{
           padding: theme.spacing.xl,
-          marginBottom: theme.spacing.lg
+          marginBottom: theme.spacing.lg,
+          background:'#ffffff', border:'1px solid #e5e7eb', color:'#0f172a'
         }}>
           <h2 style={{
             fontSize: '20px',

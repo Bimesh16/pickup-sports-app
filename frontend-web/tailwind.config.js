@@ -7,12 +7,23 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Nepal Flag Colors
+        // Nepal Flag Colors + Brand Theme
         nepal: {
           crimson: '#DC143C',    // Nepal's crimson red
           white: '#FFFFFF',      // Nepal's white
           blue: '#003893',       // Nepal's blue
         },
+        // Brand Theme: Navy → Royal → Crimson
+        navy: '#1B263B',
+        royal: '#003893',
+        crimson: '#E63946',
+        // Text tokens for WCAG AA compliance
+        'text-dark': '#0E1116',
+        'text-light': '#E9EEF5',
+        'body-light': '#1F2937',
+        'body-dark': '#E9EEF5',
+        'helper-light': '#6B7280',
+        'helper-dark': '#C7D1E0',
         emerald: {
           400: '#10b981',
           500: '#059669',

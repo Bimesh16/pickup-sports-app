@@ -144,7 +144,7 @@ export const NEPAL_FESTIVALS = [
 export const TRADITIONAL_PATTERNS = {
   mandala: 'repeating-conic-gradient(from 0deg, #DC143C 0deg 60deg, transparent 60deg 120deg)',
   prayer: 'linear-gradient(45deg, #DC143C 25%, transparent 25%, transparent 75%, #DC143C 75%)',
-  mountain: 'linear-gradient(135deg, #4a90e2 0%, #2d5016 50%, #FFD700 100%)'
+  mountain: 'linear-gradient(135deg, #1B263B 0%, #003893 50%, #E63946 100%)' // Navy → Royal → Crimson
 } as const;
 
 export const NEPALI_GREETINGS = [

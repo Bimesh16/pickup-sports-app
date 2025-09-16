@@ -47,7 +47,7 @@ export const theme = {
   gradients: {
     primary: `linear-gradient(135deg, ${NEPAL_COLORS.primary} 0%, ${NEPAL_COLORS.secondary} 100%)`,
     sunset: `linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FFD700 100%)`,
-    mountain: `linear-gradient(180deg, #4A90E2 0%, #2D5016 100%)`,
+    mountain: `linear-gradient(180deg, #1B263B 0%, #003893 50%, #E63946 100%)`, // Navy → Royal → Crimson
     prayer: `linear-gradient(45deg, ${NEPAL_COLORS.primary}15 25%, transparent 25%, transparent 75%, ${NEPAL_COLORS.primary}15 75%)`,
     card: `linear-gradient(145deg, ${NEPAL_COLORS.surface} 0%, #f8fafc 100%)`
   },

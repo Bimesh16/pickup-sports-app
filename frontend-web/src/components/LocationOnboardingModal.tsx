@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card, Button } from '@components/ui';
 import { COUNTRIES } from '@lib/constants';
-import { COUNTRY_LOCATIONS, getCountryDefaultCenter } from '@constants/geo';
+import { COUNTRY_LOCATIONS, getCountryDefaultCenter, NEPAL_PROVINCE_GROUPS } from '@constants/geo';
 
 type Loc = { lat: number; lng: number; name: string };
 
@@ -29,10 +29,22 @@ export default function LocationOnboardingModal({
 
   const options = useMemo(() => {
     const arr = (COUNTRY_LOCATIONS[country] ?? []) as Loc[];
-    if (!search.trim()) return arr;
-    const q = search.toLowerCase();
-    return arr.filter(x => x.name.toLowerCase().includes(q));
+    const base = search.trim()
+      ? arr.filter(x => x.name.toLowerCase().includes(search.toLowerCase()))
+      : arr;
+    return [...base].sort((a, b) => a.name.localeCompare(b.name));
   }, [search, country]);
+
+  const groupedOptions = useMemo(() => {
+    if (country !== 'Nepal') return null as null | { title: string; items: Loc[] }[];
+    const groups = Object.entries(NEPAL_PROVINCE_GROUPS).map(([title, items]) => {
+      const filtered = search.trim()
+        ? items.filter(x => x.name.toLowerCase().includes(search.toLowerCase()))
+        : items;
+      return { title, items: [...filtered].sort((a, b) => a.name.localeCompare(b.name)) };
+    }).filter(g => g.items.length > 0);
+    return groups;
+  }, [country, search]);
 
   useEffect(() => {
     if (!open) {
@@ -118,20 +130,41 @@ export default function LocationOnboardingModal({
         </div>
         {mode === 'list' ? (
           <div className="max-h-56 overflow-y-auto rounded-lg border border-gray-200">
-            {options.length > 0 ? (
-              options.map((loc) => (
-                <button
-                  key={loc.name}
-                  onClick={() => setSelected(loc)}
-                  className={`w-full text-left px-3 py-2 text-sm ${selected?.name === loc.name ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
-                >
-                  {loc.name} <span className="text-gray-500">({loc.lat.toFixed(4)}, {loc.lng.toFixed(4)})</span>
-                </button>
-              ))
+            {country === 'Nepal' && groupedOptions ? (
+              groupedOptions.length > 0 ? (
+                groupedOptions.map(group => (
+                  <div key={group.title}>
+                    <div className="sticky top-0 bg-white px-3 py-1 text-xs font-semibold text-gray-700 border-b border-gray-200">{group.title}</div>
+                    {group.items.map(loc => (
+                      <button
+                        key={group.title + ':' + loc.name}
+                        onClick={() => setSelected(loc)}
+                        className={`w-full text-left px-3 py-2 text-sm ${selected?.name === loc.name ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                      >
+                        {loc.name} <span className="text-gray-500">({loc.lat.toFixed(4)}, {loc.lng.toFixed(4)})</span>
+                      </button>
+                    ))}
+                  </div>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-sm text-gray-600">No matches for your search.</div>
+              )
             ) : (
-              <div className="px-3 py-2 text-sm text-gray-600">
-                We don't have a curated list for {country} yet. Use "Use my location" above, or switch to another country.
-              </div>
+              options.length > 0 ? (
+                options.map((loc) => (
+                  <button
+                    key={loc.name}
+                    onClick={() => setSelected(loc)}
+                    className={`w-full text-left px-3 py-2 text-sm ${selected?.name === loc.name ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                  >
+                    {loc.name} <span className="text-gray-500">({loc.lat.toFixed(4)}, {loc.lng.toFixed(4)})</span>
+                  </button>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-sm text-gray-600">
+                  We don't have a curated list for {country} yet. Use "Use my location" above, or switch to another country.
+                </div>
+              )
             )}
           </div>
         ) : (

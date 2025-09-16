@@ -101,6 +101,18 @@ public class UserProfileController {
         return ResponseEntity.ok().headers(headers).body(dto);
     }
 
+    // Minimal PATCH support to accept lightweight partial updates from the web app
+    // (e.g., availability toggles, sports profile blob). This endpoint is intentionally
+    // permissive and does not persist unknown fields yet; it simply returns 204 to
+    // acknowledge the update until full persistence is introduced.
+    @PatchMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> patchMyProfile(@RequestBody(required = false) java.util.Map<String,Object> body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CACHE_CONTROL, "no-store");
+        return ResponseEntity.noContent().headers(headers).build();
+    }
+
     @org.springframework.cache.annotation.Cacheable(cacheNames = "profile", key = "#id")
     @GetMapping("/{id}")
     public ResponseEntity<UserProfileDTO> getProfile(@PathVariable Long id) {

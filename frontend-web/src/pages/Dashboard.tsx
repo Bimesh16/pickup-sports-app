@@ -1,7 +1,7 @@
 // src/pages/Dashboard.tsx - Comprehensive Dashboard Component
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { Button, Card, Badge, Modal, GoogleMap, CreateGameForm, UserProfile } from '@components/ui';
@@ -13,6 +13,7 @@ import { theme } from '@styles/theme';
 import { NEPAL_LOCATIONS, POPULAR_SPORTS_NEPAL } from '@constants/nepal';
 import type { Game, Venue, Notification, DashboardTab, LocationData } from '@app-types/api';
 import { Profile } from './Profile';
+const ProfileHub = React.lazy(() => import('@pages/ProfileHub'));
 import { Settings } from './Settings';
 import { GameDetails } from './GameDetails';
 
@@ -243,6 +244,7 @@ function NotificationsList() {
 export function Dashboard() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [welcomeToast, setWelcomeToast] = useState(false);
   const [showWelcomeCard, setShowWelcomeCard] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
@@ -788,19 +790,10 @@ export function Dashboard() {
           </div>
         )}
 
-        {activeTab === 'profile' && user && (
-          <div style={{ maxWidth: '512px' }}>
-            <UserProfile
-              user={user}
-              onUpdateProfile={(data) => updateProfileMutation.mutate(data)}
-            />
-          </div>
-        )}
-
         {activeTab === 'profile' && (
-          <div style={{ maxWidth: '800px' }}>
-            <Profile />
-          </div>
+          <React.Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+            <ProfileHub />
+          </React.Suspense>
         )}
         
         {activeTab === 'settings' && (
