@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@hooks/useAuth';
 const Dashboard = React.lazy(() => import('@pages/Dashboard'));
-const LoginPage = React.lazy(() => import('@pages/MobileLogin'));
+const LoginPage = React.lazy(() => import('@pages/Login'));
 const GameDetailsRoute = React.lazy(() => import('@pages/GameDetailsRoute'));
 const Register = React.lazy(() => import('@pages/Register'));
 const LocationOnboarding = React.lazy(() => import('@pages/LocationOnboarding'));
@@ -31,7 +31,7 @@ import { AppStateProvider } from '@context/AppStateContext';
 import { WebSocketProvider } from '@context/WebSocketContext';
 import { theme } from '@styles/theme';
 import { http } from '@lib/http';
-import { ErrorBoundary } from '@components/ErrorBoundary';
+import ErrorBoundary from '@components/ErrorBoundary';
 
 // Create a client
 const queryClient = new QueryClient({

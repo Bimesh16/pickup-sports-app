@@ -1,684 +1,6 @@
-<testsuites id="" name="" tests="35" failures="35" skipped="0" errors="0" time="16.426834">
-<testsuite name="auth/login.spec.ts" timestamp="2025-09-16T06:35:11.191Z" hostname="chromium" tests="7" failures="7" skipped="0" time="1.874" errors="0">
-<testcase name="Login Flow › should login successfully with valid credentials" classname="auth/login.spec.ts" time="0.307">
-<failure message="login.spec.ts:12:3 should login successfully with valid credentials" type="FAILURE">
-<![CDATA[  [chromium] › auth/login.spec.ts:12:3 › Login Flow › should login successfully with valid credentials 
-
-    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-chromium/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-chromium/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-chromium/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should show error for invalid credentials" classname="auth/login.spec.ts" time="0.31">
-<failure message="login.spec.ts:50:3 should show error for invalid credentials" type="FAILURE">
-<![CDATA[  [chromium] › auth/login.spec.ts:50:3 › Login Flow › should show error for invalid credentials ────
-
-    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-chromium/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-chromium/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-chromium/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should validate required fields" classname="auth/login.spec.ts" time="0.31">
-<failure message="login.spec.ts:77:3 should validate required fields" type="FAILURE">
-<![CDATA[  [chromium] › auth/login.spec.ts:77:3 › Login Flow › should validate required fields ──────────────
-
-    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-validate-required-fields-chromium/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-validate-required-fields-chromium/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-chromium/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should redirect to dashboard if already logged in" classname="auth/login.spec.ts" time="0.31">
-<failure message="login.spec.ts:88:3 should redirect to dashboard if already logged in" type="FAILURE">
-<![CDATA[  [chromium] › auth/login.spec.ts:88:3 › Login Flow › should redirect to dashboard if already logged in 
-
-    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-chromium/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-chromium/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-chromium/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should handle network errors gracefully" classname="auth/login.spec.ts" time="0.306">
-<failure message="login.spec.ts:102:3 should handle network errors gracefully" type="FAILURE">
-<![CDATA[  [chromium] › auth/login.spec.ts:102:3 › Login Flow › should handle network errors gracefully ─────
-
-    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-chromium/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-chromium/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-chromium/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should persist login state across page refreshes" classname="auth/login.spec.ts" time="0.166">
-<failure message="login.spec.ts:122:3 should persist login state across page refreshes" type="FAILURE">
-<![CDATA[  [chromium] › auth/login.spec.ts:122:3 › Login Flow › should persist login state across page refreshes 
-
-    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-chromium/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-chromium/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-chromium/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should logout and clear storage" classname="auth/login.spec.ts" time="0.165">
-<failure message="login.spec.ts:143:3 should logout and clear storage" type="FAILURE">
-<![CDATA[  [chromium] › auth/login.spec.ts:143:3 › Login Flow › should logout and clear storage ─────────────
-
-    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at UtilityScript.evaluate (<anonymous>:293:16)
-        at UtilityScript.<anonymous> (<anonymous>:1:44)
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-chromium/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-chromium/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-chromium/video.webm]]
-]]>
-</system-out>
-</testcase>
-</testsuite>
-<testsuite name="auth/login.spec.ts" timestamp="2025-09-16T06:35:11.191Z" hostname="firefox" tests="7" failures="7" skipped="0" time="6.915" errors="0">
-<testcase name="Login Flow › should login successfully with valid credentials" classname="auth/login.spec.ts" time="0.939">
-<failure message="login.spec.ts:12:3 should login successfully with valid credentials" type="FAILURE">
-<![CDATA[  [firefox] › auth/login.spec.ts:12:3 › Login Flow › should login successfully with valid credentials 
-
-    Error: page.evaluate: The operation is insecure.
-    @debugger eval code line 291 > eval:2:7
-    evaluate@debugger eval code:293:16
-    @debugger eval code:1:44
-
-        at @debugger eval code line 291 > eval:2:7
-        at evaluate@debugger eval code:293:16
-        at @debugger eval code:1:44
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-firefox/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-firefox/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-firefox/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-firefox/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should show error for invalid credentials" classname="auth/login.spec.ts" time="0.835">
-<failure message="login.spec.ts:50:3 should show error for invalid credentials" type="FAILURE">
-<![CDATA[  [firefox] › auth/login.spec.ts:50:3 › Login Flow › should show error for invalid credentials ─────
-
-    Error: page.evaluate: The operation is insecure.
-    @debugger eval code line 291 > eval:2:7
-    evaluate@debugger eval code:293:16
-    @debugger eval code:1:44
-
-        at @debugger eval code line 291 > eval:2:7
-        at evaluate@debugger eval code:293:16
-        at @debugger eval code:1:44
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-firefox/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-firefox/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-firefox/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-firefox/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should validate required fields" classname="auth/login.spec.ts" time="1.13">
-<failure message="login.spec.ts:77:3 should validate required fields" type="FAILURE">
-<![CDATA[  [firefox] › auth/login.spec.ts:77:3 › Login Flow › should validate required fields ───────────────
-
-    Error: page.evaluate: The operation is insecure.
-    @debugger eval code line 291 > eval:2:7
-    evaluate@debugger eval code:293:16
-    @debugger eval code:1:44
-
-        at @debugger eval code line 291 > eval:2:7
-        at evaluate@debugger eval code:293:16
-        at @debugger eval code:1:44
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-validate-required-fields-firefox/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-validate-required-fields-firefox/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-firefox/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-firefox/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should redirect to dashboard if already logged in" classname="auth/login.spec.ts" time="0.97">
-<failure message="login.spec.ts:88:3 should redirect to dashboard if already logged in" type="FAILURE">
-<![CDATA[  [firefox] › auth/login.spec.ts:88:3 › Login Flow › should redirect to dashboard if already logged in 
-
-    Error: page.evaluate: The operation is insecure.
-    @debugger eval code line 291 > eval:2:7
-    evaluate@debugger eval code:293:16
-    @debugger eval code:1:44
-
-        at @debugger eval code line 291 > eval:2:7
-        at evaluate@debugger eval code:293:16
-        at @debugger eval code:1:44
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-firefox/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-firefox/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-firefox/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-firefox/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should handle network errors gracefully" classname="auth/login.spec.ts" time="0.994">
-<failure message="login.spec.ts:102:3 should handle network errors gracefully" type="FAILURE">
-<![CDATA[  [firefox] › auth/login.spec.ts:102:3 › Login Flow › should handle network errors gracefully ──────
-
-    Error: page.evaluate: The operation is insecure.
-    @debugger eval code line 291 > eval:2:7
-    evaluate@debugger eval code:293:16
-    @debugger eval code:1:44
-
-        at @debugger eval code line 291 > eval:2:7
-        at evaluate@debugger eval code:293:16
-        at @debugger eval code:1:44
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-firefox/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-firefox/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-firefox/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-firefox/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should persist login state across page refreshes" classname="auth/login.spec.ts" time="1.022">
-<failure message="login.spec.ts:122:3 should persist login state across page refreshes" type="FAILURE">
-<![CDATA[  [firefox] › auth/login.spec.ts:122:3 › Login Flow › should persist login state across page refreshes 
-
-    Error: page.evaluate: The operation is insecure.
-    @debugger eval code line 291 > eval:2:7
-    evaluate@debugger eval code:293:16
-    @debugger eval code:1:44
-
-        at @debugger eval code line 291 > eval:2:7
-        at evaluate@debugger eval code:293:16
-        at @debugger eval code:1:44
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-firefox/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-firefox/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-firefox/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-firefox/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should logout and clear storage" classname="auth/login.spec.ts" time="1.025">
-<failure message="login.spec.ts:143:3 should logout and clear storage" type="FAILURE">
-<![CDATA[  [firefox] › auth/login.spec.ts:143:3 › Login Flow › should logout and clear storage ──────────────
-
-    Error: page.evaluate: The operation is insecure.
-    @debugger eval code line 291 > eval:2:7
-    evaluate@debugger eval code:293:16
-    @debugger eval code:1:44
-
-        at @debugger eval code line 291 > eval:2:7
-        at evaluate@debugger eval code:293:16
-        at @debugger eval code:1:44
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-firefox/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-firefox/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-firefox/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-firefox/video.webm]]
-]]>
-</system-out>
-</testcase>
-</testsuite>
-<testsuite name="auth/login.spec.ts" timestamp="2025-09-16T06:35:11.191Z" hostname="webkit" tests="7" failures="7" skipped="0" time="7.852" errors="0">
-<testcase name="Login Flow › should login successfully with valid credentials" classname="auth/login.spec.ts" time="1.356">
-<failure message="login.spec.ts:12:3 should login successfully with valid credentials" type="FAILURE">
-<![CDATA[  [webkit] › auth/login.spec.ts:12:3 › Login Flow › should login successfully with valid credentials 
-
-    Error: page.evaluate: SecurityError: The operation is insecure.
-
-       at utils/test-helpers.ts:125
-
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-webkit/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-webkit/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-webkit/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-webkit/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should show error for invalid credentials" classname="auth/login.spec.ts" time="1.366">
-<failure message="login.spec.ts:50:3 should show error for invalid credentials" type="FAILURE">
-<![CDATA[  [webkit] › auth/login.spec.ts:50:3 › Login Flow › should show error for invalid credentials ──────
-
-    Error: page.evaluate: SecurityError: The operation is insecure.
-
-       at utils/test-helpers.ts:125
-
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-webkit/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-webkit/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-webkit/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-webkit/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should validate required fields" classname="auth/login.spec.ts" time="1.351">
-<failure message="login.spec.ts:77:3 should validate required fields" type="FAILURE">
-<![CDATA[  [webkit] › auth/login.spec.ts:77:3 › Login Flow › should validate required fields ────────────────
-
-    Error: page.evaluate: SecurityError: The operation is insecure.
-
-       at utils/test-helpers.ts:125
-
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-validate-required-fields-webkit/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-validate-required-fields-webkit/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-webkit/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-webkit/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should redirect to dashboard if already logged in" classname="auth/login.spec.ts" time="1.34">
-<failure message="login.spec.ts:88:3 should redirect to dashboard if already logged in" type="FAILURE">
-<![CDATA[  [webkit] › auth/login.spec.ts:88:3 › Login Flow › should redirect to dashboard if already logged in 
-
-    Error: page.evaluate: SecurityError: The operation is insecure.
-
-       at utils/test-helpers.ts:125
-
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-webkit/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-webkit/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-webkit/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-webkit/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should handle network errors gracefully" classname="auth/login.spec.ts" time="1.353">
-<failure message="login.spec.ts:102:3 should handle network errors gracefully" type="FAILURE">
-<![CDATA[  [webkit] › auth/login.spec.ts:102:3 › Login Flow › should handle network errors gracefully ───────
-
-    Error: page.evaluate: SecurityError: The operation is insecure.
-
-       at utils/test-helpers.ts:125
-
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-webkit/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-webkit/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-webkit/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-webkit/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should persist login state across page refreshes" classname="auth/login.spec.ts" time="0.502">
-<failure message="login.spec.ts:122:3 should persist login state across page refreshes" type="FAILURE">
-<![CDATA[  [webkit] › auth/login.spec.ts:122:3 › Login Flow › should persist login state across page refreshes 
-
-    Error: page.evaluate: SecurityError: The operation is insecure.
-
-       at utils/test-helpers.ts:125
-
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-webkit/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-webkit/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-webkit/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-webkit/video.webm]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Login Flow › should logout and clear storage" classname="auth/login.spec.ts" time="0.584">
-<failure message="login.spec.ts:143:3 should logout and clear storage" type="FAILURE">
-<![CDATA[  [webkit] › auth/login.spec.ts:143:3 › Login Flow › should logout and clear storage ───────────────
-
-    Error: page.evaluate: SecurityError: The operation is insecure.
-
-       at utils/test-helpers.ts:125
-
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-webkit/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-webkit/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-webkit/test-failed-1.png]]
-
-[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-webkit/video.webm]]
-]]>
-</system-out>
-</testcase>
-</testsuite>
-<testsuite name="auth/login.spec.ts" timestamp="2025-09-16T06:35:11.191Z" hostname="mobile-chrome" tests="7" failures="7" skipped="0" time="2.394" errors="0">
-<testcase name="Login Flow › should login successfully with valid credentials" classname="auth/login.spec.ts" time="0.345">
+<testsuites id="" name="" tests="142" failures="42" skipped="100" errors="0" time="95.212942">
+<testsuite name="auth/login.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="7" failures="7" skipped="0" time="2.384" errors="0">
+<testcase name="Login Flow › should login successfully with valid credentials" classname="auth/login.spec.ts" time="0.38">
 <failure message="login.spec.ts:12:3 should login successfully with valid credentials" type="FAILURE">
 <![CDATA[  [mobile-chrome] › auth/login.spec.ts:12:3 › Login Flow › should login successfully with valid credentials 
 
@@ -707,7 +29,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should show error for invalid credentials" classname="auth/login.spec.ts" time="0.403">
+<testcase name="Login Flow › should show error for invalid credentials" classname="auth/login.spec.ts" time="0.386">
 <failure message="login.spec.ts:50:3 should show error for invalid credentials" type="FAILURE">
 <![CDATA[  [mobile-chrome] › auth/login.spec.ts:50:3 › Login Flow › should show error for invalid credentials 
 
@@ -736,7 +58,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should validate required fields" classname="auth/login.spec.ts" time="0.374">
+<testcase name="Login Flow › should validate required fields" classname="auth/login.spec.ts" time="0.379">
 <failure message="login.spec.ts:77:3 should validate required fields" type="FAILURE">
 <![CDATA[  [mobile-chrome] › auth/login.spec.ts:77:3 › Login Flow › should validate required fields ─────────
 
@@ -765,7 +87,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should redirect to dashboard if already logged in" classname="auth/login.spec.ts" time="0.337">
+<testcase name="Login Flow › should redirect to dashboard if already logged in" classname="auth/login.spec.ts" time="0.383">
 <failure message="login.spec.ts:88:3 should redirect to dashboard if already logged in" type="FAILURE">
 <![CDATA[  [mobile-chrome] › auth/login.spec.ts:88:3 › Login Flow › should redirect to dashboard if already logged in 
 
@@ -794,7 +116,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should handle network errors gracefully" classname="auth/login.spec.ts" time="0.326">
+<testcase name="Login Flow › should handle network errors gracefully" classname="auth/login.spec.ts" time="0.383">
 <failure message="login.spec.ts:102:3 should handle network errors gracefully" type="FAILURE">
 <![CDATA[  [mobile-chrome] › auth/login.spec.ts:102:3 › Login Flow › should handle network errors gracefully 
 
@@ -823,7 +145,7 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should persist login state across page refreshes" classname="auth/login.spec.ts" time="0.297">
+<testcase name="Login Flow › should persist login state across page refreshes" classname="auth/login.spec.ts" time="0.233">
 <failure message="login.spec.ts:122:3 should persist login state across page refreshes" type="FAILURE">
 <![CDATA[  [mobile-chrome] › auth/login.spec.ts:122:3 › Login Flow › should persist login state across page refreshes 
 
@@ -838,15 +160,21 @@
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-chrome/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
 <![CDATA[
 [[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-chrome/video.webm]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should logout and clear storage" classname="auth/login.spec.ts" time="0.312">
+<testcase name="Login Flow › should logout and clear storage" classname="auth/login.spec.ts" time="0.24">
 <failure message="login.spec.ts:143:3 should logout and clear storage" type="FAILURE">
 <![CDATA[  [mobile-chrome] › auth/login.spec.ts:143:3 › Login Flow › should logout and clear storage ────────
 
@@ -876,251 +204,2135 @@
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="auth/login.spec.ts" timestamp="2025-09-16T06:35:11.191Z" hostname="mobile-safari" tests="7" failures="7" skipped="0" time="4.103" errors="0">
-<testcase name="Login Flow › should login successfully with valid credentials" classname="auth/login.spec.ts" time="0.303">
-<failure message="login.spec.ts:12:3 should login successfully with valid credentials" type="FAILURE">
-<![CDATA[  [mobile-safari] › auth/login.spec.ts:12:3 › Login Flow › should login successfully with valid credentials 
+<testsuite name="country-dropdown.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="1" failures="1" skipped="0" time="11.501" errors="0">
+<testcase name="Country dropdown keyboard navigation › Arrow keys move active option and Enter selects" classname="country-dropdown.spec.ts" time="11.501">
+<failure message="country-dropdown.spec.ts:8:3 Arrow keys move active option and Enter selects" type="FAILURE">
+<![CDATA[  [mobile-chrome] › country-dropdown.spec.ts:8:3 › Country dropdown keyboard navigation › Arrow keys move active option and Enter selects 
 
-    Error: page.evaluate: SecurityError: The operation is insecure.
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByText('Next Step')
 
-       at utils/test-helpers.ts:125
 
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+      12 |
+      13 |     // Navigate to Step 2 if needed
+    > 14 |     await page.getByText('Next Step').click({ timeout: 10000 });
+         |                                       ^
+      15 |
+      16 |     // Open country dropdown
+      17 |     const openBtn = page.getByTestId('country-selector-button');
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/country-dropdown.spec.ts:14:39
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-safari/test-failed-1.png
+    ../test-results/country-dropdown-Country-d-793b3-ve-option-and-Enter-selects-mobile-chrome/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-safari/video.webm
+    ../test-results/country-dropdown-Country-d-793b3-ve-option-and-Enter-selects-mobile-chrome/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/country-dropdown-Country-d-793b3-ve-option-and-Enter-selects-mobile-chrome/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-safari/test-failed-1.png]]
+[[ATTACHMENT|country-dropdown-Country-d-793b3-ve-option-and-Enter-selects-mobile-chrome/test-failed-1.png]]
 
-[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-safari/video.webm]]
+[[ATTACHMENT|country-dropdown-Country-d-793b3-ve-option-and-Enter-selects-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|country-dropdown-Country-d-793b3-ve-option-and-Enter-selects-mobile-chrome/error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should show error for invalid credentials" classname="auth/login.spec.ts" time="0.808">
-<failure message="login.spec.ts:50:3 should show error for invalid credentials" type="FAILURE">
-<![CDATA[  [mobile-safari] › auth/login.spec.ts:50:3 › Login Flow › should show error for invalid credentials 
+</testsuite>
+<testsuite name="dashboard/create-game.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="13" failures="13" skipped="0" time="162.152" errors="0">
+<testcase name="Create Game Form › should load create game form with all fields" classname="dashboard/create-game.spec.ts" time="12.105">
+<failure message="create-game.spec.ts:27:3 should load create game form with all fields" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:27:3 › Create Game Form › should load create game form with all fields 
 
-    Error: page.evaluate: SecurityError: The operation is insecure.
+    Error: expect(locator).toBeVisible() failed
 
-       at utils/test-helpers.ts:125
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
 
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-safari/test-failed-1.png
+    ../test-results/dashboard-create-game-Crea-13c7b-e-game-form-with-all-fields-mobile-chrome/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-safari/video.webm
+    ../test-results/dashboard-create-game-Crea-13c7b-e-game-form-with-all-fields-mobile-chrome/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-13c7b-e-game-form-with-all-fields-mobile-chrome/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-safari/test-failed-1.png]]
+[[ATTACHMENT|dashboard-create-game-Crea-13c7b-e-game-form-with-all-fields-mobile-chrome/test-failed-1.png]]
 
-[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-safari/video.webm]]
+[[ATTACHMENT|dashboard-create-game-Crea-13c7b-e-game-form-with-all-fields-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-13c7b-e-game-form-with-all-fields-mobile-chrome/error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should validate required fields" classname="auth/login.spec.ts" time="0.806">
-<failure message="login.spec.ts:77:3 should validate required fields" type="FAILURE">
-<![CDATA[  [mobile-safari] › auth/login.spec.ts:77:3 › Login Flow › should validate required fields ─────────
+<testcase name="Create Game Form › should validate required fields" classname="dashboard/create-game.spec.ts" time="12.107">
+<failure message="create-game.spec.ts:47:3 should validate required fields" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:47:3 › Create Game Form › should validate required fields 
 
-    Error: page.evaluate: SecurityError: The operation is insecure.
+    Error: expect(locator).toBeVisible() failed
 
-       at utils/test-helpers.ts:125
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
 
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-validate-required-fields-mobile-safari/test-failed-1.png
+    ../test-results/dashboard-create-game-Crea-fa5ba-ld-validate-required-fields-mobile-chrome/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-validate-required-fields-mobile-safari/video.webm
+    ../test-results/dashboard-create-game-Crea-fa5ba-ld-validate-required-fields-mobile-chrome/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-fa5ba-ld-validate-required-fields-mobile-chrome/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-mobile-safari/test-failed-1.png]]
+[[ATTACHMENT|dashboard-create-game-Crea-fa5ba-ld-validate-required-fields-mobile-chrome/test-failed-1.png]]
 
-[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-mobile-safari/video.webm]]
+[[ATTACHMENT|dashboard-create-game-Crea-fa5ba-ld-validate-required-fields-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-fa5ba-ld-validate-required-fields-mobile-chrome/error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should redirect to dashboard if already logged in" classname="auth/login.spec.ts" time="0.808">
-<failure message="login.spec.ts:88:3 should redirect to dashboard if already logged in" type="FAILURE">
-<![CDATA[  [mobile-safari] › auth/login.spec.ts:88:3 › Login Flow › should redirect to dashboard if already logged in 
+<testcase name="Create Game Form › should fill form step by step" classname="dashboard/create-game.spec.ts" time="12.749">
+<failure message="create-game.spec.ts:60:3 should fill form step by step" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:60:3 › Create Game Form › should fill form step by step 
 
-    Error: page.evaluate: SecurityError: The operation is insecure.
+    Error: expect(locator).toBeVisible() failed
 
-       at utils/test-helpers.ts:125
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
 
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-safari/test-failed-1.png
+    ../test-results/dashboard-create-game-Crea-7b179-ould-fill-form-step-by-step-mobile-chrome/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-safari/video.webm
+    ../test-results/dashboard-create-game-Crea-7b179-ould-fill-form-step-by-step-mobile-chrome/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-7b179-ould-fill-form-step-by-step-mobile-chrome/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-safari/test-failed-1.png]]
+[[ATTACHMENT|dashboard-create-game-Crea-7b179-ould-fill-form-step-by-step-mobile-chrome/test-failed-1.png]]
 
-[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-safari/video.webm]]
+[[ATTACHMENT|dashboard-create-game-Crea-7b179-ould-fill-form-step-by-step-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-7b179-ould-fill-form-step-by-step-mobile-chrome/error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should handle network errors gracefully" classname="auth/login.spec.ts" time="0.816">
-<failure message="login.spec.ts:102:3 should handle network errors gracefully" type="FAILURE">
-<![CDATA[  [mobile-safari] › auth/login.spec.ts:102:3 › Login Flow › should handle network errors gracefully 
+<testcase name="Create Game Form › should show preview before creating" classname="dashboard/create-game.spec.ts" time="12.694">
+<failure message="create-game.spec.ts:94:3 should show preview before creating" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:94:3 › Create Game Form › should show preview before creating 
 
-    Error: page.evaluate: SecurityError: The operation is insecure.
+    Error: expect(locator).toBeVisible() failed
 
-       at utils/test-helpers.ts:125
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
 
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-safari/test-failed-1.png
+    ../test-results/dashboard-create-game-Crea-90507-how-preview-before-creating-mobile-chrome/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-safari/video.webm
+    ../test-results/dashboard-create-game-Crea-90507-how-preview-before-creating-mobile-chrome/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-90507-how-preview-before-creating-mobile-chrome/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-safari/test-failed-1.png]]
+[[ATTACHMENT|dashboard-create-game-Crea-90507-how-preview-before-creating-mobile-chrome/test-failed-1.png]]
 
-[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-safari/video.webm]]
+[[ATTACHMENT|dashboard-create-game-Crea-90507-how-preview-before-creating-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-90507-how-preview-before-creating-mobile-chrome/error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should persist login state across page refreshes" classname="auth/login.spec.ts" time="0.324">
-<failure message="login.spec.ts:122:3 should persist login state across page refreshes" type="FAILURE">
-<![CDATA[  [mobile-safari] › auth/login.spec.ts:122:3 › Login Flow › should persist login state across page refreshes 
+<testcase name="Create Game Form › should create game successfully" classname="dashboard/create-game.spec.ts" time="11.766">
+<failure message="create-game.spec.ts:122:3 should create game successfully" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:122:3 › Create Game Form › should create game successfully 
 
-    Error: page.evaluate: SecurityError: The operation is insecure.
+    Error: expect(locator).toBeVisible() failed
 
-       at utils/test-helpers.ts:125
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
 
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-safari/test-failed-1.png
+    ../test-results/dashboard-create-game-Crea-61cad-ld-create-game-successfully-mobile-chrome/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-safari/video.webm
+    ../test-results/dashboard-create-game-Crea-61cad-ld-create-game-successfully-mobile-chrome/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-61cad-ld-create-game-successfully-mobile-chrome/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-safari/test-failed-1.png]]
+[[ATTACHMENT|dashboard-create-game-Crea-61cad-ld-create-game-successfully-mobile-chrome/test-failed-1.png]]
 
-[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-safari/video.webm]]
+[[ATTACHMENT|dashboard-create-game-Crea-61cad-ld-create-game-successfully-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-61cad-ld-create-game-successfully-mobile-chrome/error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Login Flow › should logout and clear storage" classname="auth/login.spec.ts" time="0.238">
-<failure message="login.spec.ts:143:3 should logout and clear storage" type="FAILURE">
-<![CDATA[  [mobile-safari] › auth/login.spec.ts:143:3 › Login Flow › should logout and clear storage ────────
+<testcase name="Create Game Form › should handle create game error" classname="dashboard/create-game.spec.ts" time="13.287">
+<failure message="create-game.spec.ts:147:3 should handle create game error" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:147:3 › Create Game Form › should handle create game error 
 
-    Error: page.evaluate: SecurityError: The operation is insecure.
+    Error: expect(locator).toBeVisible() failed
 
-       at utils/test-helpers.ts:125
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
 
-      123 |   // Cleanup helpers
-      124 |   async clearStorage() {
-    > 125 |     await this.page.evaluate(() => {
-          |                     ^
-      126 |       localStorage.clear();
-      127 |       sessionStorage.clear();
-      128 |     });
-        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
-        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-mobile-safari/test-failed-1.png
+    ../test-results/dashboard-create-game-Crea-155eb-ld-handle-create-game-error-mobile-chrome/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-mobile-safari/video.webm
+    ../test-results/dashboard-create-game-Crea-155eb-ld-handle-create-game-error-mobile-chrome/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-155eb-ld-handle-create-game-error-mobile-chrome/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-mobile-safari/test-failed-1.png]]
+[[ATTACHMENT|dashboard-create-game-Crea-155eb-ld-handle-create-game-error-mobile-chrome/test-failed-1.png]]
 
-[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-mobile-safari/video.webm]]
+[[ATTACHMENT|dashboard-create-game-Crea-155eb-ld-handle-create-game-error-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-155eb-ld-handle-create-game-error-mobile-chrome/error-context.md]]
 ]]>
 </system-out>
+</testcase>
+<testcase name="Create Game Form › should validate date and time constraints" classname="dashboard/create-game.spec.ts" time="11.705">
+<failure message="create-game.spec.ts:178:3 should validate date and time constraints" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:178:3 › Create Game Form › should validate date and time constraints 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-3ffce-e-date-and-time-constraints-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-3ffce-e-date-and-time-constraints-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-3ffce-e-date-and-time-constraints-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-create-game-Crea-3ffce-e-date-and-time-constraints-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-3ffce-e-date-and-time-constraints-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-3ffce-e-date-and-time-constraints-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Create Game Form › should validate player count constraints" classname="dashboard/create-game.spec.ts" time="13.46">
+<failure message="create-game.spec.ts:191:3 should validate player count constraints" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:191:3 › Create Game Form › should validate player count constraints 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-d79dd-te-player-count-constraints-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-d79dd-te-player-count-constraints-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-d79dd-te-player-count-constraints-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-create-game-Crea-d79dd-te-player-count-constraints-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-d79dd-te-player-count-constraints-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-d79dd-te-player-count-constraints-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Create Game Form › should validate price constraints" classname="dashboard/create-game.spec.ts" time="11.771">
+<failure message="create-game.spec.ts:203:3 should validate price constraints" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:203:3 › Create Game Form › should validate price constraints 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-40213--validate-price-constraints-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-40213--validate-price-constraints-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-40213--validate-price-constraints-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-create-game-Crea-40213--validate-price-constraints-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-40213--validate-price-constraints-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-40213--validate-price-constraints-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Create Game Form › should cancel form and return to games" classname="dashboard/create-game.spec.ts" time="11.625">
+<failure message="create-game.spec.ts:215:3 should cancel form and return to games" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:215:3 › Create Game Form › should cancel form and return to games 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-e0690-el-form-and-return-to-games-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-e0690-el-form-and-return-to-games-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-e0690-el-form-and-return-to-games-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-create-game-Crea-e0690-el-form-and-return-to-games-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-e0690-el-form-and-return-to-games-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-e0690-el-form-and-return-to-games-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Create Game Form › should load venues dynamically" classname="dashboard/create-game.spec.ts" time="14.102">
+<failure message="create-game.spec.ts:227:3 should load venues dynamically" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:227:3 › Create Game Form › should load venues dynamically 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-65d53-uld-load-venues-dynamically-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-65d53-uld-load-venues-dynamically-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-65d53-uld-load-venues-dynamically-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-create-game-Crea-65d53-uld-load-venues-dynamically-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-65d53-uld-load-venues-dynamically-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-65d53-uld-load-venues-dynamically-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Create Game Form › should show loading state during creation" classname="dashboard/create-game.spec.ts" time="11.751">
+<failure message="create-game.spec.ts:239:3 should show loading state during creation" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:239:3 › Create Game Form › should show loading state during creation 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-dbe27-ading-state-during-creation-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-dbe27-ading-state-during-creation-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-dbe27-ading-state-during-creation-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-create-game-Crea-dbe27-ading-state-during-creation-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-dbe27-ading-state-during-creation-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-dbe27-ading-state-during-creation-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Create Game Form › should handle form reset" classname="dashboard/create-game.spec.ts" time="13.03">
+<failure message="create-game.spec.ts:274:3 should handle form reset" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/create-game.spec.ts:274:3 › Create Game Form › should handle form reset 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/create-game.spec.ts:23:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-a1edf-rm-should-handle-form-reset-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-create-game-Crea-a1edf-rm-should-handle-form-reset-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-create-game-Crea-a1edf-rm-should-handle-form-reset-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-create-game-Crea-a1edf-rm-should-handle-form-reset-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-a1edf-rm-should-handle-form-reset-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-create-game-Crea-a1edf-rm-should-handle-form-reset-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="dashboard/games.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="17" failures="17" skipped="0" time="210.414" errors="0">
+<testcase name="Games Tab › should load games tab with search and filters" classname="dashboard/games.spec.ts" time="11.652">
+<failure message="games.spec.ts:24:3 should load games tab with search and filters" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:24:3 › Games Tab › should load games tab with search and filters 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--be9d4-tab-with-search-and-filters-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--be9d4-tab-with-search-and-filters-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab--be9d4-tab-with-search-and-filters-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab--be9d4-tab-with-search-and-filters-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--be9d4-tab-with-search-and-filters-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--be9d4-tab-with-search-and-filters-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should search games by sport" classname="dashboard/games.spec.ts" time="13.046">
+<failure message="games.spec.ts:40:3 should search games by sport" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:40:3 › Games Tab › should search games by sport ────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-search-games-by-sport-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-search-games-by-sport-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab-should-search-games-by-sport-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab-should-search-games-by-sport-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-search-games-by-sport-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-search-games-by-sport-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should filter games by location" classname="dashboard/games.spec.ts" time="13.287">
+<failure message="games.spec.ts:52:3 should filter games by location" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:52:3 › Games Tab › should filter games by location ─────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-filter-games-by-location-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-filter-games-by-location-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab-should-filter-games-by-location-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab-should-filter-games-by-location-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-filter-games-by-location-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-filter-games-by-location-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should filter games by date and time" classname="dashboard/games.spec.ts" time="11.684">
+<failure message="games.spec.ts:73:3 should filter games by date and time" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:73:3 › Games Tab › should filter games by date and time 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--45a97-lter-games-by-date-and-time-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--45a97-lter-games-by-date-and-time-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab--45a97-lter-games-by-date-and-time-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab--45a97-lter-games-by-date-and-time-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--45a97-lter-games-by-date-and-time-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--45a97-lter-games-by-date-and-time-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should filter games by skill level" classname="dashboard/games.spec.ts" time="12.989">
+<failure message="games.spec.ts:90:3 should filter games by skill level" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:90:3 › Games Tab › should filter games by skill level ──
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-filter-games-by-skill-level-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-filter-games-by-skill-level-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab-should-filter-games-by-skill-level-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab-should-filter-games-by-skill-level-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-filter-games-by-skill-level-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-filter-games-by-skill-level-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should sort games by distance" classname="dashboard/games.spec.ts" time="13.061">
+<failure message="games.spec.ts:106:3 should sort games by distance" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:106:3 › Games Tab › should sort games by distance ──────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-sort-games-by-distance-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-sort-games-by-distance-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab-should-sort-games-by-distance-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-distance-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-distance-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-distance-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should sort games by time" classname="dashboard/games.spec.ts" time="13.408">
+<failure message="games.spec.ts:118:3 should sort games by time" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:118:3 › Games Tab › should sort games by time ──────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-sort-games-by-time-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-sort-games-by-time-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab-should-sort-games-by-time-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-time-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-time-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-time-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should sort games by price" classname="dashboard/games.spec.ts" time="11.697">
+<failure message="games.spec.ts:130:3 should sort games by price" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:130:3 › Games Tab › should sort games by price ─────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-sort-games-by-price-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-sort-games-by-price-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab-should-sort-games-by-price-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-price-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-price-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-price-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should sort games by popularity" classname="dashboard/games.spec.ts" time="11.692">
+<failure message="games.spec.ts:142:3 should sort games by popularity" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:142:3 › Games Tab › should sort games by popularity ────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-sort-games-by-popularity-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-sort-games-by-popularity-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab-should-sort-games-by-popularity-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-popularity-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-popularity-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-sort-games-by-popularity-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should toggle between list and map view" classname="dashboard/games.spec.ts" time="11.697">
+<failure message="games.spec.ts:154:3 should toggle between list and map view" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:154:3 › Games Tab › should toggle between list and map view 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--b5224-e-between-list-and-map-view-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--b5224-e-between-list-and-map-view-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab--b5224-e-between-list-and-map-view-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab--b5224-e-between-list-and-map-view-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--b5224-e-between-list-and-map-view-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--b5224-e-between-list-and-map-view-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should join a game" classname="dashboard/games.spec.ts" time="11.687">
+<failure message="games.spec.ts:174:3 should join a game" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:174:3 › Games Tab › should join a game ─────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-join-a-game-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-join-a-game-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab-should-join-a-game-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab-should-join-a-game-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-join-a-game-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-join-a-game-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should handle join game error" classname="dashboard/games.spec.ts" time="12.844">
+<failure message="games.spec.ts:192:3 should handle join game error" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:192:3 › Games Tab › should handle join game error ──────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-handle-join-game-error-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-handle-join-game-error-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab-should-handle-join-game-error-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab-should-handle-join-game-error-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-handle-join-game-error-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-handle-join-game-error-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should implement infinite scroll" classname="dashboard/games.spec.ts" time="11.734">
+<failure message="games.spec.ts:212:3 should implement infinite scroll" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:212:3 › Games Tab › should implement infinite scroll ───
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-implement-infinite-scroll-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab-should-implement-infinite-scroll-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab-should-implement-infinite-scroll-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab-should-implement-infinite-scroll-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-implement-infinite-scroll-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab-should-implement-infinite-scroll-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should show loading states during search" classname="dashboard/games.spec.ts" time="13.46">
+<failure message="games.spec.ts:251:3 should show loading states during search" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:251:3 › Games Tab › should show loading states during search 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--a8b22-oading-states-during-search-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--a8b22-oading-states-during-search-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab--a8b22-oading-states-during-search-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab--a8b22-oading-states-during-search-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--a8b22-oading-states-during-search-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--a8b22-oading-states-during-search-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should show empty state when no games found" classname="dashboard/games.spec.ts" time="11.66">
+<failure message="games.spec.ts:275:3 should show empty state when no games found" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:275:3 › Games Tab › should show empty state when no games found 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--05f97-y-state-when-no-games-found-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--05f97-y-state-when-no-games-found-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab--05f97-y-state-when-no-games-found-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab--05f97-y-state-when-no-games-found-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--05f97-y-state-when-no-games-found-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--05f97-y-state-when-no-games-found-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should display game details correctly" classname="dashboard/games.spec.ts" time="11.677">
+<failure message="games.spec.ts:296:3 should display game details correctly" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:296:3 › Games Tab › should display game details correctly 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--3ab67-play-game-details-correctly-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--3ab67-play-game-details-correctly-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab--3ab67-play-game-details-correctly-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab--3ab67-play-game-details-correctly-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--3ab67-play-game-details-correctly-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--3ab67-play-game-details-correctly-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Games Tab › should handle map view interactions" classname="dashboard/games.spec.ts" time="13.139">
+<failure message="games.spec.ts:309:3 should handle map view interactions" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/games.spec.ts:309:3 › Games Tab › should handle map view interactions 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/games.spec.ts:20:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--9c63b-andle-map-view-interactions-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-games-Games-Tab--9c63b-andle-map-view-interactions-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-games-Games-Tab--9c63b-andle-map-view-interactions-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-games-Games-Tab--9c63b-andle-map-view-interactions-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--9c63b-andle-map-view-interactions-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-games-Games-Tab--9c63b-andle-map-view-interactions-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="dashboard/home.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="12" failures="4" skipped="8" time="67.837" errors="0">
+<testcase name="Home Screen › should load home screen with all sections" classname="dashboard/home.spec.ts" time="11.713">
+<failure message="home.spec.ts:30:3 should load home screen with all sections" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/home.spec.ts:30:3 › Home Screen › should load home screen with all sections 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/home.spec.ts:27:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-home-Home-Screen-4f666-me-screen-with-all-sections-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-home-Home-Screen-4f666-me-screen-with-all-sections-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-home-Home-Screen-4f666-me-screen-with-all-sections-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-home-Home-Screen-4f666-me-screen-with-all-sections-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-home-Home-Screen-4f666-me-screen-with-all-sections-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-home-Home-Screen-4f666-me-screen-with-all-sections-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Home Screen › should display nearby games correctly" classname="dashboard/home.spec.ts" time="11.714">
+<failure message="home.spec.ts:54:3 should display nearby games correctly" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/home.spec.ts:54:3 › Home Screen › should display nearby games correctly 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/home.spec.ts:27:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-home-Home-Screen-a284d-play-nearby-games-correctly-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-home-Home-Screen-a284d-play-nearby-games-correctly-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-home-Home-Screen-a284d-play-nearby-games-correctly-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-home-Home-Screen-a284d-play-nearby-games-correctly-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-home-Home-Screen-a284d-play-nearby-games-correctly-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-home-Home-Screen-a284d-play-nearby-games-correctly-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Home Screen › should display trending sports correctly" classname="dashboard/home.spec.ts" time="11.743">
+<failure message="home.spec.ts:72:3 should display trending sports correctly" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/home.spec.ts:72:3 › Home Screen › should display trending sports correctly 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/home.spec.ts:27:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-home-Home-Screen-3729a-y-trending-sports-correctly-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-home-Home-Screen-3729a-y-trending-sports-correctly-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-home-Home-Screen-3729a-y-trending-sports-correctly-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-home-Home-Screen-3729a-y-trending-sports-correctly-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-home-Home-Screen-3729a-y-trending-sports-correctly-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-home-Home-Screen-3729a-y-trending-sports-correctly-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Home Screen › should display user XP and rank" classname="dashboard/home.spec.ts" time="11.694">
+<failure message="home.spec.ts:86:3 should display user XP and rank" type="FAILURE">
+<![CDATA[  [mobile-chrome] › dashboard/home.spec.ts:86:3 › Home Screen › should display user XP and rank ────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('[data-testid="dashboard-header"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="dashboard-header"]')
+
+
+       at utils/test-helpers.ts:15
+
+      13 |     // Wait for redirect to dashboard
+      14 |     await this.page.waitForURL('/dashboard');
+    > 15 |     await expect(this.page.locator('[data-testid="dashboard-header"]')).toBeVisible();
+         |                                                                         ^
+      16 |   }
+      17 |
+      18 |   async logout() {
+        at TestHelpers.login (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:15:73)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/dashboard/home.spec.ts:27:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/dashboard-home-Home-Screen-should-display-user-XP-and-rank-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/dashboard-home-Home-Screen-should-display-user-XP-and-rank-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/dashboard-home-Home-Screen-should-display-user-XP-and-rank-mobile-chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|dashboard-home-Home-Screen-should-display-user-XP-and-rank-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|dashboard-home-Home-Screen-should-display-user-XP-and-rank-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|dashboard-home-Home-Screen-should-display-user-XP-and-rank-mobile-chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Home Screen › should handle quick action clicks" classname="dashboard/home.spec.ts" time="5.147">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Home Screen › should show loading states" classname="dashboard/home.spec.ts" time="4.552">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Home Screen › should handle API errors gracefully" classname="dashboard/home.spec.ts" time="4.204">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Home Screen › should show offline indicator when offline" classname="dashboard/home.spec.ts" time="3.595">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Home Screen › should show cached data when offline" classname="dashboard/home.spec.ts" time="3.475">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Home Screen › should display notifications preview" classname="dashboard/home.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Home Screen › should navigate to notifications when clicking notification" classname="dashboard/home.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Home Screen › should show real-time connection status" classname="dashboard/home.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="dashboard/notifications.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Notifications Management › should load notifications page with all notifications" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should mark notification as read" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should mark all notifications as read" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should filter notifications by type" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should filter notifications by read status" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should show notification timestamps" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should handle notification click navigation" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should show empty state when no notifications" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should show loading state during fetch" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should handle API errors gracefully" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should implement pagination" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should show notification count in header" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should handle mark as read error" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should handle mark all as read error" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should show notification types with icons" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Notifications Management › should refresh notifications" classname="dashboard/notifications.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="dashboard/profile.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="15" failures="0" skipped="15" time="0" errors="0">
+<testcase name="Profile Management › should load profile page with all sections" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should edit bio inline" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should add a sport preference" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should update availability grid" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should show profile completion progress" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should complete profile tasks" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should show privacy preview" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should toggle privacy settings" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should display activity timeline" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should display stats charts" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should display badges" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should display teams" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should handle profile update errors" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should show loading states during updates" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Profile Management › should persist data across page refreshes" classname="dashboard/profile.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="dashboard/settings.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="17" failures="0" skipped="17" time="0" errors="0">
+<testcase name="Settings Management › should load settings page with all sections" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should update notification preferences" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should update app settings" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should toggle theme" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should download user data" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should handle delete account" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should copy invite link" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should share invite link" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should handle share API not supported" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should handle API errors gracefully" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should show loading states during updates" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should persist settings across page refreshes" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should show quick actions" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should navigate to quick actions" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should show invite link with correct format" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should handle download data error" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Settings Management › should handle delete account error" classname="dashboard/settings.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="defense-key.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testcase name="Defense Key generator creates strong compliant password" classname="defense-key.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="mobile/low-end-devices.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="12" failures="0" skipped="12" time="0" errors="0">
+<testcase name="Low-End Device Testing › should work on iPhone SE (375x667)" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Low-End Device Testing › should work on Android small (360x640)" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Low-End Device Testing › should handle slow 3G network" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Low-End Device Testing › should work with reduced motion" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Low-End Device Testing › should handle high contrast mode" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Low-End Device Testing › should work with large text" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Low-End Device Testing › should handle orientation change" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Low-End Device Testing › should work with touch only" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Low-End Device Testing › should handle memory constraints" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Low-End Device Testing › should work with older browser features" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Low-End Device Testing › should handle network interruptions" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Low-End Device Testing › should work with assistive technologies" classname="mobile/low-end-devices.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="performance/lighthouse.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Performance Tests › should meet Core Web Vitals on desktop" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should meet Core Web Vitals on mobile" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should load home page within 2.5s on 3G" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should achieve TTI (Time to Interactive) &lt; 4s" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should have good performance score on Lighthouse" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should load games page efficiently" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should handle large datasets efficiently" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should have efficient bundle size" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should have efficient image loading" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should have efficient caching" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should handle slow network gracefully" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should have good memory usage" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should have efficient DOM updates" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Performance Tests › should have efficient event listeners" classname="performance/lighthouse.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="realtime/websocket.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Real-time Updates › should connect to WebSocket on login" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should handle WebSocket disconnection" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should update game player count in real-time" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should show real-time notification banner" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should dismiss notification banner" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should auto-dismiss notification after timeout" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should handle chat messages in real-time" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should reconnect WebSocket on connection loss" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should handle WebSocket errors gracefully" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should show offline indicator when offline" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should show slow connection indicator" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should queue messages when offline" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should handle multiple simultaneous updates" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Real-time Updates › should show connection status in header" classname="realtime/websocket.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sticky-bar.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testcase name="Sticky bar and trust pills visibility › No overlap at small viewport and both visible" classname="sticky-bar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="username-availability.spec.ts" timestamp="2025-09-16T17:36:52.372Z" hostname="mobile-chrome" tests="2" failures="0" skipped="2" time="0" errors="0">
+<testcase name="Username taken shows suggestions and applying one updates input" classname="username-availability.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Username available shows no suggestions and passes check" classname="username-availability.spec.ts" time="0">
+<skipped>
+</skipped>
 </testcase>
 </testsuite>
 </testsuites>

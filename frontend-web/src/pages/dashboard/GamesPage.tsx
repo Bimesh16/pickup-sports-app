@@ -20,33 +20,26 @@ import {
   SortDesc
 } from 'lucide-react';
 import { useLocationContext } from '@context/LocationContext';
-import { mockDashboardApi } from './mockData';
-import { apiClient } from '@lib/apiClient';
+import { gamesApi, calculateDistance, formatGameTime, getSportEmoji } from '@api/games';
+import { GameSummaryDTO } from '../../types/api';
+import MapView from '@components/MapView';
+import ErrorBoundary from '@components/ErrorBoundary';
 
 // Types
-interface Game {
-  id: string;
-  sport: string;
-  venue: string;
-  time: string;
-  price: number;
-  playersCount: number;
-  maxPlayers: number;
-  skillLevel: string;
-  location: {
-    lat: number;
-    lng: number;
-    address: string;
-  };
+interface Game extends GameSummaryDTO {
   distance?: number;
-  isPrivate: boolean;
-  createdBy: {
+  venueName?: string;
+  address?: string;
+  pricePerPlayer?: number;
+  playersCount?: number;
+  isPrivate?: boolean;
+  createdBy?: {
     id: number;
     username: string;
     avatarUrl?: string;
   };
-  description: string;
-  status: 'ACTIVE' | 'FULL' | 'CANCELLED';
+  description?: string;
+  status?: 'ACTIVE' | 'FULL' | 'CANCELLED' | 'COMPLETED';
 }
 
 interface FilterState {
@@ -68,38 +61,6 @@ interface MapViewProps {
   selectedGame?: Game;
 }
 
-// Map View Component (using a simple div for now, can be replaced with react-leaflet)
-const MapView: React.FC<MapViewProps> = ({ games, onGameSelect, selectedGame }) => {
-  return (
-    <div className="h-full bg-gradient-to-br from-blue-100 to-green-100 rounded-lg relative overflow-hidden">
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center text-gray-600">
-          <Map className="w-16 h-16 mx-auto mb-4 text-blue-500" />
-          <h3 className="text-lg font-semibold mb-2">Interactive Map</h3>
-          <p className="text-sm">Map integration coming soon</p>
-          <p className="text-xs mt-2">{games.length} games in your area</p>
-        </div>
-      </div>
-      
-      {/* Mock markers */}
-      {games.slice(0, 5).map((game, index) => (
-        <button
-          key={game.id}
-          onClick={() => onGameSelect(game)}
-          className={`absolute w-8 h-8 bg-red-500 rounded-full border-2 border-white shadow-lg transform -translate-x-1/2 -translate-y-1/2 hover:scale-110 transition-transform ${
-            selectedGame?.id === game.id ? 'ring-4 ring-blue-300' : ''
-          }`}
-          style={{
-            left: `${20 + (index * 15)}%`,
-            top: `${30 + (index * 10)}%`
-          }}
-        >
-          <span className="text-white text-xs font-bold">{game.sport[0]}</span>
-        </button>
-      ))}
-    </div>
-  );
-};
 
 // Game Card Component
 interface GameCardProps {
@@ -109,16 +70,8 @@ interface GameCardProps {
 }
 
 const GameCard: React.FC<GameCardProps> = ({ game, onJoin, isJoining = false }) => {
-  const formatTime = (timeString: string) => {
-    const date = new Date(timeString);
-    return {
-      day: date.toLocaleDateString('en-US', { weekday: 'short' }),
-      time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-    };
-  };
-
-  const { day, time } = formatTime(game.time);
-  const isFull = game.playersCount >= game.maxPlayers;
+  const { day, time } = formatGameTime(game.time);
+  const isFull = (game.currentPlayers || 0) >= (game.maxPlayers || 0);
   const canJoin = game.status === 'ACTIVE' && !isFull;
 
   return (
@@ -126,23 +79,18 @@ const GameCard: React.FC<GameCardProps> = ({ game, onJoin, isJoining = false }) 
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-[var(--brand-primary)]/10 rounded-lg flex items-center justify-center">
-            <span className="text-2xl">
-              {game.sport === 'Futsal' ? '⚽' : 
-               game.sport === 'Basketball' ? '🏀' : 
-               game.sport === 'Cricket' ? '🏏' : 
-               game.sport === 'Volleyball' ? '🏐' : 
-               game.sport === 'Badminton' ? '🏸' : 
-               game.sport === 'Tennis' ? '🎾' : '⚽'}
-            </span>
+            <span className="text-2xl">{getSportEmoji(game.sport)}</span>
           </div>
           <div>
             <h3 className="font-semibold text-[var(--text)]">{game.sport}</h3>
-            <p className="text-sm text-[var(--text-muted)]">{game.venue}</p>
+            <p className="text-sm text-[var(--text-muted)]">{game.venue?.name || game.location}</p>
           </div>
         </div>
         
         <div className="text-right">
-          <div className="text-lg font-bold text-[var(--brand-primary)]">NPR {game.price}</div>
+          <div className="text-lg font-bold text-[var(--brand-primary)]">
+            NPR {game.pricePerPlayer || 0}
+          </div>
           {game.distance && (
             <div className="text-xs text-[var(--text-muted)]">{game.distance.toFixed(1)} km away</div>
           )}
@@ -157,18 +105,18 @@ const GameCard: React.FC<GameCardProps> = ({ game, onJoin, isJoining = false }) 
         
         <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
           <MapPin className="w-4 h-4" />
-          <span className="truncate">{game.location.address}</span>
+          <span className="truncate">{game.venue?.address || game.location}</span>
         </div>
         
         <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
           <Users className="w-4 h-4" />
-          <span>{game.playersCount}/{game.maxPlayers} players</span>
+          <span>{game.currentPlayers || 0}/{game.maxPlayers || 0} players</span>
           {isFull && <Badge variant="error" size="sm">Full</Badge>}
         </div>
         
         <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
           <Star className="w-4 h-4" />
-          <span>{game.skillLevel}</span>
+          <span>{game.skillLevel || 'Any Level'}</span>
           {game.isPrivate && <Badge variant="default" size="sm">Private</Badge>}
         </div>
       </div>
@@ -179,11 +127,11 @@ const GameCard: React.FC<GameCardProps> = ({ game, onJoin, isJoining = false }) 
 
       <div className="flex items-center justify-between">
         <div className="text-xs text-[var(--text-muted)]">
-          by @{game.createdBy.username}
+          by @{game.creatorName || 'Unknown'}
         </div>
         
         <Button
-          onClick={() => onJoin(game.id)}
+          onClick={() => onJoin(game.id.toString())}
           disabled={!canJoin || isJoining}
           className={`${
             canJoin 
@@ -404,73 +352,67 @@ export default function GamesPage() {
   });
 
   // Fetch games
-  const fetchGames = useCallback(async (pageNum: number = 1, reset: boolean = false) => {
+  const fetchGames = useCallback(async (pageNum: number = 0, reset: boolean = false) => {
     try {
       setLoading(true);
       
-      // Use mock data for now
-      const mockGames = await mockDashboardApi.getNearbyGames(
-        location?.lat || 27.7172, 
-        location?.lng || 85.324, 
-        filters.distance
-      );
+      // Prepare search parameters
+      const searchParams = {
+        sport: filters.sport || undefined,
+        location: filters.location || undefined,
+        skillLevel: filters.skillLevel || undefined,
+        fromTime: filters.date ? new Date(filters.date).toISOString() : undefined,
+        toTime: filters.date ? new Date(new Date(filters.date).getTime() + 24 * 60 * 60 * 1000).toISOString() : undefined,
+        minPrice: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
+        maxPrice: filters.priceRange[1] < 1000 ? filters.priceRange[1] : undefined,
+        minPlayers: filters.playerCount[0] > 0 ? filters.playerCount[0] : undefined,
+        maxPlayers: filters.playerCount[1] < 20 ? filters.playerCount[1] : undefined,
+        isPrivate: filters.isPrivate !== null ? filters.isPrivate : undefined,
+        lat: location?.lat || 27.7172,
+        lng: location?.lng || 85.324,
+        radiusKm: filters.distance,
+        page: pageNum,
+        size: 20,
+        sort: `${filters.sortBy},${filters.sortOrder}`
+      };
 
-      // Apply filters
-      let filteredGames = mockGames.filter(game => {
-        if (filters.sport && !game.sport.toLowerCase().includes(filters.sport.toLowerCase())) return false;
-        if (filters.skillLevel && game.skillLevel !== filters.skillLevel) return false;
-        if (filters.priceRange[0] > 0 && game.price < filters.priceRange[0]) return false;
-        if (filters.priceRange[1] < 1000 && game.price > filters.priceRange[1]) return false;
-        if (filters.playerCount[0] > 0 && game.playersCount < filters.playerCount[0]) return false;
-        if (filters.playerCount[1] < 20 && game.playersCount > filters.playerCount[1]) return false;
-        if (filters.isPrivate !== null && game.isPrivate !== filters.isPrivate) return false;
-        return true;
-      });
-
-      // Add mock distance data
-      filteredGames = filteredGames.map(game => ({
+      // Call the API
+      const response = await gamesApi.searchGames(searchParams);
+      
+      // Calculate distances and transform data
+      const transformedGames: Game[] = response.content.map(game => ({
         ...game,
-        distance: Math.random() * 10 + 1, // Mock distance
-        isPrivate: Math.random() > 0.7, // Mock privacy
+        distance: game.latitude && game.longitude && location?.lat && location?.lng
+          ? calculateDistance(location.lat, location.lng, game.latitude, game.longitude)
+          : undefined,
+        venueName: game.venue?.name,
+        address: game.venue?.address || game.location,
+        pricePerPlayer: game.pricePerPlayer || 0,
+        playersCount: game.currentPlayers || 0,
+        isPrivate: false, // Default to public, can be updated based on API response
         createdBy: {
-          id: Math.floor(Math.random() * 100),
-          username: `user${Math.floor(Math.random() * 1000)}`,
+          id: 0,
+          username: game.creatorName || 'Unknown',
           avatarUrl: ''
         },
-        description: `Join us for an exciting ${game.sport.toLowerCase()} game! All skill levels welcome.`,
-        status: game.playersCount >= game.maxPlayers ? 'FULL' : 'ACTIVE'
+        description: game.description || `Join us for an exciting ${game.sport.toLowerCase()} game!`,
+        status: game.status as 'ACTIVE' | 'FULL' | 'CANCELLED' | 'COMPLETED' || 'ACTIVE'
       }));
 
-      // Sort games
-      filteredGames.sort((a, b) => {
-        let comparison = 0;
-        switch (filters.sortBy) {
-          case 'distance':
-            comparison = (a.distance || 0) - (b.distance || 0);
-            break;
-          case 'time':
-            comparison = new Date(a.time).getTime() - new Date(b.time).getTime();
-            break;
-          case 'price':
-            comparison = a.price - b.price;
-            break;
-          case 'popularity':
-            comparison = b.playersCount - a.playersCount;
-            break;
-        }
-        return filters.sortOrder === 'asc' ? comparison : -comparison;
-      });
-
       if (reset) {
-        setGames(filteredGames);
-        setPage(1);
+        setGames(transformedGames);
+        setPage(0);
       } else {
-        setGames(prev => [...prev, ...filteredGames]);
+        setGames(prev => [...prev, ...transformedGames]);
       }
       
-      setHasMore(filteredGames.length === 20); // Assuming 20 items per page
+      setHasMore(!response.last);
     } catch (error) {
       console.error('Error fetching games:', error);
+      // Fallback to empty array on error
+      if (reset) {
+        setGames([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -489,20 +431,25 @@ export default function GamesPage() {
     try {
       setJoiningGames(prev => new Set(prev).add(gameId));
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the API to join the game
+      const result = await gamesApi.joinGame(parseInt(gameId));
       
       // Update game in state
       setGames(prev => prev.map(game => 
-        game.id === gameId 
-          ? { ...game, playersCount: game.playersCount + 1 }
+        game.id.toString() === gameId 
+          ? { 
+              ...game, 
+              currentPlayers: (game.currentPlayers || 0) + 1,
+              status: result.status === 'confirmed' ? 'ACTIVE' : game.status
+            }
           : game
       ));
       
-      // Show success message (you can implement a toast here)
-      console.log('Joined game successfully!');
+      // Show success message
+      console.log('Joined game successfully!', result.message);
     } catch (error) {
       console.error('Error joining game:', error);
+      // You can show an error toast here
     } finally {
       setJoiningGames(prev => {
         const newSet = new Set(prev);
@@ -514,11 +461,21 @@ export default function GamesPage() {
 
   // Initial load
   useEffect(() => {
-    fetchGames(1, true);
+    fetchGames(0, true);
   }, [fetchGames]);
 
+  // Refetch when filters change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchGames(0, true);
+    }, 500); // Debounce filter changes
+
+    return () => clearTimeout(timeoutId);
+  }, [filters.sport, filters.location, filters.date, filters.skillLevel, filters.priceRange, filters.playerCount, filters.distance, filters.isPrivate, filters.sortBy, filters.sortOrder]);
+
   return (
-    <div className="space-y-4">
+    <ErrorBoundary>
+      <div className="space-y-4">
       {/* Search & Filter Bar */}
       <Card className="p-4">
         <div className="space-y-4">
@@ -583,7 +540,7 @@ export default function GamesPage() {
               <div className="flex items-center gap-1 bg-[var(--bg-muted)] rounded-lg p-1">
                 <Button
                   onClick={() => setViewMode('list')}
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  variant={viewMode === 'list' ? 'primary' : 'outline'}
                   size="sm"
                   className="flex items-center gap-1"
                 >
@@ -592,7 +549,7 @@ export default function GamesPage() {
                 </Button>
                 <Button
                   onClick={() => setViewMode('map')}
-                  variant={viewMode === 'map' ? 'default' : 'ghost'}
+                  variant={viewMode === 'map' ? 'primary' : 'outline'}
                   size="sm"
                   className="flex items-center gap-1"
                 >
@@ -635,7 +592,7 @@ export default function GamesPage() {
                   key={game.id}
                   game={game}
                   onJoin={handleJoinGame}
-                  isJoining={joiningGames.has(game.id)}
+                  isJoining={joiningGames.has(game.id.toString())}
                 />
               ))}
               
@@ -658,13 +615,13 @@ export default function GamesPage() {
         {/* Map View */}
         {viewMode === 'map' && (
           <div className="lg:col-span-2 h-96 lg:h-auto">
-            <Card className="h-full p-4">
-              <MapView
-                games={games}
-                onGameSelect={setSelectedGame}
-                selectedGame={selectedGame}
-              />
-            </Card>
+            <MapView
+              games={games}
+              onGameSelect={setSelectedGame}
+              selectedGame={selectedGame}
+              center={location ? { lat: location.lat, lng: location.lng } : { lat: 27.7172, lng: 85.324 }}
+              className="h-full"
+            />
           </div>
         )}
       </div>
@@ -676,6 +633,7 @@ export default function GamesPage() {
         filters={filters}
         onFiltersChange={setFilters}
       />
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }

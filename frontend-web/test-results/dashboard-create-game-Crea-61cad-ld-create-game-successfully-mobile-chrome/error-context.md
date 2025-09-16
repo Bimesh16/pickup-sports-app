@@ -1,0 +1,73 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e8]
+        - generic [ref=e10]:
+          - heading "Pickup Sports" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Welcome back
+      - button "Switch to dark mode" [ref=e13] [cursor=pointer]: 🌙
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - heading "Sign in to your account" [level=2] [ref=e17]
+        - paragraph [ref=e18]: Join games, discover venues, and connect with players
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - generic [ref=e22]: Email address
+            - generic [ref=e23]:
+              - img [ref=e24]
+              - textbox "Email address" [active] [ref=e29]
+          - generic [ref=e30]:
+            - generic [ref=e31]: Password
+            - generic [ref=e32]:
+              - img [ref=e33]
+              - textbox "Password" [ref=e38]
+              - button "Show password" [ref=e39] [cursor=pointer]:
+                - img [ref=e40] [cursor=pointer]
+          - generic [ref=e43]:
+            - generic [ref=e44] [cursor=pointer]:
+              - checkbox "Remember me" [ref=e45]
+              - generic [ref=e46] [cursor=pointer]: Remember me
+            - button "Forgot password?" [ref=e47] [cursor=pointer]
+          - button "Sign in" [ref=e48] [cursor=pointer]
+        - paragraph [ref=e50]:
+          - text: Don't have an account?
+          - button "Sign up" [ref=e51] [cursor=pointer]
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - img [ref=e55]
+          - paragraph [ref=e57]: Join Games
+        - generic [ref=e58]:
+          - img [ref=e60]
+          - paragraph [ref=e63]: Easy Booking
+    - paragraph [ref=e65]: By signing in, you agree to our Terms of Service and Privacy Policy
+  - generic [ref=e66]: "ENV: MOCK"
+  - status:
+    - img
+    - generic: Connected
+  - generic [ref=e69]:
+    - generic [ref=e70]:
+      - img [ref=e72]
+      - generic [ref=e74]:
+        - generic [ref=e75]: Secure
+        - generic [ref=e76]: Your data is protected
+    - generic [ref=e77]:
+      - img [ref=e79]
+      - generic [ref=e83]:
+        - generic [ref=e84]: Fair Play
+        - generic [ref=e85]: Equal opportunities for all
+    - generic [ref=e86]:
+      - img [ref=e88]
+      - generic [ref=e90]:
+        - generic [ref=e91]: Fast
+        - generic [ref=e92]: Lightning quick performance
+    - generic [ref=e93]:
+      - img [ref=e95]
+      - generic [ref=e98]:
+        - generic [ref=e99]: Protected
+        - generic [ref=e100]: Privacy first approach
+```
