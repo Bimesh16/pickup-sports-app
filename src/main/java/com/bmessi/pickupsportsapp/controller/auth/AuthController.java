@@ -7,7 +7,6 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -18,9 +17,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import static com.bmessi.pickupsportsapp.web.ApiResponseUtils.noStore;
 
 import java.util.Map;
+import java.util.Optional;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,7 +32,6 @@ import com.bmessi.pickupsportsapp.security.CaptchaService;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 @Tag(name = "Authentication")
 public class AuthController {
 
@@ -41,9 +41,9 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final com.bmessi.pickupsportsapp.config.properties.RefreshCookieProperties cookieProps;
     private final com.bmessi.pickupsportsapp.config.properties.AuthFlowProperties authProps;
-    private final com.bmessi.pickupsportsapp.service.VerificationService verificationService;
-    private final com.bmessi.pickupsportsapp.service.PasswordResetService passwordResetService;
-    private final com.bmessi.pickupsportsapp.service.EmailService emailService;
+    private final Optional<com.bmessi.pickupsportsapp.service.VerificationService> verificationService;
+    private final Optional<com.bmessi.pickupsportsapp.service.PasswordResetService> passwordResetService;
+    private final Optional<com.bmessi.pickupsportsapp.service.EmailService> emailService;
     private final com.bmessi.pickupsportsapp.security.LoginAttemptService loginAttemptService;
     private final com.bmessi.pickupsportsapp.security.SecurityAuditService securityAuditService;
     private final com.bmessi.pickupsportsapp.service.AdminAuditService adminAuditService;
@@ -58,6 +58,50 @@ public class AuthController {
     private final com.bmessi.pickupsportsapp.service.TrustedDeviceService trustedDeviceService;
     private final VelocityCheckService velocityCheckService;
     private final CaptchaService captchaService;
+
+    public AuthController(AuthService authService,
+                         AuthenticationManager authenticationManager,
+                         com.bmessi.pickupsportsapp.config.properties.RefreshCookieProperties cookieProps,
+                         com.bmessi.pickupsportsapp.config.properties.AuthFlowProperties authProps,
+                         @Autowired(required = false) com.bmessi.pickupsportsapp.service.VerificationService verificationService,
+                         @Autowired(required = false) com.bmessi.pickupsportsapp.service.PasswordResetService passwordResetService,
+                         @Autowired(required = false) com.bmessi.pickupsportsapp.service.EmailService emailService,
+                         com.bmessi.pickupsportsapp.security.LoginAttemptService loginAttemptService,
+                         com.bmessi.pickupsportsapp.security.SecurityAuditService securityAuditService,
+                         com.bmessi.pickupsportsapp.service.AdminAuditService adminAuditService,
+                         com.bmessi.pickupsportsapp.repository.UserRepository userRepository,
+                         org.springframework.security.crypto.password.PasswordEncoder passwordEncoder,
+                         com.bmessi.pickupsportsapp.service.ChangeEmailService changeEmailService,
+                         io.micrometer.core.instrument.MeterRegistry meterRegistry,
+                         java.util.Optional<com.bmessi.pickupsportsapp.security.RedisRateLimiterService> redisRateLimiter,
+                         com.bmessi.pickupsportsapp.config.properties.LoginPolicyProperties loginPolicyProperties,
+                         com.bmessi.pickupsportsapp.service.MfaService mfaService,
+                         com.bmessi.pickupsportsapp.service.MfaChallengeService mfaChallengeService,
+                         com.bmessi.pickupsportsapp.service.TrustedDeviceService trustedDeviceService,
+                         VelocityCheckService velocityCheckService,
+                         CaptchaService captchaService) {
+        this.authService = authService;
+        this.authenticationManager = authenticationManager;
+        this.cookieProps = cookieProps;
+        this.authProps = authProps;
+        this.verificationService = Optional.ofNullable(verificationService);
+        this.passwordResetService = Optional.ofNullable(passwordResetService);
+        this.emailService = Optional.ofNullable(emailService);
+        this.loginAttemptService = loginAttemptService;
+        this.securityAuditService = securityAuditService;
+        this.adminAuditService = adminAuditService;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.changeEmailService = changeEmailService;
+        this.meterRegistry = meterRegistry;
+        this.redisRateLimiter = redisRateLimiter;
+        this.loginPolicyProperties = loginPolicyProperties;
+        this.mfaService = mfaService;
+        this.mfaChallengeService = mfaChallengeService;
+        this.trustedDeviceService = trustedDeviceService;
+        this.velocityCheckService = velocityCheckService;
+        this.captchaService = captchaService;
+    }
 
     @Operation(summary = "Authenticate a user and issue tokens")
     @PostMapping("/login")
@@ -114,8 +158,8 @@ public class AuthController {
                 username = userDetails.getUsername();
             }
 
-            // Enforce verification if required
-            if (authProps.isVerificationRequired() && !verificationService.isVerified(username)) {
+            // Enforce verification if required (skip if verification service is not available)
+            if (authProps.isVerificationRequired() && verificationService.isPresent() && !verificationService.get().isVerified(username)) {
                 return ResponseEntity.status(403)
                         .headers(noStore())
                         .body(Map.of(

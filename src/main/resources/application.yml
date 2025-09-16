@@ -185,7 +185,7 @@ app:
         ttlSeconds: 900
   env: dev
   cors:
-    allowed-origins: "http://localhost:3000"
+    allowed-origins: "*"
 
 retention:
   chat:

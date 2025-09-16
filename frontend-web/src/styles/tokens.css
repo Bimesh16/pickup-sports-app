@@ -1,0 +1,537 @@
+:root{
+  /* Nepal theme core - Official flag colors */
+  --nepal-crimson: #DC143C;
+  --nepal-blue: #003893;
+  --nepal-white: #ffffff;
+  --nepal-navy: #1B263B;
+
+  /* Brand colors */
+  --brand-primary: var(--nepal-crimson);
+  --brand-secondary: var(--nepal-blue);
+  --brand-accent: var(--nepal-navy);
+
+  /* Surfaces & backgrounds */
+  --bg-app: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-muted: #f8fafc;
+  --bg-contrast: #e2e8f0;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Text colors */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+
+  /* Borders and dividers */
+  --border: #e5e7eb;
+  --border-muted: #f1f5f9;
+  --border-strong: #cbd5e1;
+
+  /* Status colors */
+  --success: #16a34a;
+  --success-light: #dcfce7;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  --info: #3b82f6;
+  --info-light: #dbeafe;
+
+  /* Interactive states */
+  --ring: #7dd3fc;
+  --ring-offset: #ffffff;
+  --focus: var(--brand-secondary);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* Border radius */
+  --radius-sm: 0.25rem;
+  --radius: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition: 200ms ease-in-out;
+  --transition-slow: 300ms ease-in-out;
+}
+
+/* Dark mode theme */
+[data-theme="dark"] {
+  /* Surfaces & backgrounds */
+  --bg-app: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-muted: #334155;
+  --bg-contrast: #475569;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Text colors */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-inverse: #0f172a;
+
+  /* Borders and dividers */
+  --border: #475569;
+  --border-muted: #334155;
+  --border-strong: #64748b;
+
+  /* Brand colors - adjusted for dark mode */
+  --brand-primary: #ff6b7a; /* lighter crimson for dark */
+  --brand-secondary: #3b82f6; /* lighter blue for dark */
+  --brand-accent: #1e40af;
+
+  /* Status colors - adjusted for dark mode */
+  --success: #22c55e;
+  --success-light: #14532d;
+  --warning: #f59e0b;
+  --warning-light: #451a03;
+  --danger: #f87171;
+  --danger-light: #450a0a;
+  --info: #60a5fa;
+  --info-light: #1e3a8a;
+
+  /* Interactive states */
+  --ring: #60a5fa;
+  --ring-offset: #1e293b;
+  --focus: var(--brand-secondary);
+}
+
+/* Auto dark mode based on system preference */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Surfaces & backgrounds */
+    --bg-app: #0f172a;
+    --bg-surface: #1e293b;
+    --bg-muted: #334155;
+    --bg-contrast: #475569;
+    --bg-overlay: rgba(0, 0, 0, 0.7);
+
+    /* Text colors */
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-inverse: #0f172a;
+
+    /* Borders and dividers */
+    --border: #475569;
+    --border-muted: #334155;
+    --border-strong: #64748b;
+
+    /* Brand colors - adjusted for dark mode */
+    --brand-primary: #ff6b7a;
+    --brand-secondary: #3b82f6;
+    --brand-accent: #1e40af;
+
+    /* Status colors - adjusted for dark mode */
+    --success: #22c55e;
+    --success-light: #14532d;
+    --warning: #f59e0b;
+    --warning-light: #451a03;
+    --danger: #f87171;
+    --danger-light: #450a0a;
+    --info: #60a5fa;
+    --info-light: #1e3a8a;
+
+    /* Interactive states */
+    --ring: #60a5fa;
+    --ring-offset: #1e293b;
+    --focus: var(--brand-secondary);
+  }
+}
+
+.app-shell { background: linear-gradient(180deg, #0F1626 0%, #0B1220 55%, #0A0F1D 100%); }
+.surface { background: var(--bg-surface); color: var(--text-strong); }
+.muted   { background: var(--bg-muted); }
+.contrast{ background: var(--bg-contrast); }
+.text-strong { color: var(--text-strong); }
+.text-muted  { color: var(--text-muted); }
+.bordered { border: 1px solid var(--border); }
+.btn-outline { border-color: var(--border); color: var(--text-strong); }
+.btn-outline:focus { outline-color: var(--ring); }
+
+/* Nepal background helpers */
+.nepal-bg { background: linear-gradient(180deg, #1B263B 0%, #003893 55%, #E63946 120%); }
+.nepal-header {
+  background: linear-gradient(90deg, var(--primary-blue), var(--nepal-crimson));
+  color: var(--nepal-white);
+}
+
+/* ---- Profile theme (no yellow/orange) ---- */
+:root{
+  /* Nepal theme */
+  --brand-navy:#1B263B;
+  --brand-royal:#003893;
+  --brand-crimson:#E63946;
+
+  /* App background (dark, no yellow) */
+  --bg-app: linear-gradient(180deg,#0F1626 0%, #0B1220 55%, #0A0F1D 100%);
+
+  /* Surfaces & text (AA+) */
+  --surface: rgba(255,255,255,0.96);
+  --surface-border: rgba(11,18,32,0.10);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,.18);
+
+  --text: #0E1116;
+  --text-2: #1F2937;
+  --text-3: #6B7280;
+
+  --text-inv: #FFFFFF;
+  --text-inv-2: #E9EEF5;
+  --text-inv-3: #C7D1E0;
+}
+
+/* Kill all legacy yellow/orange wrappers */
+html, body, .app-shell, .app-shell__inner{
+  min-height:100vh;
+  background: var(--bg-app) !important;
+  background-color: transparent !important;
+}
+
+/* Profile hero (navy→royal→crimson) */
+.profile-hero{
+  position: relative;
+  height: 260px;
+  background: linear-gradient(180deg,var(--brand-navy) 0%, var(--brand-royal) 60%, var(--brand-crimson) 140%);
+  overflow: hidden;
+}
+.profile-hero::before{        /* stadium beams */
+  content:""; position:absolute; inset:0;
+  background: repeating-linear-gradient(110deg, rgba(255,255,255,.05) 0 2px, transparent 2px 8px);
+}
+.profile-hero::after{         /* scrim for contrast */
+  content:""; position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 70%);
+}
+
+/* Content container overlaps hero smoothly */
+.profile-content{
+  max-width: 980px;
+  margin: -120px auto 0;
+  padding: 24px 24px 96px;
+}
+
+/* Cards (white glass) */
+.card{
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Sticky tab row with no phantom gaps */
+.profile-tabs{
+  position: sticky;
+  top: 12px;
+  z-index: 10;
+  background: var(--surface);
+  display:flex; gap:8px; flex-wrap:wrap;
+  margin-bottom:16px; padding-bottom:8px;
+}
+
+/* Ensure all text is high-contrast on white cards */
+.card h1,.card h2,.card h3{ color: var(--text); }
+.card .muted{ color: var(--text-3); }
+
+/* Dark-on-light inputs/dropdowns – never grey on grey */
+input, select, textarea{
+  background:#fff; color:var(--text);
+  border:1px solid var(--surface-border);
+}
+
+/* Footer pills / sticky bars never overlap */
+.safe-bottom{ padding-bottom:84px; }
+
+/* Optional: gradient badge chip */
+.chip-gradient{
+  background: linear-gradient(135deg, var(--brand-royal), var(--brand-crimson));
+  color: #fff;
+}
+
+/* Loading animations */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+  50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Utility classes */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Safe Area Support */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-pl {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-pr {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Mobile-specific tokens */
+:root {
+  --mobile-header-height: 60px;
+  --mobile-tab-bar-height: 60px;
+  --mobile-floating-button-size: 56px;
+  --mobile-touch-target: 44px;
+  --mobile-gesture-threshold: 50px;
+  --mobile-pull-refresh-threshold: 80px;
+  
+  /* Mobile spacing */
+  --mobile-padding: 16px;
+  --mobile-padding-sm: 12px;
+  --mobile-padding-lg: 24px;
+  --mobile-gap: 12px;
+  --mobile-gap-sm: 8px;
+  --mobile-gap-lg: 16px;
+  
+  /* Mobile typography */
+  --mobile-text-xs: 0.75rem;
+  --mobile-text-sm: 0.875rem;
+  --mobile-text-base: 1rem;
+  --mobile-text-lg: 1.125rem;
+  --mobile-text-xl: 1.25rem;
+  --mobile-text-2xl: 1.5rem;
+  
+  /* Mobile breakpoints */
+  --mobile-sm: 375px;
+  --mobile-md: 414px;
+  --mobile-lg: 768px;
+  --mobile-xl: 1024px;
+}
+
+/* Mobile-first responsive utilities */
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-block {
+    display: block !important;
+  }
+  
+  .mobile-flex {
+    display: flex !important;
+  }
+  
+  .mobile-grid {
+    display: grid !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .desktop-hidden {
+    display: none !important;
+  }
+  
+  .desktop-block {
+    display: block !important;
+  }
+  
+  .desktop-flex {
+    display: flex !important;
+  }
+  
+  .desktop-grid {
+    display: grid !important;
+  }
+}
+
+/* Touch target utilities */
+.touch-target {
+  min-width: var(--mobile-touch-target);
+  min-height: var(--mobile-touch-target);
+}
+
+.touch-target-sm {
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.touch-target-lg {
+  min-width: 56px;
+  min-height: 56px;
+}
+
+/* Mobile gesture utilities */
+.gesture-swipe {
+  touch-action: pan-x;
+}
+
+.gesture-pull {
+  touch-action: pan-y;
+}
+
+.gesture-none {
+  touch-action: none;
+}
+
+/* Mobile-specific animations */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-down {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.3s ease-out;
+}
+
+/* Mobile scrollbar styling */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--text-muted);
+    border-radius: 2px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+}
+
+/* Mobile focus styles */
+@media (max-width: 768px) {
+  .focus-mobile:focus {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+  }
+  
+  .focus-mobile:focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+/* Mobile text selection */
+@media (max-width: 768px) {
+  .select-none-mobile {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+}

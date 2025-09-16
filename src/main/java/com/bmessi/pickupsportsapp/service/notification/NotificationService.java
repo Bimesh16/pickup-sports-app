@@ -20,6 +20,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "notification.service.enabled", havingValue = "true", matchIfMissing = false)
 public class NotificationService {
 
     private static final String ERR_MESSAGE_BLANK = "Notification message must not be blank";

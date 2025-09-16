@@ -1,0 +1,1544 @@
+openapi: 3.0.3
+info:
+  title: Pickup Sports App API
+  version: 1.0.0
+  description: |
+    REST API for Pickup Sports App (Java 17, Spring Boot). Includes authentication, game management, search, notifications, profiles, venues, Nepal market features, media presign, and push subscriptions. JWT Bearer auth used for protected endpoints. Some features may be gated by feature flags or env properties.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+security:
+  - bearerAuth: []
+tags:
+  - name: Status
+  - name: Authentication
+  - name: Users
+  - name: Profiles
+  - name: Media
+  - name: Games
+  - name: RSVP
+  - name: Search
+  - name: Notifications
+  - name: Push
+  - name: Venues
+  - name: Config
+  - name: Nepal Market
+paths:
+  /status:
+    get:
+      tags: [Status]
+      summary: API status
+      operationId: getStatus
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppStatusResponse'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login and obtain tokens (may return MFA challenge)
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Token pair or MFA requirement
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TokenPairResponse'
+                  - type: object
+                    properties:
+                      mfaRequired:
+                        type: boolean
+                      methods:
+                        type: array
+                        items:
+                          type: string
+                      challenge:
+                        type: string
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access and refresh tokens
+      operationId: refresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: New token pair
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPairResponse'
+
+  /auth/me:
+    get:
+      tags: [Authentication]
+      summary: Current authenticated user info
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Principal info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                  authenticated:
+                    type: boolean
+
+  /users/register:
+    post:
+      tags: [Users]
+      summary: Register a new user (idempotent)
+      operationId: registerUser
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+        - in: header
+          name: Prefer
+          schema:
+            type: string
+            example: return=minimal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created
+          headers:
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '200':
+          description: Replay of idempotent request (when Prefer=return=minimal)
+
+  /profiles/me:
+    get:
+      tags: [Profiles]
+      summary: Get my profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profile
+          headers:
+            ETag:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileDTO'
+    put:
+      tags: [Profiles]
+      summary: Update my profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: If-Match
+          schema:
+            type: string
+        - in: header
+          name: If-Unmodified-Since
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserProfileRequest'
+      responses:
+        '200':
+          description: Updated
+          headers:
+            ETag:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileDTO'
+
+  /profiles/{id}:
+    get:
+      tags: [Profiles]
+      summary: Get a user profile by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Profile
+          headers:
+            ETag:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileDTO'
+
+  /profiles/{id}/avatar:
+    head:
+      tags: [Profiles]
+      summary: Resolve avatar URL (redirect in Location)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '302':
+          description: Redirect to avatar URL
+          headers:
+            Location:
+              schema: { type: string }
+
+  /media/s3/presign:
+    post:
+      tags: [Media]
+      summary: Presign S3 upload (when provider=s3 and presign enabled)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: string
+                contentType:
+                  type: string
+      responses:
+        '200':
+          description: Presigned URLs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignResponse'
+
+  /api/v1/games:
+    post:
+      tags: [Games]
+      summary: Create a new game
+      parameters:
+        - in: query
+          name: latitude
+          schema: { type: number, format: double }
+        - in: query
+          name: longitude
+          schema: { type: number, format: double }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGameRequest'
+      responses:
+        '200':
+          description: Game created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameDetailsDTO'
+    get:
+      tags: [Games]
+      summary: List/search games (use /search for advanced)
+      responses:
+        '200':
+          description: Not implemented (use /search)
+
+  /api/v1/games/{gameId}:
+    get:
+      tags: [Games]
+      summary: Get game details
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameDetailsDTO'
+    put:
+      tags: [Games]
+      summary: Update game (creator only)
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGameRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameDetailsDTO'
+    delete:
+      tags: [Games]
+      summary: Delete game (creator only)
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '204':
+          description: Deleted
+
+  /api/v1/games/nearby:
+    get:
+      tags: [Games]
+      summary: Find nearby games
+      parameters:
+        - in: query
+          name: latitude
+          required: true
+          schema: { type: number, format: double }
+        - in: query
+          name: longitude
+          required: true
+          schema: { type: number, format: double }
+        - in: query
+          name: radiusKm
+          schema: { type: number, format: double, default: 5.0 }
+        - in: query
+          name: sport
+          schema: { type: string }
+        - in: query
+          name: skillLevel
+          schema: { type: string }
+      responses:
+        '200':
+          description: Games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameSummaryDTO'
+
+  /api/v1/games/trending:
+    get:
+      tags: [Games]
+      summary: Get trending games
+      parameters:
+        - in: query
+          name: latitude
+          schema: { type: number, format: double }
+        - in: query
+          name: longitude
+          schema: { type: number, format: double }
+      responses:
+        '200':
+          description: Games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameSummaryDTO'
+
+  /games/{id}/join:
+    post:
+      tags: [RSVP]
+      summary: Join a game
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64 }
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Join result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RsvpResultResponse'
+        '429':
+          description: Rate limited
+
+  /games/{id}/leave:
+    delete:
+      tags: [RSVP]
+      summary: Leave a game
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64 }
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Leave result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  removed:
+                    type: boolean
+                  promoted:
+                    type: integer
+
+  /games/{id}/rsvp-status:
+    get:
+      tags: [RSVP]
+      summary: Get RSVP status for current user
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64 }
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RsvpStatusResponse'
+
+  /games/{id}/hold:
+    post:
+      tags: [RSVP]
+      summary: Create a hold for a spot
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: ttl
+          schema: { type: integer, format: int32, example: 120 }
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Hold created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldResponse'
+
+  /games/{id}/confirm:
+    post:
+      tags: [RSVP]
+      summary: Confirm a previously created hold
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64 }
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldConfirmRequest'
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RsvpResultResponse'
+        '410':
+          description: Hold expired
+
+  /search/games:
+    get:
+      tags: [Search]
+      summary: Advanced game search
+      parameters:
+        - in: query
+          name: sport
+          schema: { type: string }
+        - in: query
+          name: location
+          schema: { type: string }
+        - in: query
+          name: skillLevel
+          schema: { type: string }
+        - in: query
+          name: fromDate
+          schema: { type: string, format: date-time }
+        - in: query
+          name: toDate
+          schema: { type: string, format: date-time }
+        - in: query
+          name: lat
+          schema: { type: number, format: double }
+        - in: query
+          name: lng
+          schema: { type: number, format: double }
+        - in: query
+          name: radiusKm
+          schema: { type: number, format: double, default: 10.0 }
+      responses:
+        '200':
+          description: Page of game summaries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageGameSummary'
+
+  /search/users:
+    get:
+      tags: [Search]
+      summary: Search users
+      parameters:
+        - in: query
+          name: username
+          schema: { type: string }
+        - in: query
+          name: preferredSport
+          schema: { type: string }
+        - in: query
+          name: location
+          schema: { type: string }
+      responses:
+        '200':
+          description: Page of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageUserDTO'
+
+  /search/filters:
+    get:
+      tags: [Search]
+      summary: Get available search filters
+      responses:
+        '200':
+          description: Filters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  availableSports:
+                    type: array
+                    items:
+                      type: string
+                  availableLocations:
+                    type: array
+                    items:
+                      type: string
+                  skillLevels:
+                    type: array
+                    items:
+                      type: string
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Get my notifications
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: unreadOnly
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Page of notifications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageNotificationDTO'
+    post:
+      tags: [Notifications]
+      summary: Create a notification (by username)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                message:
+                  type: string
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationDTO'
+
+  /notifications/unread-count:
+    get:
+      tags: [Notifications]
+      summary: Unread notification count
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountResponse'
+
+  /push/subscriptions:
+    get:
+      tags: [Push]
+      summary: List my push subscriptions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Subscriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PushSubscriptionItemDTO'
+    post:
+      tags: [Push]
+      summary: Save a push subscription
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint]
+              properties:
+                endpoint:
+                  type: string
+                p256dh:
+                  type: string
+                auth:
+                  type: string
+      responses:
+        '200':
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdResponse'
+    delete:
+      tags: [Push]
+      summary: Delete a push subscription by endpoint
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: endpoint
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+
+  /venues:
+    post:
+      tags: [Venues]
+      summary: Create venue
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVenueRequest'
+      responses:
+        '201':
+          description: Venue created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueResponse'
+
+  /venues/{venueId}:
+    get:
+      tags: [Venues]
+      summary: Get venue by id
+      parameters:
+        - in: path
+          name: venueId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Venue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueResponse'
+
+  /venues/search:
+    get:
+      tags: [Venues]
+      summary: Search venues
+      parameters:
+        - in: query
+          name: city
+          schema: { type: string }
+        - in: query
+          name: state
+          schema: { type: string }
+        - in: query
+          name: venueType
+          schema: { type: string }
+        - in: query
+          name: minCapacity
+          schema: { type: integer }
+        - in: query
+          name: maxCapacity
+          schema: { type: integer }
+        - in: query
+          name: sportId
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Page of venues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageVenueResponse'
+
+  /venues/nearby:
+    get:
+      tags: [Venues]
+      summary: Find nearby venues
+      parameters:
+        - in: query
+          name: latitude
+          required: true
+          schema: { type: number }
+        - in: query
+          name: longitude
+          required: true
+          schema: { type: number }
+        - in: query
+          name: radiusKm
+          required: true
+          schema: { type: number }
+      responses:
+        '200':
+          description: Venues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VenueResponse'
+
+  /venues/available:
+    get:
+      tags: [Venues]
+      summary: Find available venues at time
+      parameters:
+        - in: query
+          name: dayOfWeek
+          required: true
+          schema: { type: string }
+        - in: query
+          name: time
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Venues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VenueResponse'
+
+  /venues/price-range:
+    get:
+      tags: [Venues]
+      summary: Find venues by price range
+      parameters:
+        - in: query
+          name: minPrice
+          schema: { type: number, format: double }
+        - in: query
+          name: maxPrice
+          schema: { type: number, format: double }
+      responses:
+        '200':
+          description: Page of venues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageVenueResponse'
+
+  /venues/amenities:
+    get:
+      tags: [Venues]
+      summary: Find venues by amenities
+      parameters:
+        - in: query
+          name: amenityNames
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+            style: form
+            explode: true
+      responses:
+        '200':
+          description: Venues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VenueResponse'
+
+  /venues/{venueId}/status:
+    patch:
+      tags: [Venues]
+      summary: Update venue status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: venueId
+          required: true
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: status
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueResponse'
+
+  /venues/{venueId}/verify:
+    post:
+      tags: [Venues]
+      summary: Verify a venue (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: venueId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Verified venue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueResponse'
+
+  /config/flags:
+    get:
+      tags: [Config]
+      summary: Feature flags for client boot
+      responses:
+        '200':
+          description: Flags
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  env:
+                    type: string
+                  recommend:
+                    type: boolean
+                  chatEnabled:
+                    type: boolean
+
+  /api/v1/nepal/futsal/nearby:
+    get:
+      tags: [Nepal Market]
+      summary: Find nearby futsal games
+      parameters:
+        - in: query
+          name: latitude
+          required: true
+          schema: { type: number }
+        - in: query
+          name: longitude
+          required: true
+          schema: { type: number }
+        - in: query
+          name: radiusKm
+          schema: { type: number, default: 5.0 }
+        - in: query
+          name: timeSlot
+          schema: { type: string }
+      responses:
+        '200':
+          description: Futsal games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FutsalGameDTO'
+
+  /api/v1/nepal/futsal/popular-areas:
+    get:
+      tags: [Nepal Market]
+      summary: Popular futsal areas
+      responses:
+        '200':
+          description: Areas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PopularAreaDTO'
+
+  /api/v1/nepal/sports/localized:
+    get:
+      tags: [Nepal Market]
+      summary: Localized sports
+      responses:
+        '200':
+          description: Sports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LocalizedSportDTO'
+
+  /api/v1/nepal/time-slots/popular:
+    get:
+      tags: [Nepal Market]
+      summary: Popular time slots
+      parameters:
+        - in: query
+          name: area
+          schema: { type: string }
+      responses:
+        '200':
+          description: Time slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PopularTimeSlotDTO'
+
+  /api/v1/nepal/payment/esewa/initiate:
+    post:
+      tags: [Nepal Market]
+      summary: Initiate eSewa payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ESewaPaymentRequest'
+      responses:
+        '200':
+          description: Payment initiation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ESewaPaymentResponse'
+
+  /api/v1/nepal/payment/esewa/verify:
+    post:
+      tags: [Nepal Market]
+      summary: Verify eSewa payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ESewaVerificationRequest'
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentVerificationResponse'
+
+  /api/v1/nepal/payment/khalti/initiate:
+    post:
+      tags: [Nepal Market]
+      summary: Initiate Khalti payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KhaltiPaymentRequest'
+      responses:
+        '200':
+          description: Payment initiation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KhaltiPaymentResponse'
+
+  /api/v1/nepal/payment/khalti/verify:
+    post:
+      tags: [Nepal Market]
+      summary: Verify Khalti payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KhaltiVerificationRequest'
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentVerificationResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AppStatusResponse:
+      type: object
+      properties:
+        app: { type: string }
+        version: { type: string }
+        status: { type: string }
+        timestamp: { type: integer, format: int64 }
+
+    AuthError:
+      type: object
+      properties:
+        error: { type: string }
+        message: { type: string }
+        path: { type: string }
+        status: { type: integer }
+        timestamp: { type: integer, format: int64 }
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string }
+        password: { type: string }
+
+    TokenPairResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        refreshNonce: { type: string }
+        tokenType: { type: string, example: Bearer }
+        expiresInSeconds: { type: integer, format: int64 }
+
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
+        nonce: { type: string }
+
+    CreateUserRequest:
+      type: object
+      required: [username, password, email]
+      properties:
+        username: { type: string }
+        password: { type: string }
+        email: { type: string, format: email }
+
+    UserDTO:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        username: { type: string }
+        preferredSport: { type: string }
+        location: { type: string }
+
+    UpdateUserProfileRequest:
+      type: object
+      properties:
+        bio: { type: string }
+        avatarUrl: { type: string }
+        skillLevel: { type: string }
+        age: { type: integer }
+        position: { type: string }
+        contactPreference: { type: string }
+
+    UserProfileDTO:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        username: { type: string }
+        bio: { type: string }
+        avatarUrl: { type: string }
+        skillLevel: { type: string }
+        age: { type: integer }
+        position: { type: string }
+        contactPreference: { type: string }
+
+    PresignResponse:
+      type: object
+      properties:
+        putUrl: { type: string }
+        getUrl: { type: string }
+        key: { type: string }
+        relativePath: { type: string }
+
+    CreateGameRequest:
+      type: object
+      required: [sport, location, time]
+      properties:
+        sport: { type: string }
+        location: { type: string }
+        time: { type: string, format: date-time }
+        skillLevel: { type: string }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        venueId: { type: integer, format: int64 }
+        gameType: { type: string, enum: [PICKUP, TOURNAMENT, LEAGUE, TRAINING, SOCIAL, COMPETITIVE] }
+        description: { type: string }
+        minPlayers: { type: integer }
+        maxPlayers: { type: integer }
+        pricePerPlayer: { type: number, format: double }
+        totalCost: { type: number, format: double }
+        durationMinutes: { type: integer }
+        rsvpCutoff: { type: string, format: date-time }
+        capacity: { type: integer }
+        waitlistEnabled: { type: boolean }
+        isPrivate: { type: boolean }
+        requiresApproval: { type: boolean }
+        weatherDependent: { type: boolean }
+        cancellationPolicy: { type: string }
+        rules: { type: string }
+        equipmentProvided: { type: string }
+        equipmentRequired: { type: string }
+
+    GameDetailsDTO:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        sport: { type: string }
+        location: { type: string }
+        time: { type: string, format: date-time }
+        skillLevel: { type: string }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        creator:
+          $ref: '#/components/schemas/UserDTO'
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDTO'
+
+    GameSummaryDTO:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        sport: { type: string }
+        location: { type: string }
+        time: { type: string, format: date-time }
+        skillLevel: { type: string }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        creatorName: { type: string }
+        currentPlayers: { type: integer }
+        maxPlayers: { type: integer }
+        status: { type: string }
+
+    RsvpStatusResponse:
+      type: object
+      properties:
+        joined: { type: boolean }
+        waitlisted: { type: boolean }
+        capacity: { type: integer }
+        openSlots: { type: integer }
+        cutoff: { type: boolean }
+
+    RsvpResultResponse:
+      type: object
+      properties:
+        joined: { type: boolean }
+        waitlisted: { type: boolean }
+        message: { type: string }
+
+    HoldResponse:
+      type: object
+      properties:
+        holdId: { type: integer, format: int64 }
+        paymentIntentId: { type: string }
+        expiresAt: { type: string, format: date-time }
+
+    HoldConfirmRequest:
+      type: object
+      required: [holdId]
+      properties:
+        holdId: { type: integer, format: int64 }
+
+    NotificationDTO:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        message: { type: string }
+        createdAt: { type: string, format: date-time }
+        read: { type: boolean }
+        readAt: { type: string, format: date-time, nullable: true }
+
+    CountResponse:
+      type: object
+      properties:
+        count: { type: integer, format: int64 }
+
+    IdResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+
+    StatusResponse:
+      type: object
+      properties:
+        status: { type: string }
+
+    PushSubscriptionItemDTO:
+      type: object
+      properties:
+        endpoint: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    CreateVenueRequest:
+      type: object
+      required: [name, address, city, latitude, longitude, venueType, sportIds]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        address: { type: string }
+        city: { type: string }
+        state: { type: string }
+        country: { type: string }
+        postalCode: { type: string }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        venueType: { type: string }
+        maxCapacity: { type: integer }
+        minCapacity: { type: integer }
+        basePricePerHour: { type: number, format: double }
+        basePricePerPlayer: { type: number, format: double }
+        contactPhone: { type: string }
+        contactEmail: { type: string }
+        websiteUrl: { type: string }
+        sportIds:
+          type: array
+          items: { type: integer, format: int64 }
+        amenities:
+          type: array
+          items:
+            type: object
+        businessHours:
+          type: array
+          items:
+            type: object
+
+    VenueResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        description: { type: string }
+        address: { type: string }
+        city: { type: string }
+        state: { type: string }
+        country: { type: string }
+        postalCode: { type: string }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        venueType: { type: string }
+        maxCapacity: { type: integer }
+        minCapacity: { type: integer }
+        status: { type: string }
+        basePricePerHour: { type: number, format: double }
+        basePricePerPlayer: { type: number, format: double }
+        isVerified: { type: boolean }
+        ownerId: { type: integer, format: int64 }
+        contactPhone: { type: string }
+        contactEmail: { type: string }
+        websiteUrl: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        supportedSports:
+          type: array
+          items:
+            type: object
+        amenities:
+          type: array
+          items:
+            type: object
+        businessHours:
+          type: array
+          items:
+            type: object
+        images:
+          type: array
+          items:
+            type: object
+
+    PageMetadata:
+      type: object
+      properties:
+        totalElements: { type: integer, format: int64 }
+        totalPages: { type: integer }
+        number: { type: integer }
+        size: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+        numberOfElements: { type: integer }
+
+    PageGameSummary:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/GameSummaryDTO'
+        totalElements: { type: integer, format: int64 }
+        totalPages: { type: integer }
+        number: { type: integer }
+        size: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+        numberOfElements: { type: integer }
+
+    PageUserDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDTO'
+        totalElements: { type: integer, format: int64 }
+        totalPages: { type: integer }
+        number: { type: integer }
+        size: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+        numberOfElements: { type: integer }
+
+    PageNotificationDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationDTO'
+        totalElements: { type: integer, format: int64 }
+        totalPages: { type: integer }
+        number: { type: integer }
+        size: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+        numberOfElements: { type: integer }
+
+    PageVenueResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/VenueResponse'
+        totalElements: { type: integer, format: int64 }
+        totalPages: { type: integer }
+        number: { type: integer }
+        size: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+        numberOfElements: { type: integer }
+
+    # Nepal Market DTOs
+    FutsalGameDTO:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        sport: { type: string }
+        location: { type: string }
+        time: { type: string, format: date-time }
+        skillLevel: { type: string }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        pricePerPlayer: { type: number, format: double }
+        currentPlayers: { type: integer }
+        maxPlayers: { type: integer }
+        venue: { type: string }
+        area: { type: string }
+
+    PopularAreaDTO:
+      type: object
+      properties:
+        areaName: { type: string }
+        nepaliName: { type: string }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        activeGames: { type: integer }
+        totalVenues: { type: integer }
+        averagePrice: { type: number, format: double }
+        popularityLevel: { type: string }
+        bestTimeSlot: { type: string }
+        totalPlayers: { type: integer }
+
+    LocalizedSportDTO:
+      type: object
+      properties:
+        englishName: { type: string }
+        nepaliName: { type: string }
+        popularityScore: { type: number }
+        icon: { type: string }
+        description: { type: string }
+
+    PopularTimeSlotDTO:
+      type: object
+      properties:
+        timeSlot: { type: string }
+        nepaliName: { type: string }
+        popularityScore: { type: number }
+        averagePrice: { type: number }
+        typicalDuration: { type: integer }
+
+    ESewaPaymentRequest:
+      type: object
+      required: [gameId, userId, amount, description]
+      properties:
+        gameId: { type: integer, format: int64 }
+        userId: { type: integer, format: int64 }
+        amount: { type: number, format: double }
+        description: { type: string }
+
+    KhaltiPaymentRequest:
+      type: object
+      required: [gameId, userId, amount, description]
+      properties:
+        gameId: { type: integer, format: int64 }
+        userId: { type: integer, format: int64 }
+        amount: { type: number, format: double }
+        description: { type: string }
+
+    ESewaPaymentResponse:
+      type: object
+      properties:
+        paymentId: { type: string }
+        redirectUrl: { type: string }
+        status: { type: string }
+        message: { type: string }
+
+    KhaltiPaymentResponse:
+      type: object
+      properties:
+        paymentId: { type: string }
+        qrCode: { type: string }
+        status: { type: string }
+        message: { type: string }
+
+    ESewaVerificationRequest:
+      type: object
+      required: [paymentId, transactionId, amount]
+      properties:
+        paymentId: { type: string }
+        transactionId: { type: string }
+        amount: { type: number, format: double }
+
+    KhaltiVerificationRequest:
+      type: object
+      required: [paymentId, token]
+      properties:
+        paymentId: { type: string }
+        token: { type: string }
+
+    PaymentVerificationResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        transactionId: { type: string }
+        amount: { type: number, format: double }
+        verifiedAt: { type: string, format: date-time }
+
+x-websocket:
+  description: |
+    STOMP over WebSocket endpoints (SockJS):
+    - Send: /app/games/{gameId}/chat
+    - Subscribe: /topic/games/{gameId}/chat
+    Presence endpoints exist under /app/games/{gameId}/presence/{join|leave}.

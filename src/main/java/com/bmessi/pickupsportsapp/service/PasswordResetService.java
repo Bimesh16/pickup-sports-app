@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "email.service.enabled", havingValue = "true", matchIfMissing = false)
 public class PasswordResetService {
 
     private static final SecureRandom RNG = new SecureRandom();
@@ -45,6 +46,24 @@ public class PasswordResetService {
 
     @Transactional
     public void requestReset(String username, String requesterIp) {
+        String token = requestResetReturningToken(username, requesterIp);
+        if (token == null) return; // rate-limited or user not found; no-op
+
+        // Build reset link and send email (best-effort; failures are logged by EmailService)
+        String link = buildResetLink(token);
+        try {
+            emailService.sendPasswordResetEmail(username, link);
+        } catch (Exception ignore) {
+            // do not propagate mailing failures
+        }
+    }
+
+    /**
+     * Performs rate limiting, creates and stores a reset token for username and returns the raw token.
+     * Returns null if rate-limited or user not found. Does not send email.
+     */
+    @Transactional
+    public String requestResetReturningToken(String username, String requesterIp) {
         // Rate limiting (best-effort, in-memory)
         long now = System.currentTimeMillis();
         int perUser = Math.max(1, props.getResetMaxPerUserPerMinute());
@@ -68,7 +87,7 @@ public class PasswordResetService {
             if (now - w.start >= windowMs) { w.start = now; w.count.set(0); }
             if (w.count.incrementAndGet() > perUser) {
                 try { meterRegistry.counter("auth.forgot.attempts", "result", "denied", "scope", "user").increment(); } catch (Exception ignore) {}
-                return; // silently drop to avoid enumeration and abuse
+                return null; // silently drop to avoid enumeration and abuse
             }
         }
         if (requesterIp != null && !requesterIp.isBlank()) {
@@ -76,14 +95,14 @@ public class PasswordResetService {
             if (now - w.start >= windowMs) { w.start = now; w.count.set(0); }
             if (w.count.incrementAndGet() > perIp) {
                 try { meterRegistry.counter("auth.forgot.attempts", "result", "denied", "scope", "ip").increment(); } catch (Exception ignore) {}
-                return;
+                return null;
             }
         }
 
         var user = userRepo.findByUsername(username);
         if (user == null) {
             // Don't reveal user existence
-            return;
+            return null;
         }
         // Clean up previous tokens for user
         tokenRepo.deleteByUsername(user.getUsername());
@@ -97,16 +116,14 @@ public class PasswordResetService {
                 .build();
         tokenRepo.save(prt);
         try { meterRegistry.counter("auth.forgot.attempts", "result", "allowed", "scope", "user").increment(); } catch (Exception ignore) {}
+        return token;
+    }
 
-        // Build reset link and send email (best-effort; failures are logged by EmailService)
+    /** Build a user-facing reset link for the given token. */
+    public String buildResetLink(String token) {
         String base = props.getAppUrl();
         if (base.endsWith("/")) base = base.substring(0, base.length() - 1);
-        String link = base + "/auth/reset?token=" + token;
-        try {
-            emailService.sendPasswordResetEmail(user.getUsername(), link);
-        } catch (Exception ignore) {
-            // do not propagate mailing failures
-        }
+        return base + "/auth/reset?token=" + token;
     }
 
     @Transactional(readOnly = true)

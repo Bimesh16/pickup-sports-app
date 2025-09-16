@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@300;400;500;600;700;800;900&family=Mukta:wght@300;400;500;600;700;800;900&display=swap');
+
+@import './styles/tokens.css';
+@import './styles/premium-ui.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for our app */
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography classes */
+.font-english {
+  font-family: 'Inter', 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.font-nepali {
+  font-family: 'Noto Sans Devanagari', 'Mukta', sans-serif;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Custom animations for stadium entrance */
+@keyframes stadium-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(220, 20, 60, 0.3), 0 0 40px rgba(220, 20, 60, 0.1);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(220, 20, 60, 0.5), 0 0 60px rgba(220, 20, 60, 0.2);
+  }
+}
+
+@keyframes ball-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes stadium-gate {
+  0% { transform: scaleX(0); opacity: 0; }
+  50% { transform: scaleX(0.5); opacity: 0.5; }
+  100% { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+.animate-stadium-glow {
+  animation: stadium-glow 2s ease-in-out infinite;
+}
+
+.animate-ball-bounce {
+  animation: ball-bounce 0.6s ease-in-out;
+}
+
+.animate-stadium-gate {
+  animation: stadium-gate 0.8s ease-out;
+}
+
+.animate-confetti {
+  animation: confetti-fall 3s linear infinite;
+}
+
+/* Enhanced focus states */
+input:focus {
+  animation: stadium-glow 0.5s ease-in-out;
+}
+
+/* Social button hover effects */
+.social-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Stadium tunnel effect */
+.stadium-tunnel {
+  background: radial-gradient(ellipse at center, 
+    rgba(220, 20, 60, 0.4) 0%, 
+    rgba(0, 56, 147, 0.3) 30%, 
+    transparent 70%);
+}
+
+/* Floating sport icons */
+.floating-icon {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+/* Locker room animations */
+@keyframes locker-open {
+  0% { clip-path: polygon(0 0, 10% 0, 10% 100%, 0 100%); }
+  100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+}
+
+@keyframes gear-appear {
+  0% { transform: scale(0) rotate(180deg); opacity: 0; }
+  50% { transform: scale(1.2) rotate(90deg); opacity: 0.8; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes badge-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(220, 20, 60, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(220, 20, 60, 0.6), 0 0 60px rgba(0, 56, 147, 0.3); }
+}
+
+.animate-locker-open {
+  animation: locker-open 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-gear-appear {
+  animation: gear-appear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.animate-badge-glow {
+  animation: badge-glow 2s ease-in-out infinite;
+}
+
+/* Locker room lighting effect */
+.locker-room-lighting {
+  background: linear-gradient(45deg, 
+    rgba(255, 193, 7, 0.1) 0%, 
+    rgba(255, 152, 0, 0.1) 25%, 
+    rgba(255, 87, 34, 0.1) 50%, 
+    rgba(244, 67, 54, 0.1) 75%, 
+    rgba(156, 39, 176, 0.1) 100%);
+  animation: locker-room-pulse 4s ease-in-out infinite;
+}
+
+@keyframes locker-room-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}

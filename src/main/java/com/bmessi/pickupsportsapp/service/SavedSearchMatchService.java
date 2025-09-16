@@ -5,6 +5,7 @@ import com.bmessi.pickupsportsapp.entity.game.Game;
 import com.bmessi.pickupsportsapp.repository.SavedSearchRepository;
 import com.bmessi.pickupsportsapp.service.push.PushSenderService;
 import lombok.RequiredArgsConstructor;
+import java.util.Optional;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ public class SavedSearchMatchService {
 
     private final SavedSearchRepository repo;
     private final PushSenderService pushSender;
-    private final EmailService emailService;
+    private final Optional<EmailService> emailService;
 
     @Async
     public void handleNewGame(Game game) {
@@ -31,9 +32,13 @@ public class SavedSearchMatchService {
                         "New game: " + game.getSport(),
                         "Game at " + game.getLocation(),
                         "/games/" + game.getId());
-                emailService.sendGameEventEmail(s.getUser().getUsername(),
-                        "saved-search-match",
-                        Map.of("sport", game.getSport(), "location", game.getLocation()));
+                emailService.ifPresent(es -> {
+                    try {
+                        es.sendGameEventEmail(s.getUser().getUsername(),
+                                "saved-search-match",
+                                Map.of("sport", game.getSport(), "location", game.getLocation()));
+                    } catch (Exception ignore) {}
+                });
             }
         }
     }

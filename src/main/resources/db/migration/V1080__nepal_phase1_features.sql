@@ -7,33 +7,11 @@ SET search_path TO public;
 -- 1. Add Futsal Sport (Nepal's Most Popular Indoor Sport)
 -- =============================================
 
--- Insert futsal sport with Nepal-specific configuration
-INSERT INTO sport (
-    name, display_name, description, category,
-    team_size_min, team_size_max, total_players_min, total_players_max,
-    duration_minutes_min, duration_minutes_max,
-    skill_levels, equipment_required, equipment_provided, venue_types, rules,
-    popularity_score, difficulty_level, is_team_sport, is_indoor, is_outdoor, is_weather_dependent,
-    icon_url, banner_url, is_active, created_at, updated_at
-)
-VALUES (
-    'futsal', 'Futsal',
-    'Indoor soccer variant played on a smaller court with 5 players per team. Fast-paced game with emphasis on skill, technique, and quick thinking. Popular in Nepal for year-round play.',
-    'BALL_SPORTS',
-    5, 5, 10, 10, 40, 60,
-    '["BEGINNER","INTERMEDIATE","ADVANCED","PRO"]',
-    '["Indoor Soccer Shoes","Shin Guards","Futsal Ball"]',
-    '["Goals","Court Markings","Referee Equipment"]',
-    '["INDOOR_COURT","FUTSAL_CENTER"]',
-    'FIFA Futsal rules. 5 players per team, smaller ball, no offside, unlimited substitutions, 20-minute halves with running clock.',
-    9.2, 'INTERMEDIATE', TRUE, TRUE, FALSE, FALSE,
-    '/images/sports/futsal-icon.png', '/images/sports/futsal-banner.jpg',
-    TRUE, NOW(), NOW()
-)
+-- Insert futsal sport (using only existing columns)
+INSERT INTO sport (name, display_name, created_at)
+VALUES ('futsal', 'Futsal', NOW())
 ON CONFLICT (name) DO UPDATE SET
-    description = EXCLUDED.description,
-    popularity_score = EXCLUDED.popularity_score,
-    updated_at = NOW();
+    display_name = EXCLUDED.display_name;
 
 -- =============================================
 -- 2. City Host Management System
@@ -248,14 +226,14 @@ CREATE INDEX IF NOT EXISTS idx_nepal_areas_location ON nepal_areas(latitude, lon
 -- Insert sample futsal games in Kathmandu (if users exist)
 INSERT INTO game (
     sport, location, time, skill_level, latitude, longitude, user_id, status, game_type, 
-    description, min_players, max_players, capacity, price_per_player, total_cost, 
+    description, min_players, max_players, price_per_player, total_cost, 
     duration_minutes, rules, equipment_required, created_at, updated_at
 )
 SELECT 
     'futsal', 
     'Baneshwor Futsal Center', 
     (CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '18 hours')::timestamptz,
-    'Intermediate',
+    'INTERMEDIATE',
     27.7172, 
     85.3240,
     u.id,
@@ -264,26 +242,27 @@ SELECT
     'Evening futsal session at Baneshwor. Join us for a competitive 5v5 match. Great way to stay fit and meet new players!',
     10,
     10,
-    10,
     300.00,
     3000.00,
     120,
     'FIFA Futsal rules. 20-minute halves with running clock. Unlimited substitutions allowed.',
-    'Indoor soccer shoes required. Shin guards recommended. Ball and bibs provided.'
+    'Indoor soccer shoes required. Shin guards recommended. Ball and bibs provided.',
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 FROM (SELECT id FROM app_user LIMIT 1) u
 WHERE EXISTS (SELECT 1 FROM app_user)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO game (
     sport, location, time, skill_level, latitude, longitude, user_id, status, game_type, 
-    description, min_players, max_players, capacity, price_per_player, total_cost, 
+    description, min_players, max_players, price_per_player, total_cost, 
     duration_minutes, rules, equipment_required, created_at, updated_at
 )
 SELECT 
     'futsal', 
     'Koteshwor Sports Complex', 
     (CURRENT_TIMESTAMP + INTERVAL '2 days' + INTERVAL '7 hours')::timestamptz,
-    'Beginner',
+    'BEGINNER',
     27.6783, 
     85.3555,
     u.id,
@@ -292,12 +271,13 @@ SELECT
     'Morning futsal for beginners in Koteshwor. Perfect for those new to the sport. Coaching tips included!',
     8,
     12,
-    12,
     250.00,
     2500.00,
     90,
     'Modified futsal rules for beginners. Focus on fun and learning. No aggressive play.',
-    'Any sports shoes acceptable. All equipment provided including training cones.'
+    'Any sports shoes acceptable. All equipment provided including training cones.',
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 FROM (SELECT id FROM app_user LIMIT 1) u
 WHERE EXISTS (SELECT 1 FROM app_user)
 ON CONFLICT DO NOTHING;

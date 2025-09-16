@@ -3,6 +3,7 @@ package com.bmessi.pickupsportsapp.service.notification;
 import com.bmessi.pickupsportsapp.i18n.EventI18n;
 import com.bmessi.pickupsportsapp.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,12 +21,13 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "notification.service.enabled", havingValue = "true", matchIfMissing = false)
 public class GameReminderNotifier {
 
     private final JdbcTemplate jdbc;
     private final NotificationService notificationService;
     private final PushNotificationService pushNotificationService;
-    private final EmailService emailService;
+    private final Optional<EmailService> emailService;
 
     // Remind 24 hours before
     @Scheduled(cron = "${reminders.games.24h.cron:0 0 8 * * *}")
@@ -81,7 +83,11 @@ public class GameReminderNotifier {
                     "location", location == null ? "" : location,
                     "actor", "system"
             );
-            emailService.sendGameEventEmailNow(username, action, model, Locale.getDefault());
+            emailService.ifPresent(es -> {
+                try {
+                    es.sendGameEventEmailNow(username, action, model, Locale.getDefault());
+                } catch (Exception ignore) {}
+            });
         } catch (Exception ignore) {}
     }
 }

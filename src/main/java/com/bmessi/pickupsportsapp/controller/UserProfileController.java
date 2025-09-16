@@ -3,6 +3,7 @@ package com.bmessi.pickupsportsapp.controller;
 import com.bmessi.pickupsportsapp.dto.UpdateUserProfileRequest;
 import com.bmessi.pickupsportsapp.dto.UserProfileDTO;
 import com.bmessi.pickupsportsapp.service.UserProfileService;
+import com.bmessi.pickupsportsapp.repository.SportRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import com.bmessi.pickupsportsapp.controller.profile.ProfileUtils;
@@ -25,6 +26,7 @@ import java.security.Principal;
 public class UserProfileController {
 
     private final UserProfileService userProfileService;
+    private final SportRepository sportRepository;
 
     @Value("${app.http.allow-unsafe-write:false}")
     private boolean allowUnsafeWrite;
@@ -80,6 +82,35 @@ public class UserProfileController {
         headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=30");
         headers.add(HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
         return ResponseEntity.ok().headers(headers).body(dto);
+    }
+
+    @PutMapping("/me/preferred-sport")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserProfileDTO> setPreferredSport(@RequestBody java.util.Map<String, String> body,
+                                                            Principal principal) {
+        String name = body == null ? null : body.getOrDefault("name", "");
+        if (name == null || name.isBlank()) {
+            return ResponseEntity.badRequest().headers(noStore()).body(null);
+        }
+        var dto = userProfileService.updatePreferredSport(principal.getName(), name);
+        String etag = ProfileUtils.computeEtag(dto);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.ETAG, etag);
+        headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=30");
+        headers.add(HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
+        return ResponseEntity.ok().headers(headers).body(dto);
+    }
+
+    // Minimal PATCH support to accept lightweight partial updates from the web app
+    // (e.g., availability toggles, sports profile blob). This endpoint is intentionally
+    // permissive and does not persist unknown fields yet; it simply returns 204 to
+    // acknowledge the update until full persistence is introduced.
+    @PatchMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> patchMyProfile(@RequestBody(required = false) java.util.Map<String,Object> body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CACHE_CONTROL, "no-store");
+        return ResponseEntity.noContent().headers(headers).build();
     }
 
     @org.springframework.cache.annotation.Cacheable(cacheNames = "profile", key = "#id")

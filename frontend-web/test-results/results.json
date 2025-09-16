@@ -1,0 +1,2567 @@
+{
+  "config": {
+    "configFile": "/Users/bmessi/pickup-sports-app/frontend-web/playwright.config.ts",
+    "rootDir": "/Users/bmessi/pickup-sports-app/frontend-web/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 5
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "test-results/results.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/bmessi/pickup-sports-app/frontend-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/bmessi/pickup-sports-app/frontend-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/bmessi/pickup-sports-app/frontend-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/bmessi/pickup-sports-app/frontend-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/bmessi/pickup-sports-app/frontend-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/bmessi/pickup-sports-app/frontend-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/bmessi/pickup-sports-app/frontend-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "mobile-chrome",
+        "name": "mobile-chrome",
+        "testDir": "/Users/bmessi/pickup-sports-app/frontend-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/bmessi/pickup-sports-app/frontend-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "mobile-safari",
+        "name": "mobile-safari",
+        "testDir": "/Users/bmessi/pickup-sports-app/frontend-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/bmessi/pickup-sports-app/frontend-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "performance",
+        "name": "performance",
+        "testDir": "/Users/bmessi/pickup-sports-app/frontend-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/performance/*.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 5,
+    "webServer": {
+      "command": "npm run dev",
+      "port": 5173,
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "auth/login.spec.ts",
+      "file": "auth/login.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Login Flow",
+          "file": "auth/login.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should login successfully with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 307,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:11.512Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-chromium/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-a1f1b0f2c65ee532ce52",
+              "file": "auth/login.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "should show error for invalid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 310,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:11.520Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-chromium/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-3b71be4a08a4d3fe1e5d",
+              "file": "auth/login.spec.ts",
+              "line": 50,
+              "column": 3
+            },
+            {
+              "title": "should validate required fields",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 310,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:11.526Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-validate-required-fields-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-validate-required-fields-chromium/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-5a4f0d49c2beb1302a48",
+              "file": "auth/login.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should redirect to dashboard if already logged in",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 310,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:11.520Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-chromium/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-0a60892d810f6fc5be98",
+              "file": "auth/login.spec.ts",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "should handle network errors gracefully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 306,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:11.521Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-chromium/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-1791b3ac00bcbd6f1926",
+              "file": "auth/login.spec.ts",
+              "line": 102,
+              "column": 3
+            },
+            {
+              "title": "should persist login state across page refreshes",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 166,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:12.453Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-chromium/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-9a3e96d17a7562dd7152",
+              "file": "auth/login.spec.ts",
+              "line": 122,
+              "column": 3
+            },
+            {
+              "title": "should logout and clear storage",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 165,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:12.452Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-logout-and-clear-storage-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-logout-and-clear-storage-chromium/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-95db58171655abe0ec82",
+              "file": "auth/login.spec.ts",
+              "line": 143,
+              "column": 3
+            },
+            {
+              "title": "should login successfully with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 939,
+                      "error": {
+                        "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n",
+                        "stack": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n    at @debugger eval code line 291 > eval:2:7\n    at evaluate@debugger eval code:293:16\n    at @debugger eval code:1:44\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "@debugger eval code line 291 > eval",
+                          "column": 7,
+                          "line": 2
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "@debugger eval code line 291 > eval",
+                            "column": 7,
+                            "line": 2
+                          },
+                          "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n\u001b[2m    at @debugger eval code line 291 > eval:2:7\u001b[22m\n\u001b[2m    at evaluate@debugger eval code:293:16\u001b[22m\n\u001b[2m    at @debugger eval code:1:44\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:12.453Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-firefox/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-firefox/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "@debugger eval code line 291 > eval",
+                        "column": 7,
+                        "line": 2
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-21933a1bf6655c9f0215",
+              "file": "auth/login.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "should show error for invalid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 835,
+                      "error": {
+                        "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n",
+                        "stack": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n    at @debugger eval code line 291 > eval:2:7\n    at evaluate@debugger eval code:293:16\n    at @debugger eval code:1:44\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "@debugger eval code line 291 > eval",
+                          "column": 7,
+                          "line": 2
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "@debugger eval code line 291 > eval",
+                            "column": 7,
+                            "line": 2
+                          },
+                          "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n\u001b[2m    at @debugger eval code line 291 > eval:2:7\u001b[22m\n\u001b[2m    at evaluate@debugger eval code:293:16\u001b[22m\n\u001b[2m    at @debugger eval code:1:44\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:12.456Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-firefox/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-firefox/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "@debugger eval code line 291 > eval",
+                        "column": 7,
+                        "line": 2
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-8f6b5e6a0258986f80c4",
+              "file": "auth/login.spec.ts",
+              "line": 50,
+              "column": 3
+            },
+            {
+              "title": "should validate required fields",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 1130,
+                      "error": {
+                        "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n",
+                        "stack": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n    at @debugger eval code line 291 > eval:2:7\n    at evaluate@debugger eval code:293:16\n    at @debugger eval code:1:44\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "@debugger eval code line 291 > eval",
+                          "column": 7,
+                          "line": 2
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "@debugger eval code line 291 > eval",
+                            "column": 7,
+                            "line": 2
+                          },
+                          "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n\u001b[2m    at @debugger eval code line 291 > eval:2:7\u001b[22m\n\u001b[2m    at evaluate@debugger eval code:293:16\u001b[22m\n\u001b[2m    at @debugger eval code:1:44\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:12.476Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-validate-required-fields-firefox/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-validate-required-fields-firefox/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "@debugger eval code line 291 > eval",
+                        "column": 7,
+                        "line": 2
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-afd1113dc235e98c4e89",
+              "file": "auth/login.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should redirect to dashboard if already logged in",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 970,
+                      "error": {
+                        "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n",
+                        "stack": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n    at @debugger eval code line 291 > eval:2:7\n    at evaluate@debugger eval code:293:16\n    at @debugger eval code:1:44\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "@debugger eval code line 291 > eval",
+                          "column": 7,
+                          "line": 2
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "@debugger eval code line 291 > eval",
+                            "column": 7,
+                            "line": 2
+                          },
+                          "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n\u001b[2m    at @debugger eval code line 291 > eval:2:7\u001b[22m\n\u001b[2m    at evaluate@debugger eval code:293:16\u001b[22m\n\u001b[2m    at @debugger eval code:1:44\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:13.049Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-firefox/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-firefox/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "@debugger eval code line 291 > eval",
+                        "column": 7,
+                        "line": 2
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-3e1167a7d54880951947",
+              "file": "auth/login.spec.ts",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "should handle network errors gracefully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 994,
+                      "error": {
+                        "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n",
+                        "stack": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n    at @debugger eval code line 291 > eval:2:7\n    at evaluate@debugger eval code:293:16\n    at @debugger eval code:1:44\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "@debugger eval code line 291 > eval",
+                          "column": 7,
+                          "line": 2
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "@debugger eval code line 291 > eval",
+                            "column": 7,
+                            "line": 2
+                          },
+                          "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n\u001b[2m    at @debugger eval code line 291 > eval:2:7\u001b[22m\n\u001b[2m    at evaluate@debugger eval code:293:16\u001b[22m\n\u001b[2m    at @debugger eval code:1:44\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:13.051Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-firefox/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-firefox/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "@debugger eval code line 291 > eval",
+                        "column": 7,
+                        "line": 2
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-c3258515228a3c815c73",
+              "file": "auth/login.spec.ts",
+              "line": 102,
+              "column": 3
+            },
+            {
+              "title": "should persist login state across page refreshes",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 1022,
+                      "error": {
+                        "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n",
+                        "stack": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n    at @debugger eval code line 291 > eval:2:7\n    at evaluate@debugger eval code:293:16\n    at @debugger eval code:1:44\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "@debugger eval code line 291 > eval",
+                          "column": 7,
+                          "line": 2
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "@debugger eval code line 291 > eval",
+                            "column": 7,
+                            "line": 2
+                          },
+                          "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n\u001b[2m    at @debugger eval code line 291 > eval:2:7\u001b[22m\n\u001b[2m    at evaluate@debugger eval code:293:16\u001b[22m\n\u001b[2m    at @debugger eval code:1:44\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:16.323Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-firefox/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-firefox/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "@debugger eval code line 291 > eval",
+                        "column": 7,
+                        "line": 2
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-9c9c8f8231805f3c07fc",
+              "file": "auth/login.spec.ts",
+              "line": 122,
+              "column": 3
+            },
+            {
+              "title": "should logout and clear storage",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 1025,
+                      "error": {
+                        "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n",
+                        "stack": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n    at @debugger eval code line 291 > eval:2:7\n    at evaluate@debugger eval code:293:16\n    at @debugger eval code:1:44\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "@debugger eval code line 291 > eval",
+                          "column": 7,
+                          "line": 2
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "@debugger eval code line 291 > eval",
+                            "column": 7,
+                            "line": 2
+                          },
+                          "message": "Error: page.evaluate: The operation is insecure.\n@debugger eval code line 291 > eval:2:7\nevaluate@debugger eval code:293:16\n@debugger eval code:1:44\n\n\u001b[2m    at @debugger eval code line 291 > eval:2:7\u001b[22m\n\u001b[2m    at evaluate@debugger eval code:293:16\u001b[22m\n\u001b[2m    at @debugger eval code:1:44\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:16.792Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-logout-and-clear-storage-firefox/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-logout-and-clear-storage-firefox/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "@debugger eval code line 291 > eval",
+                        "column": 7,
+                        "line": 2
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-65e31086235f7cd4c05c",
+              "file": "auth/login.spec.ts",
+              "line": 143,
+              "column": 3
+            },
+            {
+              "title": "should login successfully with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 1356,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:17.753Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-webkit/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-webkit/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-b0106071a1e3a975dbdb",
+              "file": "auth/login.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "should show error for invalid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 1366,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:17.906Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-webkit/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-webkit/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-13073a3e6fe0f339f055",
+              "file": "auth/login.spec.ts",
+              "line": 50,
+              "column": 3
+            },
+            {
+              "title": "should validate required fields",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 1351,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:18.174Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-validate-required-fields-webkit/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-validate-required-fields-webkit/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-3fca47023e4547ab5858",
+              "file": "auth/login.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should redirect to dashboard if already logged in",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 1340,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:18.870Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-webkit/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-webkit/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-b1c41427c420a22cb6fd",
+              "file": "auth/login.spec.ts",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "should handle network errors gracefully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 18,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 1353,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:19.118Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-webkit/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-webkit/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-1ebec45cdc56562e478a",
+              "file": "auth/login.spec.ts",
+              "line": 102,
+              "column": 3
+            },
+            {
+              "title": "should persist login state across page refreshes",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 19,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 502,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:23.358Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-webkit/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-webkit/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-22aeb3837600a2516f6e",
+              "file": "auth/login.spec.ts",
+              "line": 122,
+              "column": 3
+            },
+            {
+              "title": "should logout and clear storage",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 20,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 584,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:23.357Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-logout-and-clear-storage-webkit/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-logout-and-clear-storage-webkit/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-883951bb9631789aa959",
+              "file": "auth/login.spec.ts",
+              "line": 143,
+              "column": 3
+            },
+            {
+              "title": "should login successfully with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 22,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 345,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:23.368Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-chrome/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-chrome/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-dfa33db0179480fa4387",
+              "file": "auth/login.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "should show error for invalid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 21,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 403,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:23.366Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-chrome/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-chrome/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-e8a22ccb7a19c1cc5ab5",
+              "file": "auth/login.spec.ts",
+              "line": 50,
+              "column": 3
+            },
+            {
+              "title": "should validate required fields",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 23,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 374,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:23.373Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-validate-required-fields-mobile-chrome/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-validate-required-fields-mobile-chrome/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-008829b7e45dae2d3730",
+              "file": "auth/login.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should redirect to dashboard if already logged in",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 337,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:24.457Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-chrome/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-chrome/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-e651255d035e82cd6823",
+              "file": "auth/login.spec.ts",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "should handle network errors gracefully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 25,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 326,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:24.460Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-chrome/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-chrome/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-50989188722d01ecbca5",
+              "file": "auth/login.spec.ts",
+              "line": 102,
+              "column": 3
+            },
+            {
+              "title": "should persist login state across page refreshes",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 26,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 297,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:24.495Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-chrome/test-failed-1.png"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-ad3ad403dd76c65fa85a",
+              "file": "auth/login.spec.ts",
+              "line": 122,
+              "column": 3
+            },
+            {
+              "title": "should logout and clear storage",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 27,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 312,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                        "stack": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "<anonymous>",
+                          "column": 16,
+                          "line": 293
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "<anonymous>",
+                            "column": 16,
+                            "line": 293
+                          },
+                          "message": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at UtilityScript.evaluate (<anonymous>:293:16)\u001b[22m\n\u001b[2m    at UtilityScript.<anonymous> (<anonymous>:1:44)\u001b[22m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:24.512Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-logout-and-clear-storage-mobile-chrome/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-logout-and-clear-storage-mobile-chrome/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "<anonymous>",
+                        "column": 16,
+                        "line": 293
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-3e8daa1f647270543d45",
+              "file": "auth/login.spec.ts",
+              "line": 143,
+              "column": 3
+            },
+            {
+              "title": "should login successfully with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [
+                    {
+                      "workerIndex": 28,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 303,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:24.540Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-safari/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-safari/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-ac245f76083c90a98f6b",
+              "file": "auth/login.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "should show error for invalid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [
+                    {
+                      "workerIndex": 29,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 808,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:25.409Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-safari/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-safari/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-9c3a80891125c8576285",
+              "file": "auth/login.spec.ts",
+              "line": 50,
+              "column": 3
+            },
+            {
+              "title": "should validate required fields",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [
+                    {
+                      "workerIndex": 30,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 806,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:25.422Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-validate-required-fields-mobile-safari/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-validate-required-fields-mobile-safari/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-1ff9078d12032393e697",
+              "file": "auth/login.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should redirect to dashboard if already logged in",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [
+                    {
+                      "workerIndex": 31,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 808,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:25.406Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-safari/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-safari/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-62b6b3f8d79d414550aa",
+              "file": "auth/login.spec.ts",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "should handle network errors gracefully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [
+                    {
+                      "workerIndex": 32,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 816,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:25.445Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-safari/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-safari/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-0b289159c2f957367bc8",
+              "file": "auth/login.spec.ts",
+              "line": 102,
+              "column": 3
+            },
+            {
+              "title": "should persist login state across page refreshes",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [
+                    {
+                      "workerIndex": 33,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 324,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:25.971Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-safari/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-safari/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-f95977d5ef608f20b4d8",
+              "file": "auth/login.spec.ts",
+              "line": 122,
+              "column": 3
+            },
+            {
+              "title": "should logout and clear storage",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [
+                    {
+                      "workerIndex": 34,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 238,
+                      "error": {
+                        "message": "Error: page.evaluate: SecurityError: The operation is insecure.",
+                        "stack": "Error: page.evaluate: SecurityError: The operation is insecure.\n    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\n    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19",
+                        "location": {
+                          "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                          "column": 21,
+                          "line": 125
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                            "column": 21,
+                            "line": 125
+                          },
+                          "message": "Error: page.evaluate: SecurityError: The operation is insecure.\n\n\u001b[90m   at \u001b[39mutils/test-helpers.ts:125\n\n\u001b[0m \u001b[90m 123 |\u001b[39m   \u001b[90m// Cleanup helpers\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36masync\u001b[39m clearStorage() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\n \u001b[90m     |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 126 |\u001b[39m       localStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 127 |\u001b[39m       sessionStorage\u001b[33m.\u001b[39mclear()\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)\u001b[22m\n\u001b[2m    at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-16T06:35:26.826Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-logout-and-clear-storage-mobile-safari/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/bmessi/pickup-sports-app/frontend-web/test-results/auth-login-Login-Flow-should-logout-and-clear-storage-mobile-safari/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts",
+                        "column": 21,
+                        "line": 125
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-ffc6143ef350d884d90a",
+              "file": "auth/login.spec.ts",
+              "line": 143,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-16T06:35:10.800Z",
+    "duration": 16426.834,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 35,
+    "flaky": 0
+  }
+}

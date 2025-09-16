@@ -439,3 +439,10 @@
     </profiles>
 
 </project>
+        <!-- Optional: AWS SNS SDK v2 for SMS provider; not required when using LOG/TWILIO -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sns</artifactId>
+            <version>2.25.46</version>
+            <optional>true</optional>
+        </dependency>

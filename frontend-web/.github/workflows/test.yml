@@ -1,0 +1,181 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend-web/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: frontend-web
+      run: npm ci
+    
+    - name: Install Playwright browsers
+      working-directory: frontend-web
+      run: npx playwright install --with-deps
+    
+    - name: Build application
+      working-directory: frontend-web
+      run: npm run build
+    
+    - name: Start application
+      working-directory: frontend-web
+      run: npm run preview &
+      env:
+        PORT: 5174
+    
+    - name: Wait for application
+      run: npx wait-on http://localhost:5174
+    
+    - name: Run Playwright tests
+      working-directory: frontend-web
+      run: npm run test:ci
+      env:
+        E2E_BASE_URL: http://localhost:5174
+    
+    - name: Run Lighthouse audit
+      working-directory: frontend-web
+      run: npm run lighthouse:ci
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: |
+          frontend-web/test-results/
+          frontend-web/lighthouse-report.json
+        retention-days: 30
+    
+    - name: Upload screenshots
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: screenshots
+        path: frontend-web/test-results/screenshots/
+        retention-days: 7
+
+  performance:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend-web/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: frontend-web
+      run: npm ci
+    
+    - name: Install Playwright browsers
+      working-directory: frontend-web
+      run: npx playwright install --with-deps
+    
+    - name: Build application
+      working-directory: frontend-web
+      run: npm run build
+    
+    - name: Start application
+      working-directory: frontend-web
+      run: npm run preview &
+      env:
+        PORT: 5174
+    
+    - name: Wait for application
+      run: npx wait-on http://localhost:5174
+    
+    - name: Run performance tests
+      working-directory: frontend-web
+      run: npm run test:performance
+      env:
+        E2E_BASE_URL: http://localhost:5174
+        SLOW_3G: true
+    
+    - name: Run Lighthouse audit
+      working-directory: frontend-web
+      run: npm run lighthouse
+    
+    - name: Run mobile Lighthouse audit
+      working-directory: frontend-web
+      run: npm run lighthouse:mobile
+    
+    - name: Upload performance results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-results
+        path: |
+          frontend-web/test-results/
+          frontend-web/lighthouse-report.html
+          frontend-web/lighthouse-mobile-report.html
+        retention-days: 30
+
+  accessibility:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend-web/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: frontend-web
+      run: npm ci
+    
+    - name: Install Playwright browsers
+      working-directory: frontend-web
+      run: npx playwright install --with-deps
+    
+    - name: Build application
+      working-directory: frontend-web
+      run: npm run build
+    
+    - name: Start application
+      working-directory: frontend-web
+      run: npm run preview &
+      env:
+        PORT: 5174
+    
+    - name: Wait for application
+      run: npx wait-on http://localhost:5174
+    
+    - name: Run accessibility tests
+      working-directory: frontend-web
+      run: npx playwright test --project=chromium e2e/accessibility/
+      env:
+        E2E_BASE_URL: http://localhost:5174
+    
+    - name: Upload accessibility results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: accessibility-results
+        path: frontend-web/test-results/
+        retention-days: 30

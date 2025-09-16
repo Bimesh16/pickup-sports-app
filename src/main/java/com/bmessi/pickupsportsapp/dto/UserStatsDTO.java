@@ -10,5 +10,12 @@ public record UserStatsDTO(
         double averageRating,
         int totalRatings,
         Map<String, Integer> sportCounts,
-        String mostPlayedSport
+        String mostPlayedSport,
+
+        // Extensions for richer UI
+        java.util.List<Integer> recentWeeklyAttendance,
+        int[][] weekdayTime,
+        Integer streakWeeks,
+        Double fairPlayScore,
+        Map<String, Integer> prevSportCounts
 ) {}

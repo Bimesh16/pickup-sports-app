@@ -4,6 +4,8 @@ import com.bmessi.pickupsportsapp.dto.UpdateUserProfileRequest;
 import com.bmessi.pickupsportsapp.dto.UserProfileDTO;
 import com.bmessi.pickupsportsapp.entity.User;
 import com.bmessi.pickupsportsapp.media.AvatarStorageService;
+import com.bmessi.pickupsportsapp.entity.Sport;
+import com.bmessi.pickupsportsapp.repository.SportRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -18,8 +20,9 @@ public class UserProfileService {
 
     private final UserRepository userRepository;
     private final AvatarStorageService avatarStorageService;
+    private final SportRepository sportRepository;
 
-    @Cacheable("user-profiles")
+    // @Cacheable("user-profiles") // Temporarily disabled due to serialization issue
     @Transactional(readOnly = true)
     public UserProfileDTO getProfileByUsername(String username) {
         User user = userRepository.findOptionalByUsername(username)
@@ -27,7 +30,7 @@ public class UserProfileService {
         return toDto(user);
     }
 
-    @Cacheable("user-profiles")
+    // @Cacheable("user-profiles") // Temporarily disabled due to serialization issue
     @Transactional(readOnly = true)
     public UserProfileDTO getProfileById(Long id) {
         User user = userRepository.findById(id)
@@ -42,6 +45,9 @@ public class UserProfileService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (request.bio() != null) user.setBio(request.bio().trim());
+        if (request.location() != null) user.setLocation(request.location().trim());
+        if (request.latitude() != null) user.setLatitude(request.latitude());
+        if (request.longitude() != null) user.setLongitude(request.longitude());
         if (request.avatarUrl() != null) user.setAvatarUrl(request.avatarUrl().trim());
         if (request.skillLevel() != null) user.setSkillLevel(request.skillLevel());
         if (request.age() != null) user.setAge(request.age());
@@ -85,12 +91,27 @@ public class UserProfileService {
         userRepository.save(user);
     }
 
+    @CacheEvict(cacheNames = "user-profiles", key = "#username")
+    @Transactional
+    public UserProfileDTO updatePreferredSport(String username, String sportName) {
+        User user = userRepository.findOptionalByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Sport s = sportRepository.findByNameIgnoreCase(sportName.toLowerCase());
+        if (s == null) throw new IllegalArgumentException("Unknown sport: " + sportName);
+        user.setPreferredSport(s);
+        User saved = userRepository.save(user);
+        return toDto(saved);
+    }
+
     private static UserProfileDTO toDto(User u) {
         return new UserProfileDTO(
                 u.getId(),
                 u.getUsername(),
                 u.getBio(),
                 u.getAvatarUrl(),
+                u.getLocation(),
+                u.getLatitude(),
+                u.getLongitude(),
                 u.getSkillLevel(),
                 u.getAge(),
                 u.getPosition(),

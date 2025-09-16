@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "notification.service.enabled", havingValue = "true", matchIfMissing = false)
 public class GameRemindersScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(GameRemindersScheduler.class);

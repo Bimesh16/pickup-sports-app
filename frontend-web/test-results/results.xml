@@ -1,0 +1,1126 @@
+<testsuites id="" name="" tests="35" failures="35" skipped="0" errors="0" time="16.426834">
+<testsuite name="auth/login.spec.ts" timestamp="2025-09-16T06:35:11.191Z" hostname="chromium" tests="7" failures="7" skipped="0" time="1.874" errors="0">
+<testcase name="Login Flow › should login successfully with valid credentials" classname="auth/login.spec.ts" time="0.307">
+<failure message="login.spec.ts:12:3 should login successfully with valid credentials" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:12:3 › Login Flow › should login successfully with valid credentials 
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-chromium/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should show error for invalid credentials" classname="auth/login.spec.ts" time="0.31">
+<failure message="login.spec.ts:50:3 should show error for invalid credentials" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:50:3 › Login Flow › should show error for invalid credentials ────
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-chromium/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should validate required fields" classname="auth/login.spec.ts" time="0.31">
+<failure message="login.spec.ts:77:3 should validate required fields" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:77:3 › Login Flow › should validate required fields ──────────────
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-validate-required-fields-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-validate-required-fields-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-chromium/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should redirect to dashboard if already logged in" classname="auth/login.spec.ts" time="0.31">
+<failure message="login.spec.ts:88:3 should redirect to dashboard if already logged in" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:88:3 › Login Flow › should redirect to dashboard if already logged in 
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-chromium/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should handle network errors gracefully" classname="auth/login.spec.ts" time="0.306">
+<failure message="login.spec.ts:102:3 should handle network errors gracefully" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:102:3 › Login Flow › should handle network errors gracefully ─────
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-chromium/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should persist login state across page refreshes" classname="auth/login.spec.ts" time="0.166">
+<failure message="login.spec.ts:122:3 should persist login state across page refreshes" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:122:3 › Login Flow › should persist login state across page refreshes 
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-chromium/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should logout and clear storage" classname="auth/login.spec.ts" time="0.165">
+<failure message="login.spec.ts:143:3 should logout and clear storage" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:143:3 › Login Flow › should logout and clear storage ─────────────
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-chromium/video.webm]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="auth/login.spec.ts" timestamp="2025-09-16T06:35:11.191Z" hostname="firefox" tests="7" failures="7" skipped="0" time="6.915" errors="0">
+<testcase name="Login Flow › should login successfully with valid credentials" classname="auth/login.spec.ts" time="0.939">
+<failure message="login.spec.ts:12:3 should login successfully with valid credentials" type="FAILURE">
+<![CDATA[  [firefox] › auth/login.spec.ts:12:3 › Login Flow › should login successfully with valid credentials 
+
+    Error: page.evaluate: The operation is insecure.
+    @debugger eval code line 291 > eval:2:7
+    evaluate@debugger eval code:293:16
+    @debugger eval code:1:44
+
+        at @debugger eval code line 291 > eval:2:7
+        at evaluate@debugger eval code:293:16
+        at @debugger eval code:1:44
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-firefox/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should show error for invalid credentials" classname="auth/login.spec.ts" time="0.835">
+<failure message="login.spec.ts:50:3 should show error for invalid credentials" type="FAILURE">
+<![CDATA[  [firefox] › auth/login.spec.ts:50:3 › Login Flow › should show error for invalid credentials ─────
+
+    Error: page.evaluate: The operation is insecure.
+    @debugger eval code line 291 > eval:2:7
+    evaluate@debugger eval code:293:16
+    @debugger eval code:1:44
+
+        at @debugger eval code line 291 > eval:2:7
+        at evaluate@debugger eval code:293:16
+        at @debugger eval code:1:44
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-firefox/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should validate required fields" classname="auth/login.spec.ts" time="1.13">
+<failure message="login.spec.ts:77:3 should validate required fields" type="FAILURE">
+<![CDATA[  [firefox] › auth/login.spec.ts:77:3 › Login Flow › should validate required fields ───────────────
+
+    Error: page.evaluate: The operation is insecure.
+    @debugger eval code line 291 > eval:2:7
+    evaluate@debugger eval code:293:16
+    @debugger eval code:1:44
+
+        at @debugger eval code line 291 > eval:2:7
+        at evaluate@debugger eval code:293:16
+        at @debugger eval code:1:44
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-validate-required-fields-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-validate-required-fields-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-firefox/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should redirect to dashboard if already logged in" classname="auth/login.spec.ts" time="0.97">
+<failure message="login.spec.ts:88:3 should redirect to dashboard if already logged in" type="FAILURE">
+<![CDATA[  [firefox] › auth/login.spec.ts:88:3 › Login Flow › should redirect to dashboard if already logged in 
+
+    Error: page.evaluate: The operation is insecure.
+    @debugger eval code line 291 > eval:2:7
+    evaluate@debugger eval code:293:16
+    @debugger eval code:1:44
+
+        at @debugger eval code line 291 > eval:2:7
+        at evaluate@debugger eval code:293:16
+        at @debugger eval code:1:44
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-firefox/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should handle network errors gracefully" classname="auth/login.spec.ts" time="0.994">
+<failure message="login.spec.ts:102:3 should handle network errors gracefully" type="FAILURE">
+<![CDATA[  [firefox] › auth/login.spec.ts:102:3 › Login Flow › should handle network errors gracefully ──────
+
+    Error: page.evaluate: The operation is insecure.
+    @debugger eval code line 291 > eval:2:7
+    evaluate@debugger eval code:293:16
+    @debugger eval code:1:44
+
+        at @debugger eval code line 291 > eval:2:7
+        at evaluate@debugger eval code:293:16
+        at @debugger eval code:1:44
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-firefox/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should persist login state across page refreshes" classname="auth/login.spec.ts" time="1.022">
+<failure message="login.spec.ts:122:3 should persist login state across page refreshes" type="FAILURE">
+<![CDATA[  [firefox] › auth/login.spec.ts:122:3 › Login Flow › should persist login state across page refreshes 
+
+    Error: page.evaluate: The operation is insecure.
+    @debugger eval code line 291 > eval:2:7
+    evaluate@debugger eval code:293:16
+    @debugger eval code:1:44
+
+        at @debugger eval code line 291 > eval:2:7
+        at evaluate@debugger eval code:293:16
+        at @debugger eval code:1:44
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-firefox/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should logout and clear storage" classname="auth/login.spec.ts" time="1.025">
+<failure message="login.spec.ts:143:3 should logout and clear storage" type="FAILURE">
+<![CDATA[  [firefox] › auth/login.spec.ts:143:3 › Login Flow › should logout and clear storage ──────────────
+
+    Error: page.evaluate: The operation is insecure.
+    @debugger eval code line 291 > eval:2:7
+    evaluate@debugger eval code:293:16
+    @debugger eval code:1:44
+
+        at @debugger eval code line 291 > eval:2:7
+        at evaluate@debugger eval code:293:16
+        at @debugger eval code:1:44
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-firefox/video.webm]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="auth/login.spec.ts" timestamp="2025-09-16T06:35:11.191Z" hostname="webkit" tests="7" failures="7" skipped="0" time="7.852" errors="0">
+<testcase name="Login Flow › should login successfully with valid credentials" classname="auth/login.spec.ts" time="1.356">
+<failure message="login.spec.ts:12:3 should login successfully with valid credentials" type="FAILURE">
+<![CDATA[  [webkit] › auth/login.spec.ts:12:3 › Login Flow › should login successfully with valid credentials 
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-webkit/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should show error for invalid credentials" classname="auth/login.spec.ts" time="1.366">
+<failure message="login.spec.ts:50:3 should show error for invalid credentials" type="FAILURE">
+<![CDATA[  [webkit] › auth/login.spec.ts:50:3 › Login Flow › should show error for invalid credentials ──────
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-webkit/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should validate required fields" classname="auth/login.spec.ts" time="1.351">
+<failure message="login.spec.ts:77:3 should validate required fields" type="FAILURE">
+<![CDATA[  [webkit] › auth/login.spec.ts:77:3 › Login Flow › should validate required fields ────────────────
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-validate-required-fields-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-validate-required-fields-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-webkit/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should redirect to dashboard if already logged in" classname="auth/login.spec.ts" time="1.34">
+<failure message="login.spec.ts:88:3 should redirect to dashboard if already logged in" type="FAILURE">
+<![CDATA[  [webkit] › auth/login.spec.ts:88:3 › Login Flow › should redirect to dashboard if already logged in 
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-webkit/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should handle network errors gracefully" classname="auth/login.spec.ts" time="1.353">
+<failure message="login.spec.ts:102:3 should handle network errors gracefully" type="FAILURE">
+<![CDATA[  [webkit] › auth/login.spec.ts:102:3 › Login Flow › should handle network errors gracefully ───────
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-webkit/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should persist login state across page refreshes" classname="auth/login.spec.ts" time="0.502">
+<failure message="login.spec.ts:122:3 should persist login state across page refreshes" type="FAILURE">
+<![CDATA[  [webkit] › auth/login.spec.ts:122:3 › Login Flow › should persist login state across page refreshes 
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-webkit/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should logout and clear storage" classname="auth/login.spec.ts" time="0.584">
+<failure message="login.spec.ts:143:3 should logout and clear storage" type="FAILURE">
+<![CDATA[  [webkit] › auth/login.spec.ts:143:3 › Login Flow › should logout and clear storage ───────────────
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-webkit/video.webm]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="auth/login.spec.ts" timestamp="2025-09-16T06:35:11.191Z" hostname="mobile-chrome" tests="7" failures="7" skipped="0" time="2.394" errors="0">
+<testcase name="Login Flow › should login successfully with valid credentials" classname="auth/login.spec.ts" time="0.345">
+<failure message="login.spec.ts:12:3 should login successfully with valid credentials" type="FAILURE">
+<![CDATA[  [mobile-chrome] › auth/login.spec.ts:12:3 › Login Flow › should login successfully with valid credentials 
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-chrome/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should show error for invalid credentials" classname="auth/login.spec.ts" time="0.403">
+<failure message="login.spec.ts:50:3 should show error for invalid credentials" type="FAILURE">
+<![CDATA[  [mobile-chrome] › auth/login.spec.ts:50:3 › Login Flow › should show error for invalid credentials 
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-chrome/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should validate required fields" classname="auth/login.spec.ts" time="0.374">
+<failure message="login.spec.ts:77:3 should validate required fields" type="FAILURE">
+<![CDATA[  [mobile-chrome] › auth/login.spec.ts:77:3 › Login Flow › should validate required fields ─────────
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-validate-required-fields-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-validate-required-fields-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-mobile-chrome/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should redirect to dashboard if already logged in" classname="auth/login.spec.ts" time="0.337">
+<failure message="login.spec.ts:88:3 should redirect to dashboard if already logged in" type="FAILURE">
+<![CDATA[  [mobile-chrome] › auth/login.spec.ts:88:3 › Login Flow › should redirect to dashboard if already logged in 
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-chrome/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should handle network errors gracefully" classname="auth/login.spec.ts" time="0.326">
+<failure message="login.spec.ts:102:3 should handle network errors gracefully" type="FAILURE">
+<![CDATA[  [mobile-chrome] › auth/login.spec.ts:102:3 › Login Flow › should handle network errors gracefully 
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-chrome/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should persist login state across page refreshes" classname="auth/login.spec.ts" time="0.297">
+<failure message="login.spec.ts:122:3 should persist login state across page refreshes" type="FAILURE">
+<![CDATA[  [mobile-chrome] › auth/login.spec.ts:122:3 › Login Flow › should persist login state across page refreshes 
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-chrome/test-failed-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should logout and clear storage" classname="auth/login.spec.ts" time="0.312">
+<failure message="login.spec.ts:143:3 should logout and clear storage" type="FAILURE">
+<![CDATA[  [mobile-chrome] › auth/login.spec.ts:143:3 › Login Flow › should logout and clear storage ────────
+
+    Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-mobile-chrome/video.webm]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="auth/login.spec.ts" timestamp="2025-09-16T06:35:11.191Z" hostname="mobile-safari" tests="7" failures="7" skipped="0" time="4.103" errors="0">
+<testcase name="Login Flow › should login successfully with valid credentials" classname="auth/login.spec.ts" time="0.303">
+<failure message="login.spec.ts:12:3 should login successfully with valid credentials" type="FAILURE">
+<![CDATA[  [mobile-safari] › auth/login.spec.ts:12:3 › Login Flow › should login successfully with valid credentials 
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-safari/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-32b73-ully-with-valid-credentials-mobile-safari/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should show error for invalid credentials" classname="auth/login.spec.ts" time="0.808">
+<failure message="login.spec.ts:50:3 should show error for invalid credentials" type="FAILURE">
+<![CDATA[  [mobile-safari] › auth/login.spec.ts:50:3 › Login Flow › should show error for invalid credentials 
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-safari/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-9840d-ror-for-invalid-credentials-mobile-safari/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should validate required fields" classname="auth/login.spec.ts" time="0.806">
+<failure message="login.spec.ts:77:3 should validate required fields" type="FAILURE">
+<![CDATA[  [mobile-safari] › auth/login.spec.ts:77:3 › Login Flow › should validate required fields ─────────
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-validate-required-fields-mobile-safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-validate-required-fields-mobile-safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-mobile-safari/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-should-validate-required-fields-mobile-safari/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should redirect to dashboard if already logged in" classname="auth/login.spec.ts" time="0.808">
+<failure message="login.spec.ts:88:3 should redirect to dashboard if already logged in" type="FAILURE">
+<![CDATA[  [mobile-safari] › auth/login.spec.ts:88:3 › Login Flow › should redirect to dashboard if already logged in 
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-safari/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-5a883-hboard-if-already-logged-in-mobile-safari/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should handle network errors gracefully" classname="auth/login.spec.ts" time="0.816">
+<failure message="login.spec.ts:102:3 should handle network errors gracefully" type="FAILURE">
+<![CDATA[  [mobile-safari] › auth/login.spec.ts:102:3 › Login Flow › should handle network errors gracefully 
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-safari/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-876d6-e-network-errors-gracefully-mobile-safari/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should persist login state across page refreshes" classname="auth/login.spec.ts" time="0.324">
+<failure message="login.spec.ts:122:3 should persist login state across page refreshes" type="FAILURE">
+<![CDATA[  [mobile-safari] › auth/login.spec.ts:122:3 › Login Flow › should persist login state across page refreshes 
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-safari/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-shou-0d828-state-across-page-refreshes-mobile-safari/video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Login Flow › should logout and clear storage" classname="auth/login.spec.ts" time="0.238">
+<failure message="login.spec.ts:143:3 should logout and clear storage" type="FAILURE">
+<![CDATA[  [mobile-safari] › auth/login.spec.ts:143:3 › Login Flow › should logout and clear storage ────────
+
+    Error: page.evaluate: SecurityError: The operation is insecure.
+
+       at utils/test-helpers.ts:125
+
+      123 |   // Cleanup helpers
+      124 |   async clearStorage() {
+    > 125 |     await this.page.evaluate(() => {
+          |                     ^
+      126 |       localStorage.clear();
+      127 |       sessionStorage.clear();
+      128 |     });
+        at TestHelpers.clearStorage (/Users/bmessi/pickup-sports-app/frontend-web/e2e/utils/test-helpers.ts:125:21)
+        at /Users/bmessi/pickup-sports-app/frontend-web/e2e/auth/login.spec.ts:9:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-mobile-safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-login-Login-Flow-should-logout-and-clear-storage-mobile-safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-mobile-safari/test-failed-1.png]]
+
+[[ATTACHMENT|auth-login-Login-Flow-should-logout-and-clear-storage-mobile-safari/video.webm]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

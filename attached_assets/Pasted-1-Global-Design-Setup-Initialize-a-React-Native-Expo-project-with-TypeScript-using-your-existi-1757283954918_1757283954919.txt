@@ -1,0 +1,205 @@
+1 Global Design & Setup
+
+“Initialize a React Native (Expo) project with TypeScript using your existing folder structure. Define a global theme file exporting primary colours for Nepal (#DC143C) and global (#2563EB), a secondary green (#10B981), and neutrals such as white #FFFFFF, light grey #F8FAFC and dark text #1E293B
+GitHub
+. Add twilight purples (#5B2C6F) and sunrise oranges (#FF7F50) as accent gradients. Establish spacing constants (4 px, 8 px, 16 px, 24 px) and corner radii (8–16 px). Use Inter for body text and Poppins for headings
+GitHub
+. Create a ThemeProvider that switches palettes based on locale and supports adaptive dark mode (e.g., deep blue backgrounds with light text). Apply glassmorphism (semi‑transparent backgrounds and blur) on cards and modals, and incorporate low‑opacity mandala/prayer‑flag motifs as decorative layers. Implement micro‑interactions—haptic taps on mobile and colour shifts on press—using the react-native-reanimated library. Add an optional Nepali calendar widget alongside the Gregorian date picker.”
+
+2 Authentication & Onboarding
+
+“Design a four‑screen auth flow:
+
+Welcome: Use a gradient background blending Nepal red into twilight purple and sunrise orange. Centre the greeting ‘Namaste!’ at 40 % screen height; place a language toggle in the top‑right. The ‘Continue’ button sits above the bottom safe‑area with a pill shape (height 50 px) and slow pulse animation.
+
+Login: Place a frosted glass panel (90 % width, 16 px radius) over a blurred Himalayan image. Stack email and password inputs with 16 px vertical spacing; labels use neutral text colours, while inputs use dark text. Add an eye icon to toggle password visibility and a biometric icon below. The login button uses a crimson→blue gradient and rises slightly on press. On submit, call POST /auth/login; show success/error toasts.
+
+Sign‑up Wizard: Use a top progress bar spanning 80 % width. Step 1 gathers username and password, showing a strength meter that fills from red to green. Step 2 collects sport, skill level, location and nationality via chip grids and dropdowns with flags. Step 3 requests birthdate (via Nepali/Gregorian date picker) and gender (segmented controls). Step 4 reviews information in a frosted summary card with a confirm button that triggers POST /users/register
+GitHub
+. Animate transitions between steps with slide‑in from right.
+
+Forgot Password: A minimal screen with an animated envelope icon and a single email field; the action button uses the secondary green. It calls POST /auth/forgot and later POST /auth/reset when the user provides a token. All screens adapt to dark mode (invert backgrounds, lighten text).”
+
+3 Navigation & Micro‑Interactions
+
+“Implement a bottom tab navigator with five pill‑shaped tabs. Each tab has equal width, uses a blurred glass background, and sits 12 px above the bottom safe‑area. Icons: Home (house), Explore (compass), Create (plus), Chat (bubble), Profile (person). Unselected icons are tinted grey; selected icons animate to the locale’s primary colour and bounce up by 4 px. Provide haptic feedback on selection. For web, replace the bottom bar with a collapsible side drawer occupying 20 % width, with an asymmetric Bento grid for icons and labels. Ensure support for RTL languages and include a language toggle in the side drawer.”
+
+4 Home/Dashboard
+
+“Layout the Home screen in vertical segments:
+
+• Header (30 % height): A panoramic SVG of the Himalayas tinted with a crimson‑to‑purple gradient. Position the user’s SportRing avatar and name at the top left. Use a 48 px ring with colours corresponding to the selected sport.
+
+• Quick‑action grid (40 % height): Create a 2×3 grid of cards (Find, Create, My Games, Chat, Achievements, Scouts) with varying sizes; the largest ones (Find Games, Create Game) span two columns. Cards use glassmorphic surfaces (semi‑transparent white with blur), 16 px radii and dynamic Neubrutalist shadows. Long press tilts the card 3° and scales it down slightly.
+
+• Stats (15 % height): Display three chips for wins/draws/losses, using green, yellow and red backgrounds respectively
+GitHub
+. Show a circular win‑rate gauge (70 px diameter) with a gradient fill. Add streak badges for current and best streaks below.
+
+• Featured & Nearby games (15 % height): Horizontal cards (80 % width) with 16 px spacing; each card’s background is a tinted sport photo (red or blue overlay). Show sport icon, time, distance and a capacity bar at the bottom. Use parallax scrolling for depth.
+
+Dark mode replaces the panorama with a starry night; cards darken and text turns light. On web, stack sections vertically with collapsible panels.”
+
+5 Explore & Discovery
+
+“Use a map‑and‑list dual layout:
+
+• Filter bar: Horizontal chips (height 32 px, 12 px radius) for sport, location, skill, date and price. Selected chips raise by 3 px and change colour from grey to primary. A filter icon on the right opens a bottom sheet with advanced options (indoor/outdoor, free/paid, trending).
+
+• Map view (70 % height mobile): Dark‑mode map with custom 32 px markers shaped like sports icons. Marker outlines use primary colours (red or blue) with contrasting fills. Place a recenter button at bottom right.
+
+• List view: A parallax header (max height 180 px) with user location and search bar. Below, stack cards (full width minus 32 px horizontal margin). Each card has 16 px radius, motion‑blurred backgrounds and displays sport icon, title, date/time, distance, price and capacity meter. Use shimmer placeholders while loading data.
+
+Implement friction‑based scrolling for both map and list. On web, split the view horizontally: map on the left half, list on the right half
+GitHub
+.”
+
+6 Game Details & RSVP
+
+“Divide the Game Details screen into three zones:
+
+• Hero (40 % height): A full‑bleed sport photo tinted with a crimson→blue gradient. Overlay the host’s avatar and name at the top left; place a favourite icon at the top right. Fade the bottom third of the hero into the content area.
+
+• Info & Tabs (40 %): A segmented control with four equal tabs (Details, Participants, Rules, Location) across the top of this zone. Active tabs use the secondary green background with white text
+GitHub
+. Each tab loads into a glass card (90 % width, 16 px radius) that slides in; content includes description, equipment, participant list and mini‑map.
+
+• RSVP & Actions (20 %): Display remaining spots and price side‑by‑side. Use a large RSVP button (width 60 %, height 48 px) with a gradient matching the locale’s primary colour. On tap, call POST /games/{id}/hold and overlay a semi‑transparent layer showing a circular countdown ring (10 sec) filling in red. Once hold is successful, slide in a payment panel listing methods; after payment confirmation (POST /games/{id}/confirm), show an animation of coins dropping into a bowl. Provide share and report icons in this area. Integrate an embedded chat preview at the bottom left.
+
+On web, use a two‑column layout: details on the left and participants on the right; chat moves to a separate section.”
+
+7 Create Game Wizard
+
+“Use a four‑step wizard layout:
+
+• Step 1 – Basics: At the top, a horizontal carousel of 3D sport icons; unselected cards are semi‑transparent, while the selected card is filled with the locale’s primary colour. Below, place date and time pickers; on the left, a Nepali calendar toggled by a switch, and on the right, a time picker. The bottom half shows a small map with a custom pin; tapping opens a full‑screen map modal to select the location.
+
+• Step 2 – Details: Present a list of inputs inside frosted cards (90 % width, 16 px radius, 12 px vertical spacing). Fields include min/max players (numeric steppers), price per player (number input with currency symbol), total cost (auto-calculated), capacity slider, skill level (chips), game type (select), RSVP cutoff (time picker). Display the total cost at the top of this step in secondary green and animate it whenever values change.
+
+• Step 3 – Venue & Extras: Provide an autocomplete search bar for existing venues (calls GET /venues). Search results appear in a dropdown beneath. A ‘Create New’ button reveals a mini-form (name, address, images). Include toggles for indoor/outdoor, waitlist and private game; active toggles glow blue. Add an image upload component with three slots; clicking each opens a gallery picker.
+
+• Step 4 – Confirmation: Render a summary card (width 90 %, height 50 %) showing all details entered. The confirm button (full width) uses a crimson→blue gradient and, when pressed, calls POST /games to create the game
+GitHub
+. On success, show a confetti animation with sport icons.
+
+Show an animated progress bar across the top of the wizard and allow swiping to go back. On web, condense steps into collapsible sections on a single page, using vertical accordions and simpler fade animations.”
+
+7 Create Game Wizard (continued)
+
+“Design the wizard across four steps with consistent spacing:
+
+• Step 1 – Basics: Display a horizontal carousel of large 3D sport icons. Each card has a 1 : 1 aspect ratio with a 16px radius; unselected cards are translucent, while the selected card is filled with Nepal Red #DC143C
+GitHub
+. Below, place a date/time selector: a two‑column layout where the left column contains a Nepali calendar widget and the right column contains date/time pickers; the calendar header uses a gradient from purple to orange. The bottom third of the screen contains a map with a custom pin; tapping the pin opens a full‑screen map modal.
+
+• Step 2 – Details: Layout fields in a vertical list. Each input card has 90% width, 16px radius and white background at 80% opacity. Use segmented controls for skill level and game type; slide selectors with spring animation. Display dynamic calculations (total cost) above the “Next” button; the calculation line uses Secondary Green #10B981 and animates when values change.
+
+• Step 3 – Venue & Extras: Offer a search bar that autocompletes venues via GET /venues; results appear in a drop‑down beneath. A ‘Create new’ button opens a mini‑form with name/address/images fields. Provide toggle switches (30px long) for indoor/outdoor, waitlist and private game; active toggles glow in Global Blue #2563EB. Add an image upload component with 3 thumbnail slots; tapping opens the gallery picker.
+
+• Step 4 – Confirmation: Present a frosted summary card in the centre (width 90%, height 50%). List all inputs with colour‑coded labels. At the bottom, place a full‑width confirmation button tinted with Nepal Red→Blue gradient. Pressing triggers POST /games and shows a success animation (e.g. confetti from the top).
+
+Show an animated progress bar at the top through all steps. On web, condense the wizard into a single page with collapsible sections; reduce animations to quick fades.”
+
+8 Profile & Stats
+
+“Use a vertical scroll layout with four distinct zones:
+
+• Header: Reserve 25% of screen height; centre the SportRing avatar (64px) within a circular mandala frame (96px). The halo around the ring pulses slowly when the user has new notifications. Display the user’s name, handle and nationality flag below the avatar.
+
+• Stats: Position three pill‑shaped chips horizontally with equal spacing; each chip has a gradient background (win: green #10B981, draw: yellow #F59E0B, loss: red #EF4444). Insert a circular win‑rate gauge (70px diameter) to the right of these chips. Underneath, place a row of streak badges with small icons.
+
+• Sport filter: Create a horizontally scrollable strip of sport icons. Selected sports have a glowing ring; switching recolours the ring and filters the following section.
+
+• Sport profiles: For each sport, display an expandable card (90% width, 16px radius) tinted with that sport’s colour. Inside, show scouting reports and an edit/delete menu.
+
+• History & Achievements: A horizontal timeline at the bottom holds cards representing each game played; each card has a 60px height and uses a subtle left‑to‑right gradient. Below the timeline, list achievements in a vertical stack; achievements locked are desaturated and tilt when tapped to unlock. Unlock animations trigger confetti bursts with sport‑specific colours.
+
+Use a dark background for dark mode and lighten text to white. On web, place the sport filter at the top and stack profile sections in a single column.”
+
+9 Edit Profile & Sport Profiles
+
+“Present an Edit Profile modal that slides up from the bottom at 90% screen width. The modal header contains a title (‘Edit Profile’) and a close icon aligned right. Arrange editable fields in a vertical form: name (text input), bio (multi‑line), skill level (slider with tick marks), preferred sport (dropdown with icons), location (map picker with pin), birthdate (toggle between Gregorian and Nepali calendar date pickers) and nationality (dropdown with flag icons). Each field sits inside a frosted card with 12px padding and 16px radius. For avatar upload, place a circular preview image above the form; tapping opens a file picker and a cropping tool. On submit, call PUT /users/{userId}/profile
+GitHub
+ and show a success toast.
+
+For sport profiles, present a multi‑section wizard: positions (multi-select chips), play style (radio buttons), superpower (text field), preferred formats (multi-select chips), availability (day/time pickers), fun fact (text field), skill level (slider), preferred side (left/middle/right toggles), kit number (numeric input), travel radius (slider with km labels) and open‑to‑invites (switch). Use tooltips or info icons to explain each field; align tooltips to the right of inputs. The wizard concludes with a summary card and a save button. Each section’s background colour adjusts to the sport’s palette.”
+
+10 Messages & Real‑Time Chat
+
+“For the chat module, divide the screen vertically:
+
+• Conversation list (25% width on mobile; collapsible on web): Each item is a rectangular card (height 56px, radius 12px) with a blurred backdrop; left side displays the game icon, middle shows game title and last message preview, right side holds a badge with unread count. On mobile, show one line of preview; on web, expand to two lines.
+
+• Chat view (75% width on mobile): Use a dark, semi‑transparent background. Messages align left/right depending on sender; message bubbles have 14px radius, tinted in Nepal Red for the user and Global Blue for others. Reactions appear as small icons in a cluster above a message. Display typing indicators as three animated dots that oscillate. The input bar sits at bottom, with a microphone icon, an attachment icon and a text field; the send button uses Secondary Green #10B981. Haptic feedback occurs on send.
+
+Load past messages via GET /messages/conversations/{id}; send new ones via POST /messages/send. For real‑time updates, subscribe to your WebSocket endpoint and animate new messages sliding up. On web, fix the input bar to the bottom and shrink message bubbles on hover to reveal timestamps.”
+
+11 Payments & Pricing
+
+“Design payment sheets as overlay panels occupying the bottom 60% of the screen. Use a blurred background with glass effect and a clear top handle for dragging. Display the selected game’s price breakdown: base price, tax, service fee and total. Each line uses a left‑aligned label and a right‑aligned amount; total amount should be bold, 20px font size and tinted in Secondary Green #10B981
+GitHub
+. Below, present available payment methods in a vertical list with icons: eSewa/Khalti for Nepal (red icons), Stripe/PayPal for global. Tapping a method expands its panel with input fields for credentials. Place a large confirm button at the bottom; its background colour matches the selected method (e.g. eSewa green, Khalti purple). Call GET /payments/international/exchange-rates to show approximate cost in the user’s currency, displayed just under the price breakdown. Show a success animation (stacking coins or filling a pot) when payment completes; then present a receipt with game details. On web, streamline to a single column with a big ‘Pay Now’ button and a note redirecting to an external checkout.”
+
+12 Venues & Maps
+
+“Organise the Venues screen into map and list segments:
+
+• Search & Filter Bar: At the top, a sticky search bar (90% width, 48px height) with rounded edges; typing triggers GET /venues autocomplete suggestions below. Next to the bar, place a filter icon opening a modal for sport type, rating, distance range and amenities.
+
+• Map (60% height mobile, 100% width web left column): Use a custom dark map style. Markers are 32px circles with sports icons inside; the ring matches Nepal Red for futsal venues and Global Blue for others. Markers scale up on tap and animate into place when loaded.
+
+• Venues List (40% height mobile, right half on web): Use vertically stacked cards (full width minus 32px margin). Each card has a height of 120px with a 16px radius, a blurred background image, venue name, city, supported sports icons (small chips), rating (stars) and distance (aligned right). Tapping a card opens a modal with venue details, gallery (horizontal image carousel with swiping) and the ability to call GET /venues/{id} for more info.
+
+• Add Venue: If the user is a venue owner, show a floating action button in the bottom right. Tapping opens a form with name, address (map picker), type, image uploads and amenities toggles. Save via POST /venues. On web, display a dedicated ‘Add Venue’ page instead of a floating button.”
+
+13 Notifications
+
+“Add a bell icon in the top right of the app bar. Display an unread badge (8px circle) with count. On tap, show a drop‑down (mobile) or side sheet (web) containing a vertical list of notifications. Each notification row has an icon, title, timestamp (small, light grey text) and a short description. Unread notifications use bold text and a coloured bar on the left (e.g. red for urgent, blue for info)
+GitHub
+. Swiping left or right on a row calls POST /notifications/mark-read, marking it as read and triggering a shrink/fade animation. Provide a ‘Mark all as read’ button at the top that calls PUT /notifications/mark-all-read. Subscribe to WebSocket /user/queue/notifications for real‑time updates; animate new notifications sliding down and the bell icon shaking gently. On web, use a popover anchored under the bell and allow keyboard navigation.”
+
+14 Achievements & Analytics
+
+“Divide the Achievements screen into two halves:
+
+• Badges grid (top half): Use a 3‑column grid of hexagonal badges. Unlocked badges have vivid colours (e.g. sport‑specific accent colours), while locked badges use desaturated tones with diagonal hatching. Tapping a badge triggers a radial reveal animation showing details like the achievement description and unlock date. When a badge unlocks, play a burst animation of particles matching the badge’s colour.
+
+• Analytics charts (bottom half): Display three charts: a line graph of win/loss over time, a bar chart of games per sport and a pie chart of skill level distribution. Use your design palette for the bars and lines (e.g. red for cricket, blue for basketball, green for futsal). Include axis titles and a chart title for each. Use animated transitions to draw the charts when the screen loads. Position each chart inside a rounded rectangle container with subtle shadows. A small recommendation panel sits below the charts; it displays AI‑generated suggestions for the user’s next sports or games to try, accompanied by icons and short descriptions. On web, display the charts in a 2×2 grid and avoid heavy animations.”
+
+15 Settings & Account Management
+
+“Use an accordion layout for the Settings screen: each section (Account, Appearance, Notifications, Language, Security, Danger Zone) is a collapsible card with a 12px radius and 8px vertical margin. Each header shows an icon (e.g. user silhouette, palette, bell, globe, shield, warning triangle) and a title; tapping expands the card to reveal its content.
+
+• Account: Show read‑only name and email fields with an edit button opening a modal.
+
+• Appearance: Provide toggles for high‑contrast mode (enlarges fonts and increases contrast), dark mode (switches theme), and RTL layout. When adaptive dark mode is enabled, include a sub-toggle for auto‑detecting ambient light.
+
+• Notifications: List checkboxes for invites, recommendations, and system alerts. When toggled, send the updated preferences to your API.
+
+• Language: Use a dropdown with languages (English, Nepali, Spanish, French, Hindi) including flag icons; selecting a language triggers a subtle flag waving animation and re-renders the text.
+
+• Security: Provide two buttons (‘Change Password’, ‘Change Email’) that open modals with password/email inputs. After submission, call POST /auth/change-password or POST /auth/change-email and display success or error messages. Show session details (device names and login times) in a list and a ‘Sign out’ button at the bottom calling POST /auth/logout.
+
+• Danger Zone: Display a red‑bordered card with the ‘Delete Account’ option. Tapping triggers a modal requiring the user to type ‘DELETE’ to confirm.
+
+On web, present all sections stacked vertically in a single scrollable view and reduce animation duration to 200 ms.”
+
+16 Multi‑Sport Profiles & Scouting Reports
+
+“Create a section displaying icons of all sports the user plays. Each icon lives in a 60px circular button with a subtle drop shadow. When tapped, the button expands to 80px and slides a card in from the right containing the full scouting report. The card (width 90%, height 60%) uses the sport’s accent colour for its header and neutral white for its body. Within the report, show the nickname (bold headline), positions (chips), play style (italic text), superpower (highlighted line), preferred formats (small tags), availability (calendar overview), fun fact, skill level (progress bar), preferred side (segmented control), kit number (medium‑sized number), travel radius (horizontal slider) and open‑to‑invites flag (switch). Include edit and delete icons in the top right of the card; swiping the expanded card to the left reveals a delete overlay. On web, present all sport reports in an accordion list; tapping a sport expands its report downward.”
+
+17 Web‑Specific Simplifications
+
+“For the web platform, adopt a responsive drawer layout:
+
+• Navigation: Place a collapsible drawer on the left side containing icons and labels for Home, Explore, Create, Chat, Profile, Venues and Settings. Use 12px padding between items and highlight the active item by changing its background to light grey.
+
+• Flatten flows: Combine multi‑step wizards (e.g. Create Game) into single pages with collapsible sections. Use vertical accordions rather than slides; avoid complex animations.
+
+• Reduced motion: Replace parallax and 3D effects with simpler fades and slides. Buttons still use subtle hover transitions (colour shifts and small rises).
+
+• List/grid views: Use responsive CSS grids for lists of games, venues and achievements. Cards expand on hover to reveal more details.
+
+• Accessibility: Ensure all interactive elements are reachable via keyboard (Tab/Shift+Tab); add ARIA labels for screen readers.
+
+• Consistent motifs: Retain cultural colours and subtle motifs but emphasise clarity; increase font sizes slightly for desktop readability; keep line lengths under 80 characters.”

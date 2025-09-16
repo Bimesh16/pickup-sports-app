@@ -67,6 +67,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     void deleteByUsername(String username);
 
+    // Lookup by phone for account recovery
+    Optional<User> findByPhone(String phone);
+
     interface Summary {
         Long getId();
         String getUsername();
