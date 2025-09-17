@@ -10,14 +10,26 @@ module.exports = {
         // Nepal Flag Colors + Brand Theme
         nepal: {
           crimson: '#DC143C',    // Nepal's crimson red
-          white: '#FFFFFF',      // Nepal's white
           blue: '#003893',       // Nepal's blue
+          gold: '#F6C453',       // Nepal's gold accent
+          white: '#FFFFFF',      // Nepal's white
         },
-        // Brand Theme: Navy → Royal → Crimson
-        navy: '#1B263B',
-        royal: '#003893',
-        crimson: '#E63946',
-        // Text tokens for WCAG AA compliance
+        // Surface tokens - WCAG AA compliant
+        surface: {
+          0: '#FFFFFF',          // Cards - highest contrast
+          1: '#F8FAFC',          // Light background
+          dark: '#0B1220',       // Hero/gradients - darkest
+        },
+        // Text tokens - High contrast ratios
+        'text-strong': '#0B1021',      // ≥7:1 on surface-0/1
+        'text-dark-contrast': '#F8FAFF', /* ≥8:1 on surface-dark */
+        'text-muted': '#475569',       // Not < #64748B for accessibility
+        // Border tokens
+        border: {
+          light: '#E5E7EB',      // Light borders
+          dark: '#20304D',       // Dark borders
+        },
+        // Legacy compatibility
         'text-dark': '#0E1116',
         'text-light': '#E9EEF5',
         'body-light': '#1F2937',

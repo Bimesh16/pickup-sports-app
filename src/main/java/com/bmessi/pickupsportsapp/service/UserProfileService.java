@@ -44,6 +44,7 @@ public class UserProfileService {
         User user = userRepository.findOptionalByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        // Basic profile fields
         if (request.bio() != null) user.setBio(request.bio().trim());
         if (request.location() != null) user.setLocation(request.location().trim());
         if (request.latitude() != null) user.setLatitude(request.latitude());
@@ -53,6 +54,21 @@ public class UserProfileService {
         if (request.age() != null) user.setAge(request.age());
         if (request.position() != null) user.setPosition(request.position().trim());
         if (request.contactPreference() != null) user.setContactPreference(request.contactPreference().trim());
+
+        // New profile fields
+        if (request.firstName() != null) user.setFirstName(request.firstName().trim());
+        if (request.lastName() != null) user.setLastName(request.lastName().trim());
+        if (request.email() != null) user.setEmail(request.email().trim());
+        if (request.displayName() != null) user.setDisplayName(request.displayName().trim());
+        if (request.phone() != null) user.setPhone(request.phone().trim());
+        if (request.gender() != null) user.setGender(request.gender());
+        if (request.nationality() != null) user.setNationality(request.nationality().trim());
+        if (request.xp() != null) user.setXp(request.xp());
+        if (request.level() != null) user.setLevel(request.level());
+        if (request.rank() != null) user.setRank(request.rank());
+        if (request.preferredSports() != null) user.setPreferredSports(request.preferredSports());
+        if (request.privacySettings() != null) user.setPrivacySettings(request.privacySettings());
+        if (request.securitySettings() != null) user.setSecuritySettings(request.securitySettings());
 
         User saved = userRepository.save(user);
         return toDto(saved);
@@ -107,6 +123,10 @@ public class UserProfileService {
         return new UserProfileDTO(
                 u.getId(),
                 u.getUsername(),
+                u.getFirstName(),
+                u.getLastName(),
+                u.getEmail(),
+                u.getDisplayName(),
                 u.getBio(),
                 u.getAvatarUrl(),
                 u.getLocation(),
@@ -115,7 +135,18 @@ public class UserProfileService {
                 u.getSkillLevel(),
                 u.getAge(),
                 u.getPosition(),
-                u.getContactPreference()
+                u.getContactPreference(),
+                u.getPhone(),
+                u.getGender(),
+                u.getNationality(),
+                u.getXp(),
+                u.getLevel(),
+                u.getRank(),
+                u.getIsEmailVerified(),
+                u.getIsPhoneVerified(),
+                u.getPreferredSports(),
+                u.getPrivacySettings(),
+                u.getSecuritySettings()
         );
     }
 }

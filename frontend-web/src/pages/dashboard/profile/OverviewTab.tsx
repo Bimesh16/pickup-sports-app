@@ -262,7 +262,7 @@ export default function OverviewTab({ profile, onProfileUpdate }: OverviewTabPro
         {/* Bio Section */}
       <Card className="p-6">
         <div className="flex items-start justify-between mb-4">
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">About Me</h3>
+          <h3 className="text-[18px] font-bold text-text-strong">About Me</h3>
           {!isEditingBio && (
             <Button
               onClick={() => setIsEditingBio(true)}
@@ -306,7 +306,7 @@ export default function OverviewTab({ profile, onProfileUpdate }: OverviewTabPro
             </div>
           </div>
         ) : (
-          <p className="text-[var(--text-muted)] leading-relaxed">
+          <p className="text-text-muted leading-relaxed">
             {profile.bio || 'No bio added yet. Click edit to add one!'}
           </p>
         )}

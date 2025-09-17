@@ -172,6 +172,73 @@ public class User {
     @Column(name = "phone", length = 20)
     private String phone;
 
+    // Additional profile fields for frontend compatibility
+    @NotBlank(message = "First name is required")
+    @Size(max = 50, message = "First name must not exceed 50 characters")
+    @Column(name = "first_name", nullable = false, length = 50)
+    private String firstName;
+
+    @NotBlank(message = "Last name is required")
+    @Size(max = 50, message = "Last name must not exceed 50 characters")
+    @Column(name = "last_name", nullable = false, length = 50)
+    private String lastName;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
+    @Size(max = 100, message = "Email must not exceed 100 characters")
+    @Column(name = "email", nullable = false, unique = true, length = 100)
+    private String email;
+
+    @Size(max = 100, message = "Display name must not exceed 100 characters")
+    @Column(name = "display_name", length = 100)
+    private String displayName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender", length = 20)
+    private Gender gender;
+
+    @Size(max = 2, message = "Nationality must be a 2-character country code")
+    @Pattern(regexp = "^[A-Z]{2}$", message = "Nationality must be a valid ISO 3166-1 alpha-2 country code")
+    @Column(name = "nationality", length = 2)
+    private String nationality;
+
+    // XP and Level System
+    @Min(value = 0, message = "XP cannot be negative")
+    @Column(name = "xp", nullable = false)
+    @Builder.Default
+    private Integer xp = 0;
+
+    @Min(value = 1, message = "Level must be at least 1")
+    @Column(name = "level", nullable = false)
+    @Builder.Default
+    private Integer level = 1;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rank", length = 20)
+    @Builder.Default
+    private Rank rank = Rank.LEARNER;
+
+    // Verification status
+    @Column(name = "is_email_verified", nullable = false)
+    @Builder.Default
+    private boolean isEmailVerified = false;
+
+    @Column(name = "is_phone_verified", nullable = false)
+    @Builder.Default
+    private boolean isPhoneVerified = false;
+
+    // Preferred sports as JSON array
+    @Column(name = "preferred_sports", columnDefinition = "TEXT")
+    private String preferredSports; // JSON array of sport names
+
+    // Privacy settings as JSON
+    @Column(name = "privacy_settings", columnDefinition = "TEXT")
+    private String privacySettings; // JSON object for privacy preferences
+
+    // Security settings as JSON
+    @Column(name = "security_settings", columnDefinition = "TEXT")
+    private String securitySettings; // JSON object for security preferences
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -186,6 +253,14 @@ public class User {
 
     public enum Role {
         USER, ADMIN, MODERATOR, PREMIUM_USER
+    }
+
+    public enum Gender {
+        MALE, FEMALE, NONBINARY, PREFER_NOT_TO_SAY
+    }
+
+    public enum Rank {
+        LEARNER, COMPETENT, ADVANCED, PRO
     }
 
 

@@ -23,7 +23,7 @@ const OverviewTab: React.FC<{ profile: UserProfile }> = ({ profile }) => {
       {/* Bio Section */}
       <Card className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-[var(--text)]">Bio</h3>
+          <h3 className="text-[18px] font-bold text-text-strong">Bio</h3>
           <Button 
             onClick={() => setIsEditingBio(!isEditingBio)} 
             variant="outline" 
@@ -49,7 +49,7 @@ const OverviewTab: React.FC<{ profile: UserProfile }> = ({ profile }) => {
             </div>
           </div>
         ) : (
-          <p className="text-[var(--text-muted)]">
+          <p className="text-text-muted">
             {bio || 'No bio yet. Click Edit to add one!'}
           </p>
         )}
@@ -59,27 +59,27 @@ const OverviewTab: React.FC<{ profile: UserProfile }> = ({ profile }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-4 text-center">
           <Trophy className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-[var(--text)]">{profile.stats.fairPlayScore}</div>
-          <div className="text-sm text-[var(--text-muted)]">Fair Play Score</div>
+          <div className="text-2xl font-bold text-text-strong">{profile.stats.fairPlayScore}</div>
+          <div className="text-[12px] text-text-muted">Fair Play Score</div>
         </Card>
         
         <Card className="p-4 text-center">
           <Zap className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-[var(--text)]">{profile.stats.currentStreak}</div>
-          <div className="text-sm text-[var(--text-muted)]">Current Streak</div>
+          <div className="text-2xl font-bold text-text-strong">{profile.stats.currentStreak}</div>
+          <div className="text-[12px] text-text-muted">Current Streak</div>
         </Card>
         
         <Card className="p-4 text-center">
           <Gamepad2 className="w-8 h-8 text-green-500 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-[var(--text)]">{profile.stats.mostPlayedSport}</div>
-          <div className="text-sm text-[var(--text-muted)]">Most Played</div>
+          <div className="text-2xl font-bold text-text-strong">{profile.stats.mostPlayedSport}</div>
+          <div className="text-[12px] text-text-muted">Most Played</div>
         </Card>
       </div>
 
       {/* Next Match */}
       <Card className="p-4">
-        <h3 className="font-semibold text-[var(--text)] mb-4">Next Match</h3>
-        <div className="text-center py-8 text-[var(--text-muted)]">
+        <h3 className="text-[18px] font-bold text-text-strong mb-4">Next Match</h3>
+        <div className="text-center py-8 text-text-muted">
           <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>No upcoming matches</p>
           <Button className="mt-3" size="sm">Find Games</Button>

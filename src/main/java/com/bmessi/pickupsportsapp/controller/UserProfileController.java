@@ -3,6 +3,7 @@ package com.bmessi.pickupsportsapp.controller;
 import com.bmessi.pickupsportsapp.dto.UpdateUserProfileRequest;
 import com.bmessi.pickupsportsapp.dto.UserProfileDTO;
 import com.bmessi.pickupsportsapp.service.UserProfileService;
+import com.bmessi.pickupsportsapp.service.ComprehensiveProfileService;
 import com.bmessi.pickupsportsapp.repository.SportRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import java.security.Principal;
 public class UserProfileController {
 
     private final UserProfileService userProfileService;
+    private final ComprehensiveProfileService comprehensiveProfileService;
     private final SportRepository sportRepository;
 
     @Value("${app.http.allow-unsafe-write:false}")
@@ -301,5 +303,19 @@ public class UserProfileController {
         return h != null && h.length >= 12 &&
                 h[0] == 'R' && h[1] == 'I' && h[2] == 'F' && h[3] == 'F' &&
                 h[8] == 'W' && h[9] == 'E' && h[10] == 'B' && h[11] == 'P';
+    }
+
+    @GetMapping("/me/comprehensive")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<com.bmessi.pickupsportsapp.dto.ComprehensiveProfileDTO> getComprehensiveProfile(Principal principal) {
+        try {
+            var dto = comprehensiveProfileService.getComprehensiveProfile(principal.getName());
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CACHE_CONTROL, "private, max-age=30");
+            headers.add(HttpHeaders.LAST_MODIFIED, httpDate(System.currentTimeMillis()));
+            return ResponseEntity.ok().headers(headers).body(dto);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().headers(noStore()).body(null);
+        }
     }
 }

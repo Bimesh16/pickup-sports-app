@@ -2,29 +2,42 @@
   /* Nepal theme core - Official flag colors */
   --nepal-crimson: #DC143C;
   --nepal-blue: #003893;
+  --nepal-gold: #F6C453;
   --nepal-white: #ffffff;
-  --nepal-navy: #1B263B;
 
   /* Brand colors */
   --brand-primary: var(--nepal-crimson);
   --brand-secondary: var(--nepal-blue);
-  --brand-accent: var(--nepal-navy);
+  --brand-accent: var(--nepal-gold);
 
-  /* Surfaces & backgrounds */
-  --bg-app: #ffffff;
-  --bg-surface: #ffffff;
-  --bg-muted: #f8fafc;
+  /* Surface tokens - WCAG AA compliant */
+  --surface-0: #FFFFFF;        /* Cards - highest contrast */
+  --surface-1: #F8FAFC;        /* Light background */
+  --surface-dark: #0B1220;     /* Hero/gradients - darkest */
+
+  /* Text tokens - High contrast ratios */
+  --text-strong: #0B1021;      /* ≥7:1 on surface-0/1 */
+  --text-dark-contrast: #F8FAFF; /* ≥8:1 on surface-dark */
+  --text-muted: #475569;       /* Not < #64748B for accessibility */
+
+  /* Border tokens */
+  --border: #E5E7EB;           /* Light borders */
+  --border-dark: #20304D;      /* Dark borders */
+
+  /* Legacy compatibility */
+  --bg-app: var(--surface-0);
+  --bg-surface: var(--surface-0);
+  --bg-muted: var(--surface-1);
   --bg-contrast: #e2e8f0;
   --bg-overlay: rgba(0, 0, 0, 0.5);
 
-  /* Text colors */
-  --text-primary: #0f172a;
+  /* Text colors - mapped to new tokens */
+  --text-primary: var(--text-strong);
   --text-secondary: #334155;
-  --text-muted: #64748b;
-  --text-inverse: #ffffff;
+  --text-muted: var(--text-muted);
+  --text-inverse: var(--text-dark-contrast);
 
   /* Borders and dividers */
-  --border: #e5e7eb;
   --border-muted: #f1f5f9;
   --border-strong: #cbd5e1;
 

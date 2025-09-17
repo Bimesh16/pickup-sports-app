@@ -54,47 +54,19 @@ import BadgesTab from './profile/BadgesTab';
 import TeamsTab from './profile/TeamsTab';
 import SportsTab from './profile/SportsTab';
 import SecurityTab from './profile/SecurityTab';
+import ProfileHeader from './profile/ProfileHeader';
+import { Profile, updateProfile } from './profile/profile.schema';
 
-// Types
-interface UserProfile {
-  id: string;
-  username: string;
-  displayName: string;
-  email: string;
-  phone?: string;
-  avatarUrl?: string;
-  bio?: string;
-  rank: 'Learner' | 'Competent' | 'Advanced' | 'Pro';
-  xp: number;
-  level: number;
-  isEmailVerified: boolean;
-  isPhoneVerified: boolean;
-  preferredSports: string[];
-  stats: {
-    totalGames: number;
-    totalWins: number;
-    winRate: number;
-    currentStreak: number;
-    longestStreak: number;
-    fairPlayScore: number;
-    mostPlayedSport: string;
-    recentWeeklyAttendance: number[];
-    sportAppearances: Record<string, number>;
-  };
-  badges: Badge[];
-  teams: Team[];
-  sports: SportProfile[];
-  privacy: {
-    showPublicly: boolean;
-    publicFields: string[];
-    privateFields: string[];
-  };
-  security: {
-    has2FA: boolean;
-    activeSessions: Session[];
-    lastPasswordChange: string;
-  };
-}
+// XP Configuration for different ranks
+export const XP_CONFIG = {
+  Learner: { min: 0, max: 100, color: 'text-blue-600' },
+  Competent: { min: 100, max: 250, color: 'text-green-600' },
+  Advanced: { min: 250, max: 500, color: 'text-purple-600' },
+  Pro: { min: 500, max: 1000, color: 'text-yellow-600' }
+};
+
+// Use Profile type from schema
+type UserProfile = Profile;
 
 interface Badge {
   id: string;
@@ -184,278 +156,10 @@ const XP_REWARDS = {
   ON_TIME_RSVP: 5
 };
 
-// Nepal Cultural Greeting Component
-const NepalCulturalGreeting: React.FC<{ name: string; xp: number }> = ({ name, xp }) => {
-  return (
-    <div className="text-center space-y-3 animate-fadeIn">
-      {/* Unique Nepal Flag-inspired Visual */}
-      <div className="relative mx-auto w-16 h-16 flex items-center justify-center">
-        {/* Nepal Flag Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#DC143C] via-[#DC143C] to-[#003893] rounded-lg rotate-45 transform">
-          <div className="absolute inset-2 bg-gradient-to-tr from-white/20 to-transparent rounded-sm"></div>
-        </div>
-        
-        {/* Mountain Peaks */}
-        <div className="relative z-10 flex items-center justify-center">
-          <div className="text-white text-xl font-bold drop-shadow-lg">🏔️</div>
-        </div>
-        
-        {/* Sparkle Effect */}
-        <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping opacity-75"></div>
-        <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></div>
-      </div>
-      
-      {/* Static Greeting */}
-      <div className="text-lg font-semibold text-[var(--text-primary)]">
-        Namaste, {name}!
-      </div>
-      <div className="text-sm text-[var(--text-muted)] font-medium" style={{fontFamily: 'Noto Sans Devanagari'}}>
-        नमस्कार • Sports Warrior
-      </div>
-      <div className="text-sm text-[var(--brand-primary)] font-medium flex items-center justify-center gap-2">
-        <span className="inline-block animate-pulse">🎮</span>
-        Ready for Action!
-        <span className="inline-block animate-pulse">⚡</span>
-      </div>
-    </div>
-  );
-};
 
-// Animated XP Counter
-const AnimatedXPCounter: React.FC<{ currentXP: number; targetXP: number; level: number }> = ({ currentXP, targetXP, level }) => {
-  const [displayXP, setDisplayXP] = useState(currentXP);
-  const progress = ((currentXP - (level * 100)) / 100) * 100;
 
-  useEffect(() => {
-    const duration = 2000; // 2 seconds
-    const steps = 60;
-    const stepValue = (targetXP - currentXP) / steps;
-    let currentStep = 0;
 
-    const interval = setInterval(() => {
-      currentStep++;
-      setDisplayXP(currentXP + (stepValue * currentStep));
-      
-      if (currentStep >= steps) {
-        clearInterval(interval);
-        setDisplayXP(targetXP);
-      }
-    }, duration / steps);
 
-    return () => clearInterval(interval);
-  }, [currentXP, targetXP]);
-
-  return (
-    <div className="space-y-3">
-      <div className="flex justify-between items-center">
-        <span className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-          ⚡ XP Progress
-          <span className="animate-pulse">🎯</span>
-        </span>
-        <span className="text-sm text-[var(--text-muted)] font-mono">
-          {Math.round(displayXP)} XP
-        </span>
-      </div>
-      
-      {/* Animated Progress Bar */}
-      <div className="relative w-full bg-[var(--bg-muted)] rounded-full h-4 overflow-hidden">
-        <div 
-          className="absolute top-0 left-0 h-full bg-gradient-to-r from-[var(--brand-primary)] via-[var(--brand-secondary)] to-[var(--brand-primary)] transition-all duration-1000 ease-out animate-shimmer"
-          style={{ width: `${Math.min(progress, 100)}%` }}
-        />
-        <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow">
-          Level {level}
-        </div>
-        
-        {/* Sparkle effects */}
-        <div className="absolute top-1 right-2 w-1 h-1 bg-white rounded-full animate-ping opacity-75" />
-        <div className="absolute top-2 right-6 w-1 h-1 bg-white rounded-full animate-ping delay-300 opacity-50" />
-      </div>
-    </div>
-  );
-};
-
-// Achievement Badges with Nepal Themes
-const NepalAchievementBadge: React.FC<{ badge: Badge; isNew?: boolean }> = ({ badge, isNew }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  
-  const getNepalIcon = (category: string, rarity: string) => {
-    const nepalIcons = {
-      achievement: ['🏔️', '🙏', '⚡', '🎯', '👑'],
-      participation: ['🏃‍♂️', '🤝', '🎮', '⚽', '🏀'],
-      social: ['👥', '🎉', '💪', '🌟', '🔥'],
-      skill: ['🥇', '🏆', '⭐', '💎', '🚀']
-    };
-    
-    const icons = nepalIcons[category as keyof typeof nepalIcons] || nepalIcons.achievement;
-    const rarityIndex = ['common', 'rare', 'epic', 'legendary'].indexOf(rarity);
-    return icons[rarityIndex] || icons[0];
-  };
-
-  const getRarityGlow = (rarity: string) => {
-    switch (rarity) {
-      case 'common': return 'shadow-green-400/50';
-      case 'rare': return 'shadow-blue-400/50';
-      case 'epic': return 'shadow-purple-400/50'; 
-      case 'legendary': return 'shadow-yellow-400/50';
-      default: return 'shadow-gray-400/50';
-    }
-  };
-
-  return (
-    <div 
-      className={`relative group cursor-pointer transition-all duration-300 ${
-        isHovered ? 'scale-110' : 'scale-100'
-      }`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className={`w-16 h-16 rounded-full bg-gradient-to-br from-[var(--brand-primary)]/20 to-[var(--brand-secondary)]/20 border-2 border-[var(--brand-primary)]/30 flex items-center justify-center text-2xl shadow-lg ${getRarityGlow(badge.rarity)} transition-all duration-300`}>
-        {getNepalIcon(badge.category, badge.rarity)}
-      </div>
-      
-      {isNew && (
-        <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-bounce font-bold">
-          !
-        </div>
-      )}
-      
-      {isHovered && (
-        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap z-10 animate-fadeIn">
-          <div className="font-semibold">{badge.name}</div>
-          <div className="text-gray-300">{badge.description}</div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Import the new interactive profile picture
-import InteractiveProfilePicture from '@components/profile/InteractiveProfilePicture';
-
-// Profile Header Card Component  
-const ProfileHeaderCard: React.FC<{
-  profile: UserProfile;
-  onEditProfile: () => void;
-  onShareProfile: () => void;
-  onShowQR: () => void;
-  onCopyInvite: () => void;
-  onAvatarUpdate: (newAvatar: string) => void;
-}> = ({ profile, onEditProfile, onShareProfile, onShowQR, onCopyInvite, onAvatarUpdate }) => {
-  const currentLevel = LEVEL_CONFIG[profile.rank];
-  const progress = ((profile.xp - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100;
-
-  return (
-    <Card className="p-6 bg-gradient-to-br from-[var(--brand-primary)]/5 via-transparent to-[var(--brand-secondary)]/5 border-[var(--brand-primary)]/20 relative overflow-hidden animate-fadeIn">
-      {/* Nepal Flag Pattern Background */}
-      <div className="absolute top-0 right-0 w-32 h-32 opacity-5 animate-prayerFlag">
-        <div className="w-full h-1/2 bg-[var(--brand-primary)]"></div>
-        <div className="w-full h-1/2 bg-[var(--brand-secondary)]"></div>
-      </div>
-      
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Interactive Avatar and Basic Info */}
-        <div className="flex flex-col items-center md:items-start">
-          {/* Nepal Cultural Greeting */}
-          <NepalCulturalGreeting name={profile.displayName.split(' ')[0]} xp={profile.xp} />
-          
-          <div className="mt-4">
-            <InteractiveProfilePicture
-              currentAvatar={profile.avatarUrl}
-              displayName={profile.displayName}
-              onAvatarUpdate={onAvatarUpdate}
-              xp={profile.xp}
-              level={profile.level}
-            />
-          </div>
-          
-          <div className="text-center md:text-left mt-4">
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-              {profile.displayName}
-            </h1>
-            <p className="text-[var(--text-muted)]">@{profile.username}</p>
-            <div className="flex items-center gap-2 mt-2">
-              <Badge variant="default">
-                {profile.rank}
-              </Badge>
-              <span className="text-sm text-[var(--text-muted)]">
-                Level {profile.level}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* XP Progress and Actions */}
-        <div className="flex-1 space-y-4">
-          {/* XP Progress Bar */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-[var(--text-primary)]">XP Progress</span>
-              <span className="text-sm text-[var(--text-muted)]">
-                {profile.xp} / {currentLevel.max} XP
-              </span>
-            </div>
-            <div className="w-full bg-[var(--bg-muted)] rounded-full h-3">
-              <div 
-                className="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] h-3 rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(progress, 100)}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-[var(--text-muted)] mt-1">
-              <span>{currentLevel.min} XP</span>
-              <span>{currentLevel.max} XP</span>
-            </div>
-          </div>
-
-          {/* Animated Greeting */}
-          <div className="text-lg font-medium text-[var(--text-primary)]">
-            <span className="inline-block animate-pulse">🎮</span> Game face on, {profile.displayName.split(' ')[0]}!
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={onEditProfile}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <Edit3 className="w-4 h-4" />
-              Edit Profile
-            </Button>
-            <Button
-              onClick={onShareProfile}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <Share2 className="w-4 h-4" />
-              Share
-            </Button>
-            <Button
-              onClick={onShowQR}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <QrCode className="w-4 h-4" />
-              QR Code
-            </Button>
-            <Button
-              onClick={onCopyInvite}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <Copy className="w-4 h-4" />
-              Copy Invite
-            </Button>
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-};
 
 // Profile Progress Component
 const ProfileProgress: React.FC<{
@@ -598,16 +302,25 @@ export default function ProfilePage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [xpAnimation, setXpAnimation] = useState<{ show: boolean; amount: number }>({ show: false, amount: 0 });
+  
+  // New editing state management
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<Partial<Profile>>({});
+  const [saving, setSaving] = useState(false);
 
   // Mock profile data - replace with real API calls
   const mockProfile: UserProfile = {
     id: String(user?.id || '1'),
     username: user?.username || 'player123',
     displayName: user?.firstName ? `${user.firstName} ${user?.lastName || ''}`.trim() : 'John Doe',
+    firstName: user?.firstName || 'John',
+    lastName: user?.lastName || 'Doe',
     email: user?.email || 'john@example.com',
     phone: '+977-9841234567',
     avatarUrl: user?.avatarUrl,
     bio: 'Passionate about pickup sports and building community through games!',
+    gender: 'male',
+    nationality: 'NP',
     rank: 'Competent',
     xp: 150,
     level: 2,
@@ -670,6 +383,7 @@ export default function ProfilePage() {
           setLoading(false);
           localStorage.setItem('userProfile', JSON.stringify(mockProfile));
         }
+
 
         // Background API sync with timeout - don't block UI
         const controller = new AbortController();
@@ -742,6 +456,43 @@ export default function ProfilePage() {
     toast.success('Invite code copied to clipboard!');
   };
 
+  // New editing handlers
+  const toggleEdit = () => {
+    setEditing(v => !v);
+    if (!editing) {
+      setDraft(profile || {});
+    } else {
+      setDraft({});
+    }
+  };
+
+  const handleChange = (patch: Partial<Profile>) => {
+    setDraft(d => ({ ...d, ...patch }));
+  };
+
+  const handleSave = async () => {
+    if (!profile) return;
+    
+    setSaving(true);
+    try {
+      const updatedProfile = await updateProfile(draft);
+      setProfile(updatedProfile);
+      setEditing(false);
+      setDraft({});
+      toast.success('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditing(false);
+    setDraft({});
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -780,19 +531,24 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-nepal-blue via-slate-900 to-nepal-crimson text-white relative overflow-hidden">
       {/* Enhanced Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-[var(--brand-primary)] rounded-full blur-3xl transform -translate-x-32 -translate-y-32"></div>
-        <div className="absolute top-1/3 right-0 w-96 h-96 bg-[var(--brand-secondary)] rounded-full blur-3xl transform translate-x-32"></div>
-        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-purple-400 rounded-full blur-3xl transform translate-y-32"></div>
+      <div className="absolute inset-0 opacity-[0.1] pointer-events-none">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-nepal-crimson rounded-full blur-3xl transform -translate-x-32 -translate-y-32"></div>
+        <div className="absolute top-1/3 right-0 w-96 h-96 bg-nepal-blue rounded-full blur-3xl transform translate-x-32"></div>
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-white/20 rounded-full blur-3xl transform translate-y-32"></div>
       </div>
+      
+      {/* Stadium-style grid overlay */}
+      <div className="absolute inset-0 opacity-30" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+      }}></div>
 
       <div className="relative z-10 space-y-8 p-4 max-w-7xl mx-auto">
         {/* XP Animation - Enhanced */}
         {xpAnimation.show && (
           <div className="fixed top-20 right-4 z-50 animate-bounce">
-            <div className="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform animate-pulse">
+            <div className="bg-gradient-to-r from-nepal-crimson to-nepal-blue text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform animate-pulse">
               <Sparkles className="w-5 h-5 animate-spin" />
               <span className="font-bold text-lg">+{xpAnimation.amount} XP</span>
               <div className="absolute inset-0 bg-white/20 rounded-xl animate-ping"></div>
@@ -800,34 +556,73 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Enhanced Profile Header */}
+        {/* Enhanced Profile Header v2 */}
         <div className="transform transition-all duration-500 hover:scale-[1.02] animate-fadeIn">
-          <ProfileHeaderCard
+          <ProfileHeader
             profile={profile}
-            onEditProfile={handleEditProfile}
-            onShareProfile={handleShareProfile}
-            onShowQR={handleShowQR}
-            onCopyInvite={handleCopyInvite}
-            onAvatarUpdate={(newAvatar: string) => {
-              setProfile(prev => prev ? { ...prev, avatarUrl: newAvatar } : null);
-              toast.success('Profile picture updated!');
-            }}
+            editing={editing}
+            onToggleEdit={toggleEdit}
+            onChange={handleChange}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            saving={saving}
           />
         </div>
 
+        {/* About Me Section */}
+        <Card className="p-6 bg-surface-0 border border-border shadow-2xl" data-testid="about-card">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[18px] font-bold text-text-strong flex items-center gap-2">
+                <User className="w-5 h-5" />
+                About Me
+              </h2>
+              {!editing && (
+                <button
+                  onClick={toggleEdit}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-nepal-blue hover:text-nepal-crimson hover:bg-surface-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-nepal-blue focus:ring-offset-2"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  Edit
+                </button>
+              )}
+            </div>
+            <div className="text-text-muted">
+              {profile.bio ? (
+                <p className="leading-relaxed">{profile.bio}</p>
+              ) : (
+                <p className="text-sm italic text-text-muted">
+                  No bio available. Click Edit to add a personal description.
+                </p>
+              )}
+            </div>
+            {editing && (
+              <div className="mt-4">
+                <textarea
+                  value={draft.bio || profile.bio || ''}
+                  onChange={(e) => handleChange({ bio: e.target.value })}
+                  placeholder="Tell us about yourself..."
+                  className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-nepal-crimson focus:border-transparent resize-none bg-surface-1 text-text-strong placeholder-text-muted"
+                  rows={3}
+                />
+              </div>
+            )}
+          </div>
+        </Card>
+
         {/* Enhanced Tabbed Sections */}
-        <Card className="p-0 shadow-xl border-0 bg-white/80 backdrop-blur-sm transform transition-all duration-500 animate-fadeInUp">
+        <Card className="p-0 shadow-2xl border-0 bg-surface-0 transform transition-all duration-500 animate-fadeInUp border border-border">
           {/* Enhanced Tab Navigation */}
-          <div className="border-b border-gray-100 bg-gradient-to-r from-white to-gray-50/50">
+          <div className="border-b border-border bg-gradient-to-r from-surface-1 to-surface-0">
             <div className="flex overflow-x-auto px-2">
               {tabs.map((tab, index) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-3 px-6 py-4 text-sm font-medium whitespace-nowrap border-b-3 transition-all duration-300 transform hover:scale-105 ${
+                  className={`flex items-center gap-3 px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-nepal-blue focus:ring-offset-2 ${
                     activeTab === tab.id
-                      ? 'border-[var(--brand-primary)] text-[var(--brand-primary)] bg-[var(--brand-primary)]/5 shadow-sm'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200 hover:bg-gray-50/50'
+                      ? 'border-nepal-crimson text-nepal-crimson bg-nepal-crimson/10'
+                      : 'border-transparent text-text-muted hover:text-text-strong hover:border-border hover:bg-surface-1'
                   }`}
                   style={{
                     animationDelay: `${index * 0.1}s`
@@ -843,59 +638,9 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Profile Progress and Stats Cards - Now below tabs */}
-          <div className="p-6 bg-gradient-to-br from-white via-gray-50/30 to-white border-b border-gray-100">
-            <div className="flex flex-col lg:flex-row gap-8">
-              <div className="lg:w-1/3 transform transition-all duration-500 hover:scale-105 animate-slideInLeft">
-                <ProfileProgress
-                  profile={profile}
-                  onTaskComplete={handleTaskComplete}
-                />
-              </div>
-              
-              {/* Quick Stats Cards */}
-              <div className="lg:w-2/3 grid grid-cols-1 md:grid-cols-3 gap-4 animate-slideInRight">
-                <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
-                      <Trophy className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-green-700">{profile.stats.totalGames}</div>
-                      <div className="text-sm text-green-600">Total Games</div>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center">
-                      <Star className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-blue-700">{profile.stats.fairPlayScore}</div>
-                      <div className="text-sm text-blue-600">Fair Play Score</div>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-4 bg-gradient-to-br from-orange-50 to-red-50 border-orange-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
-                      <Flame className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-orange-700">{profile.stats.currentStreak}</div>
-                      <div className="text-sm text-orange-600">Current Streak</div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            </div>
-          </div>
 
           {/* Enhanced Tab Content */}
-          <div className="p-8 bg-gradient-to-br from-white via-gray-50/30 to-white">
+          <div className="p-8 bg-gradient-to-br from-surface-1 via-surface-0 to-surface-1">
             <div className="animate-fadeIn">
               {activeTab === 'overview' && profile && (
                 <div className="transform transition-all duration-500 animate-slideInUp">
