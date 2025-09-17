@@ -5,14 +5,14 @@ import { theme } from '@styles/theme';
 
 export function GameCard({ g, onClick }: { g: GameSummaryDTO | undefined | null; onClick?: () => void }) {
   if (!g) {
-    if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+    if (typeof window !== 'undefined' && !import.meta.env.DEV) {
       // eslint-disable-next-line no-console
       console.warn('GameCard: received null/undefined game');
     }
     return null;
   }
   if (typeof g !== 'object') {
-    if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+    if (typeof window !== 'undefined' && !import.meta.env.DEV) {
       // eslint-disable-next-line no-console
       console.warn('GameCard: expected object but received', g);
     }
@@ -22,7 +22,7 @@ export function GameCard({ g, onClick }: { g: GameSummaryDTO | undefined | null;
   if (!('sport' in g) || (g as any).sport == null) missing.push('sport');
   if (!('time' in g) || (g as any).time == null) missing.push('time');
   if (!('location' in g) || (g as any).location == null) missing.push('location');
-  if (missing.length && typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+  if (missing.length && typeof window !== 'undefined' && !import.meta.env.DEV) {
     // eslint-disable-next-line no-console
     console.warn('GameCard: incomplete game data', { missing, g });
   }

@@ -5,12 +5,15 @@ import { AuthProvider, useAuth } from '@hooks/useAuth';
 const Dashboard = React.lazy(() => import('@pages/Dashboard'));
 const LoginPage = React.lazy(() => import('@pages/Login'));
 const GameDetailsRoute = React.lazy(() => import('@pages/GameDetailsRoute'));
+const CreateGameRoute = React.lazy(() => import('@pages/dashboard/CreateGame'));
+const EditGameRoute = React.lazy(() => import('@pages/dashboard/EditGame'));
 const Register = React.lazy(() => import('@pages/Register'));
 const LocationOnboarding = React.lazy(() => import('@pages/LocationOnboarding'));
 const PremiumTabsDemo = React.lazy(() => import('@pages/PremiumTabsDemo'));
 const ProfileHub = React.lazy(() => import('@pages/ProfileHub'));
 const NotificationsMatrix = React.lazy(() => import('@pages/NotificationsMatrix'));
 const SettingsAdvanced = React.lazy(() => import('@pages/SettingsAdvanced'));
+const UnifiedComponentsDemo = React.lazy(() => import('@pages/UnifiedComponentsDemo'));
 import EnhancedGameEntranceAuth from '@components/EnhancedGameEntranceAuth';
 // Note: UnifiedJoinTheLeague is only imported for dev test route to enable tree-shaking in prod
 let UnifiedJoinTheLeague: any = null as any;
@@ -28,7 +31,11 @@ import OfflineIndicator from '@components/OfflineIndicator';
 import { LocationProvider } from '@context/LocationContext';
 import { ThemeProvider } from '@context/ThemeContext';
 import { AppStateProvider } from '@context/AppStateContext';
-import { WebSocketProvider } from '@context/WebSocketContext';
+import { StompWebSocketProvider } from '@context/StompWebSocketContext';
+import WebSocketErrorBoundary from '@components/WebSocketErrorBoundary';
+import { pushNotificationService } from './services/pushNotificationService';
+import { offlineCacheService } from './services/offlineCacheService';
+import './utils/mockWebSocket'; // Import mock WebSocket for development
 import { theme } from '@styles/theme';
 import { http } from '@lib/http';
 import ErrorBoundary from '@components/ErrorBoundary';
@@ -46,6 +53,44 @@ const queryClient = new QueryClient({
 function AppInner() {
   const { token, isLoading } = useAuth();
   const location = useLocation();
+
+  // Initialize services
+  useEffect(() => {
+    const initializeServices = async () => {
+      try {
+        // Initialize offline cache service
+        await offlineCacheService.initialize();
+        console.log('Offline cache service initialized');
+
+        // Initialize push notifications
+        try {
+          const pushInitialized = await pushNotificationService.initialize();
+          if (pushInitialized) {
+            console.log('Push notifications initialized');
+          } else {
+            console.log('Push notifications not available (permission denied or not supported)');
+          }
+        } catch (error) {
+          console.warn('Push notification initialization failed:', error);
+        }
+
+        // Set up online/offline listeners
+        const cleanup = offlineCacheService.onOnlineStatusChange((isOnline: boolean) => {
+          console.log('Network status changed:', isOnline ? 'online' : 'offline');
+        });
+
+        return cleanup;
+      } catch (error) {
+        console.error('Failed to initialize services:', error);
+      }
+    };
+
+    const cleanup = initializeServices();
+    
+    return () => {
+      cleanup.then(cleanupFn => cleanupFn?.());
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -169,6 +214,14 @@ function AppInner() {
             </Suspense>
           ) : <Navigate to="/login" replace state={{ from: location }} />}
         />
+        <Route
+          path="/unified-demo"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <UnifiedComponentsDemo />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
 
         {/* Protected routes */}
         <Route
@@ -187,6 +240,22 @@ function AppInner() {
             </Suspense>
           ) : <Navigate to="/login" replace state={{ from: location }} />}
         />
+        <Route
+          path="/games/new"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <CreateGameRoute />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
+        <Route
+          path="/games/:id/edit"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <EditGameRoute />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to={token ? '/dashboard' : '/login'} replace />} />
@@ -194,7 +263,10 @@ function AppInner() {
       </ErrorBoundary>
       <EnvBadge />
       <OfflineIndicator />
-      <NotificationBanner onDismiss={(id) => console.log('Dismissed notification:', id)} />
+      <NotificationBanner onDismiss={(id) => {
+        console.log('Dismissed notification:', id);
+        // You can add additional logic here if needed
+      }} />
       <TrustBar />
     </div>
   );
@@ -209,9 +281,11 @@ export default function App() {
           <ThemeProvider>
             <AppStateProvider>
               <LocationProvider>
-                <WebSocketProvider>
-                  <AppInner />
-                </WebSocketProvider>
+        <WebSocketErrorBoundary>
+          <StompWebSocketProvider>
+            <AppInner />
+          </StompWebSocketProvider>
+        </WebSocketErrorBoundary>
               </LocationProvider>
             </AppStateProvider>
           </ThemeProvider>

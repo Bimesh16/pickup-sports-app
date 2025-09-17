@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { X, Bell, Gamepad2, Users, Trophy, MapPin } from 'lucide-react';
-import { useWebSocket } from '@context/WebSocketContext';
+import { useStompWebSocket } from '@context/StompWebSocketContext';
 
 interface NotificationBannerProps {
   onDismiss: (id: string) => void;
 }
 
 const NotificationBanner: React.FC<NotificationBannerProps> = ({ onDismiss }) => {
-  const { notifications } = useWebSocket();
+  const { subscribe, unsubscribe, isConnected } = useStompWebSocket();
   const [visibleNotifications, setVisibleNotifications] = useState<Array<{
     id: string;
     type: string;
@@ -17,13 +17,17 @@ const NotificationBanner: React.FC<NotificationBannerProps> = ({ onDismiss }) =>
   }>>([]);
 
   useEffect(() => {
-    if (notifications.length > 0) {
-      const latestNotification = notifications[0];
+    if (!isConnected) {
+      return; // Don't subscribe if not connected
+    }
+
+    const handleNotification = (message: any) => {
+      const data = JSON.parse(message.body);
       const notification = {
-        id: latestNotification.id,
-        type: latestNotification.type,
-        title: latestNotification.title,
-        message: latestNotification.message,
+        id: data.id || Date.now().toString(),
+        type: data.type || 'info',
+        title: data.title || 'Notification',
+        message: data.message || data.body || 'You have a new notification',
         timestamp: Date.now()
       };
 
@@ -33,8 +37,22 @@ const NotificationBanner: React.FC<NotificationBannerProps> = ({ onDismiss }) =>
       setTimeout(() => {
         onDismiss(notification.id);
       }, 5000);
-    }
-  }, [notifications, onDismiss]);
+    };
+
+    // Subscribe to STOMP topics for notifications
+    const subscriptions = [
+      subscribe('/topic/notifications', handleNotification),
+      subscribe('/topic/game_updates', handleNotification),
+      subscribe('/topic/player_events', handleNotification),
+      subscribe('/topic/team_events', handleNotification)
+    ].filter(Boolean); // Filter out undefined subscriptions
+
+    return () => {
+      subscriptions.forEach(sub => {
+        if (sub) unsubscribe(sub);
+      });
+    };
+  }, [isConnected, subscribe, unsubscribe, onDismiss]);
 
   const handleDismiss = (id: string) => {
     setVisibleNotifications(prev => prev.filter(n => n.id !== id));

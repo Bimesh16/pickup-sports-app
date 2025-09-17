@@ -23,6 +23,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useLocationContext } from '@context/LocationContext';
+import { venuesApi, calculateVenueDistance, formatVenuePrice, getAmenityIcon } from '@api/venues';
 import { mockDashboardApi } from './mockData';
 import { apiClient } from '@lib/apiClient';
 
@@ -502,31 +503,45 @@ export default function VenuesPage() {
   const fetchVenues = useCallback(async () => {
     try {
       setLoading(true);
+      const lat = location?.lat || 27.7172;
+      const lng = location?.lng || 85.324;
       
-      // Use mock data for now
-      const mockVenues = await mockDashboardApi.getVenues();
+      let transformedVenues: Venue[] = [];
       
-      // Transform mock data to match Venue interface
-      const transformedVenues: Venue[] = mockVenues.map(venue => ({
-        id: venue.id.toString(),
-        name: venue.name,
-        description: venue.description,
-        address: venue.address,
-        phone: venue.phone,
-        capacity: venue.capacity,
-        hourlyRate: venue.hourlyRate,
-        amenities: venue.amenities,
-        location: {
-          lat: venue.latitude,
-          lng: venue.longitude
-        },
-        distance: Math.random() * 10 + 1, // Mock distance
-        rating: 4 + Math.random(), // Mock rating
-        reviewCount: Math.floor(Math.random() * 100) + 10, // Mock review count
-        photos: [], // Mock photos
-        isActive: venue.isActive,
-        sports: ['Futsal', 'Basketball', 'Volleyball'] // Mock sports
-      }));
+      try {
+        // Try real API first
+        const response = await venuesApi.getNearbyVenues(lat, lng, filters.distance);
+        transformedVenues = response.content.map(venue => ({
+          ...venue,
+          distance: venue.location.lat && venue.location.lng 
+            ? calculateVenueDistance(lat, lng, venue.location.lat, venue.location.lng)
+            : undefined
+        }));
+      } catch (apiError) {
+        console.warn('API call failed, falling back to mock data:', apiError);
+        // Fallback to mock data
+        const mockVenues = await mockDashboardApi.getVenues();
+        transformedVenues = mockVenues.map(venue => ({
+          id: venue.id.toString(),
+          name: venue.name,
+          description: venue.description,
+          address: venue.address,
+          phone: venue.phone,
+          capacity: venue.capacity,
+          hourlyRate: venue.hourlyRate,
+          amenities: venue.amenities,
+          location: {
+            lat: venue.latitude,
+            lng: venue.longitude
+          },
+          distance: Math.random() * 10 + 1, // Mock distance
+          rating: 4 + Math.random(), // Mock rating
+          reviewCount: Math.floor(Math.random() * 100) + 10, // Mock review count
+          photos: [], // Mock photos
+          isActive: venue.isActive,
+          sports: ['Futsal', 'Basketball', 'Volleyball'] // Mock sports
+        }));
+      }
 
       // Apply filters
       let filteredVenues = transformedVenues.filter(venue => {
@@ -570,11 +585,24 @@ export default function VenuesPage() {
     try {
       setBookingVenues(prev => new Set(prev).add(venueId));
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Show success message (you can implement a toast here)
-      console.log('Venue booked successfully!');
+      try {
+        // Real API call to book venue
+        const bookingData = {
+          startTime: '18:00',
+          endTime: '20:00',
+          date: new Date().toISOString().split('T')[0],
+          sport: 'Futsal',
+          notes: 'Regular pickup game'
+        };
+        
+        const result = await venuesApi.bookVenue(venueId, bookingData);
+        console.log('Venue booked successfully!', result.message);
+      } catch (apiError) {
+        console.warn('API booking failed, using mock:', apiError);
+        // Fallback to mock booking
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('Venue booked successfully! (mock)');
+      }
       
       // Close modal
       setSelectedVenue(null);

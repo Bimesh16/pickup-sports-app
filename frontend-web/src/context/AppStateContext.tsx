@@ -9,6 +9,10 @@ interface AppStateContextValue {
   isLoading: boolean;
   refreshProfile: () => Promise<void>;
   refreshNotifications: () => Promise<void>;
+  addNotification: (notification: Notification) => void;
+  markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead: () => void;
+  getUnreadCount: () => number;
 }
 
 const AppStateContext = createContext<AppStateContextValue | undefined>(undefined);
@@ -42,6 +46,52 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   }, [token]);
 
+  const addNotification = useCallback((notification: Notification) => {
+    setNotifications(prev => [notification, ...prev]);
+  }, []);
+
+  const markNotificationAsRead = useCallback(async (id: string) => {
+    try {
+      await notificationsApi.markRead(parseInt(id));
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === id ? { ...notif, isRead: true } : notif
+        )
+      );
+    } catch (error) {
+      console.warn('Failed to mark notification as read', error);
+      // Update locally even if API fails
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === id ? { ...notif, isRead: true } : notif
+        )
+      );
+    }
+  }, []);
+
+  const markAllNotificationsAsRead = useCallback(async () => {
+    try {
+      const unreadNotifications = notifications.filter(n => !n.isRead);
+      await Promise.all(unreadNotifications.map(notif => 
+        notificationsApi.markRead(parseInt(notif.id))
+      ));
+      
+      setNotifications(prev => 
+        prev.map(notif => ({ ...notif, isRead: true }))
+      );
+    } catch (error) {
+      console.warn('Failed to mark all notifications as read', error);
+      // Update locally even if API fails
+      setNotifications(prev => 
+        prev.map(notif => ({ ...notif, isRead: true }))
+      );
+    }
+  }, [notifications]);
+
+  const getUnreadCount = useCallback(() => {
+    return notifications.filter(n => !n.isRead).length;
+  }, [notifications]);
+
   useEffect(() => {
     if (!token) {
       setProfile(null);
@@ -57,8 +107,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     notifications,
     isLoading,
     refreshProfile,
-    refreshNotifications
-  }), [profile, notifications, isLoading, refreshProfile, refreshNotifications]);
+    refreshNotifications,
+    addNotification,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    getUnreadCount
+  }), [profile, notifications, isLoading, refreshProfile, refreshNotifications, addNotification, markNotificationAsRead, markAllNotificationsAsRead, getUnreadCount]);
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
 }

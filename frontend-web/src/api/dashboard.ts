@@ -29,14 +29,17 @@ export const profilesApi = {
   update(payload: Partial<User>) {
     return apiClient.put<User>('/profiles/me', payload).then((res) => res.data);
   },
+  getRecentActivity(userId: string) {
+    return apiClient.get(`/api/v1/users/${userId}/games/recent`).then((res) => res.data);
+  },
 };
 
 export const notificationsApi = {
-  list() {
-    return apiClient.get<Notification[]>('/notifications').then((res) => res.data);
+  list(params?: { unreadOnly?: boolean }) {
+    return apiClient.get<Notification[]>('/api/v1/notifications', { params }).then((res) => res.data);
   },
   markRead(id: number) {
-    return apiClient.post('/notifications/' + id + '/read', {}).then((res) => res.data);
+    return apiClient.post('/api/v1/notifications/' + id + '/read', {}).then((res) => res.data);
   },
 };
 

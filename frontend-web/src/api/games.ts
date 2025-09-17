@@ -30,7 +30,50 @@ export interface GamesResponse {
   last: boolean;
 }
 
+// Create Game Request interface
+export interface CreateGameRequest {
+  sport: string;
+  title?: string;
+  description?: string;
+  time: string; // ISO date string
+  location: string;
+  latitude?: number;
+  longitude?: number;
+  skillLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'ANY';
+  maxPlayers: number;
+  minPlayers?: number;
+  pricePerPlayer: number;
+  gameType?: 'PICKUP' | 'TOURNAMENT' | 'LEAGUE';
+  duration?: number; // in minutes
+  equipment?: string;
+  rules?: string;
+  isPrivate?: boolean;
+  requiresApproval?: boolean;
+}
+
+// Update Game Request interface
+export interface UpdateGameRequest extends Partial<CreateGameRequest> {
+  id: number;
+}
+
 export const gamesApi = {
+  // Create a new game
+  async createGame(gameData: CreateGameRequest): Promise<GameSummaryDTO> {
+    const response = await apiClient.post('/api/v1/games', gameData);
+    return response.data;
+  },
+
+  // Update an existing game
+  async updateGame(gameId: number, gameData: Partial<CreateGameRequest>): Promise<GameSummaryDTO> {
+    const response = await apiClient.put(`/api/v1/games/${gameId}`, gameData);
+    return response.data;
+  },
+
+  // Delete/Cancel a game
+  async deleteGame(gameId: number): Promise<void> {
+    await apiClient.delete(`/api/v1/games/${gameId}`);
+  },
+
   // Search games with filters
   async searchGames(params: GamesSearchParams = {}): Promise<GamesResponse> {
     const queryParams = new URLSearchParams();
@@ -86,6 +129,17 @@ export const gamesApi = {
         page,
         size,
         sort: 'time,asc'
+      }
+    });
+    return response.data;
+  },
+
+  // Get trending sports
+  async getTrendingSports(lat: number, lng: number): Promise<{ sport: string; playerCount: number; gameCount: number; icon: string }[]> {
+    const response = await apiClient.get('/api/v1/games/trending', {
+      params: {
+        lat,
+        lon: lng
       }
     });
     return response.data;

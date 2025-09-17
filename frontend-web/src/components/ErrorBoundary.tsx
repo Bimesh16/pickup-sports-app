@@ -51,7 +51,7 @@ class ErrorBoundary extends Component<Props, State> {
                 We encountered an error while loading the games. Please try again.
               </p>
               
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+              {import.meta.env.DEV && this.state.error && (
                 <details className="text-left bg-[var(--bg-muted)] p-4 rounded-lg mb-4">
                   <summary className="cursor-pointer font-medium text-sm">
                     Error Details (Development)

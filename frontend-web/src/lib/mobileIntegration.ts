@@ -37,13 +37,13 @@ export const mobileConfig: MobileRealTimeConfig = {
   },
   pushNotifications: {
     fcm: {
-      serverKey: process.env.FCM_SERVER_KEY || '',
-      senderId: process.env.FCM_SENDER_ID || ''
+      serverKey: import.meta.env.VITE_FCM_SERVER_KEY || '',
+      senderId: import.meta.env.VITE_FCM_SENDER_ID || ''
     },
     apns: {
-      keyId: process.env.APNS_KEY_ID || '',
-      teamId: process.env.APNS_TEAM_ID || '',
-      bundleId: process.env.APNS_BUNDLE_ID || ''
+      keyId: import.meta.env.VITE_APNS_KEY_ID || '',
+      teamId: import.meta.env.VITE_APNS_TEAM_ID || '',
+      bundleId: import.meta.env.VITE_APNS_BUNDLE_ID || ''
     }
   },
   backgroundSync: {

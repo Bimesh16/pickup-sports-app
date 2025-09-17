@@ -845,6 +845,160 @@ export function UserProfile({ user, onUpdateProfile }: UserProfileProps) {
   );
 }
 
+// Tooltip Component
+interface TooltipProps {
+  content: string;
+  children: React.ReactNode;
+  position?: 'top' | 'bottom' | 'left' | 'right';
+  delay?: number;
+}
+
+export function Tooltip({ content, children, position = 'top', delay = 200 }: TooltipProps) {
+  const [isVisible, setIsVisible] = React.useState(false);
+  const [timeoutId, setTimeoutId] = React.useState<NodeJS.Timeout | null>(null);
+
+  const showTooltip = () => {
+    const id = setTimeout(() => setIsVisible(true), delay);
+    setTimeoutId(id);
+  };
+
+  const hideTooltip = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      setTimeoutId(null);
+    }
+    setIsVisible(false);
+  };
+
+  const getPositionStyles = () => {
+    const baseStyles = {
+      position: 'absolute',
+      zIndex: 1000,
+      padding: `${theme.spacing.xs}px ${theme.spacing.sm}px`,
+      background: '#1f2937',
+      color: 'white',
+      borderRadius: theme.radius.md,
+      fontSize: '12px',
+      fontWeight: '500',
+      whiteSpace: 'nowrap',
+      boxShadow: theme.shadows.lg,
+      pointerEvents: 'none' as const,
+      opacity: isVisible ? 1 : 0,
+      transform: isVisible ? 'scale(1)' : 'scale(0.95)',
+      transition: 'all 0.2s ease-in-out'
+    };
+
+    switch (position) {
+      case 'top':
+        return {
+          ...baseStyles,
+          bottom: '100%',
+          left: '50%',
+          transform: isVisible ? 'translateX(-50%) scale(1)' : 'translateX(-50%) scale(0.95)',
+          marginBottom: theme.spacing.xs
+        };
+      case 'bottom':
+        return {
+          ...baseStyles,
+          top: '100%',
+          left: '50%',
+          transform: isVisible ? 'translateX(-50%) scale(1)' : 'translateX(-50%) scale(0.95)',
+          marginTop: theme.spacing.xs
+        };
+      case 'left':
+        return {
+          ...baseStyles,
+          right: '100%',
+          top: '50%',
+          transform: isVisible ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.95)',
+          marginRight: theme.spacing.xs
+        };
+      case 'right':
+        return {
+          ...baseStyles,
+          left: '100%',
+          top: '50%',
+          transform: isVisible ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.95)',
+          marginLeft: theme.spacing.xs
+        };
+      default:
+        return baseStyles;
+    }
+  };
+
+  return (
+    <div
+      style={{ position: 'relative', display: 'inline-block' }}
+      onMouseEnter={showTooltip}
+      onMouseLeave={hideTooltip}
+      onFocus={showTooltip}
+      onBlur={hideTooltip}
+    >
+      {children}
+      {isVisible && (
+        <div style={getPositionStyles()}>
+          {content}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Switch Component
+interface SwitchProps {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  disabled?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+export function Switch({ checked, onCheckedChange, disabled = false, size = 'md' }: SwitchProps) {
+  const sizes = {
+    sm: { width: '32px', height: '18px' },
+    md: { width: '44px', height: '24px' },
+    lg: { width: '56px', height: '30px' }
+  };
+
+  const thumbSizes = {
+    sm: { width: '14px', height: '14px' },
+    md: { width: '20px', height: '20px' },
+    lg: { width: '26px', height: '26px' }
+  };
+
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onCheckedChange(!checked)}
+      style={{
+        ...sizes[size],
+        position: 'relative',
+        background: checked ? theme.colors.primary : '#d1d5db',
+        border: 'none',
+        borderRadius: '9999px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        transition: 'all 0.2s ease-in-out',
+        opacity: disabled ? 0.5 : 1
+      }}
+    >
+      <div
+        style={{
+          ...thumbSizes[size],
+          position: 'absolute',
+          top: '2px',
+          left: checked ? `calc(100% - ${thumbSizes[size].width}px - 2px)` : '2px',
+          background: 'white',
+          borderRadius: '50%',
+          transition: 'all 0.2s ease-in-out',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+        }}
+      />
+    </button>
+  );
+}
+
 // Global styles to inject
 export const GlobalStyles = () => {
   React.useEffect(() => {

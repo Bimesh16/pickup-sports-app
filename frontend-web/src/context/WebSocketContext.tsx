@@ -1,118 +1,296 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { websocketManager, GameUpdatedEvent, NotificationCreatedEvent, ChatMessageEvent } from '@lib/websocket';
-import { useAuth } from '@hooks/useAuth';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { EventEmitter } from 'events';
+import { toast } from 'react-toastify';
 
-interface WebSocketContextType {
+interface WebSocketContextValue {
   isConnected: boolean;
-  gameUpdates: GameUpdatedEvent[];
-  notifications: NotificationCreatedEvent[];
-  chatMessages: ChatMessageEvent[];
-  sendMessage: (message: any) => void;
-  clearGameUpdates: () => void;
-  clearNotifications: () => void;
-  clearChatMessages: () => void;
+  connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error';
+  reconnectAttempts: number;
+  subscribe: (event: string, callback: (data: any) => void) => void;
+  unsubscribe: (event: string, callback: (data: any) => void) => void;
+  send: (event: string, data: any) => void;
+  reconnect: () => void;
 }
 
-const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
-
-export const useWebSocket = () => {
-  const context = useContext(WebSocketContext);
-  if (!context) {
-    throw new Error('useWebSocket must be used within a WebSocketProvider');
-  }
-  return context;
-};
+const WebSocketContext = createContext<WebSocketContextValue | undefined>(undefined);
 
 interface WebSocketProviderProps {
   children: React.ReactNode;
 }
 
-export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }) => {
-  const { token } = useAuth();
+export function WebSocketProvider({ children }: WebSocketProviderProps) {
   const [isConnected, setIsConnected] = useState(false);
-  const [gameUpdates, setGameUpdates] = useState<GameUpdatedEvent[]>([]);
-  const [notifications, setNotifications] = useState<NotificationCreatedEvent[]>([]);
-  const [chatMessages, setChatMessages] = useState<ChatMessageEvent[]>([]);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const [eventEmitter] = useState(() => new EventEmitter());
+  
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const maxReconnectAttempts = 5;
+  const baseReconnectDelay = 1000; // 1 second
 
-  // Connect to WebSocket when token is available
-  useEffect(() => {
-    if (token) {
-      websocketManager.connect(token);
-    } else {
-      websocketManager.disconnect();
-      setIsConnected(false);
+  // WebSocket URL - use environment variable or fallback
+  const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8080/ws';
+
+  // Calculate exponential backoff delay
+  const getReconnectDelay = (attempt: number) => {
+    return Math.min(baseReconnectDelay * Math.pow(2, attempt), 30000); // Max 30 seconds
+  };
+
+  // Connect to WebSocket
+  const connect = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      return;
     }
-  }, [token]);
 
-  // Set up event listeners
+    setConnectionStatus('connecting');
+    
+    try {
+      // Check if WebSocket is supported
+      if (typeof WebSocket === 'undefined') {
+        throw new Error('WebSocket is not supported in this environment');
+      }
+      
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        setIsConnected(true);
+        setConnectionStatus('connected');
+        setReconnectAttempts(0);
+        
+        // Send authentication token if available
+        const token = localStorage.getItem('ps_token');
+        if (token) {
+          ws.send(JSON.stringify({
+            type: 'auth',
+            token: token
+          }));
+        }
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('WebSocket message received:', data);
+          
+          // Emit the event to subscribers
+          eventEmitter.emit(data.type, data.payload);
+          
+          // Handle specific events
+          handleWebSocketEvent(data.type, data.payload);
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+
+      ws.onclose = (event) => {
+        console.log('WebSocket disconnected:', event.code, event.reason);
+        setIsConnected(false);
+        setConnectionStatus('disconnected');
+        
+        // Don't attempt to reconnect if it's a manual close or if we've exceeded max attempts
+        if (event.code !== 1000 && reconnectAttempts < maxReconnectAttempts) {
+          scheduleReconnect();
+        } else if (reconnectAttempts >= maxReconnectAttempts) {
+          console.warn('Max reconnection attempts reached. WebSocket will not reconnect automatically.');
+          setConnectionStatus('error');
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setConnectionStatus('error');
+        setIsConnected(false);
+        // Don't attempt to reconnect on error, let the close handler handle it
+      };
+
+    } catch (error) {
+      console.error('Error creating WebSocket connection:', error);
+      setConnectionStatus('error');
+      scheduleReconnect();
+    }
+  }, [wsUrl, reconnectAttempts, eventEmitter]);
+
+  // Schedule reconnection with exponential backoff
+  const scheduleReconnect = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+    }
+
+    const delay = getReconnectDelay(reconnectAttempts);
+    console.log(`Scheduling reconnection in ${delay}ms (attempt ${reconnectAttempts + 1})`);
+    
+    reconnectTimeoutRef.current = setTimeout(() => {
+      setReconnectAttempts(prev => prev + 1);
+      connect();
+    }, delay);
+  }, [connect, reconnectAttempts]);
+
+  // Handle specific WebSocket events
+  const handleWebSocketEvent = useCallback((eventType: string, payload: any) => {
+    switch (eventType) {
+      case 'game_updated':
+        handleGameUpdated(payload);
+        break;
+      case 'notification_created':
+        handleNotificationCreated(payload);
+        break;
+      case 'chat_message':
+        handleChatMessage(payload);
+        break;
+      case 'player_joined':
+        handlePlayerJoined(payload);
+        break;
+      case 'player_left':
+        handlePlayerLeft(payload);
+        break;
+      case 'game_cancelled':
+        handleGameCancelled(payload);
+        break;
+      case 'team_invite':
+        handleTeamInvite(payload);
+        break;
+      default:
+        console.log('Unhandled WebSocket event:', eventType, payload);
+    }
+  }, []);
+
+  // Handle game updates
+  const handleGameUpdated = (payload: any) => {
+    console.log('Game updated:', payload);
+    // You can emit a custom event or update state here
+    eventEmitter.emit('game_updated', payload);
+  };
+
+  // Handle new notifications
+  const handleNotificationCreated = (payload: any) => {
+    console.log('New notification:', payload);
+    
+    // Show in-app banner for important notifications
+    if (payload.priority === 'high') {
+      toast.info(payload.message, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
+    
+    eventEmitter.emit('notification_created', payload);
+  };
+
+  // Handle chat messages
+  const handleChatMessage = (payload: any) => {
+    console.log('Chat message:', payload);
+    eventEmitter.emit('chat_message', payload);
+  };
+
+  // Handle player joined
+  const handlePlayerJoined = (payload: any) => {
+    console.log('Player joined:', payload);
+    toast.success(`${payload.playerName} joined the game!`);
+    eventEmitter.emit('player_joined', payload);
+  };
+
+  // Handle player left
+  const handlePlayerLeft = (payload: any) => {
+    console.log('Player left:', payload);
+    toast.info(`${payload.playerName} left the game`);
+    eventEmitter.emit('player_left', payload);
+  };
+
+  // Handle game cancelled
+  const handleGameCancelled = (payload: any) => {
+    console.log('Game cancelled:', payload);
+    toast.error(`Game "${payload.gameName}" has been cancelled`);
+    eventEmitter.emit('game_cancelled', payload);
+  };
+
+  // Handle team invite
+  const handleTeamInvite = (payload: any) => {
+    console.log('Team invite:', payload);
+    toast.info(`You've been invited to join "${payload.teamName}"`);
+    eventEmitter.emit('team_invite', payload);
+  };
+
+  // Subscribe to events
+  const subscribe = useCallback((event: string, callback: (data: any) => void) => {
+    eventEmitter.on(event, callback);
+  }, [eventEmitter]);
+
+  // Unsubscribe from events
+  const unsubscribe = useCallback((event: string, callback: (data: any) => void) => {
+    eventEmitter.off(event, callback);
+  }, [eventEmitter]);
+
+  // Send message
+  const send = useCallback((event: string, data: any) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: event,
+        payload: data
+      }));
+    } else {
+      console.warn('WebSocket is not connected. Cannot send message:', event, data);
+    }
+  }, []);
+
+  // Manual reconnect
+  const reconnect = useCallback(() => {
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+    setReconnectAttempts(0);
+    connect();
+  }, [connect]);
+
+  // Initialize connection
   useEffect(() => {
-    const handleConnected = () => {
-      setIsConnected(true);
-    };
+    // Only attempt to connect if WebSocket is supported
+    if (typeof WebSocket !== 'undefined') {
+      // Add a small delay to prevent immediate connection attempts
+      const timeoutId = setTimeout(() => {
+        connect();
+      }, 1000);
+      
+      return () => {
+        clearTimeout(timeoutId);
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+        }
+        if (wsRef.current) {
+          wsRef.current.close();
+        }
+      };
+    } else {
+      console.warn('WebSocket not supported, real-time features disabled');
+      setConnectionStatus('error');
+    }
+  }, [connect]);
 
-    const handleDisconnected = () => {
-      setIsConnected(false);
-    };
-
-    const handleGameUpdated = (data: GameUpdatedEvent) => {
-      setGameUpdates(prev => [data, ...prev.slice(0, 9)]); // Keep last 10 updates
-    };
-
-    const handleNotificationCreated = (data: NotificationCreatedEvent) => {
-      setNotifications(prev => [data, ...prev.slice(0, 9)]); // Keep last 10 notifications
-    };
-
-    const handleChatMessage = (data: ChatMessageEvent) => {
-      setChatMessages(prev => [data, ...prev.slice(0, 49)]); // Keep last 50 messages
-    };
-
-    const handleMaxReconnectAttempts = () => {
-      console.error('Max reconnection attempts reached');
-      setIsConnected(false);
-    };
-
-    websocketManager.on('connected', handleConnected);
-    websocketManager.on('disconnected', handleDisconnected);
-    websocketManager.on('game_updated', handleGameUpdated);
-    websocketManager.on('notification_created', handleNotificationCreated);
-    websocketManager.on('chat_message', handleChatMessage);
-    websocketManager.on('maxReconnectAttemptsReached', handleMaxReconnectAttempts);
-
-    return () => {
-      websocketManager.off('connected', handleConnected);
-      websocketManager.off('disconnected', handleDisconnected);
-      websocketManager.off('game_updated', handleGameUpdated);
-      websocketManager.off('notification_created', handleNotificationCreated);
-      websocketManager.off('chat_message', handleChatMessage);
-      websocketManager.off('maxReconnectAttemptsReached', handleMaxReconnectAttempts);
-    };
+  // Reconnect when token changes
+  useEffect(() => {
+    const token = localStorage.getItem('ps_token');
+    if (token && wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: 'auth',
+        token: token
+      }));
+    }
   }, []);
 
-  const sendMessage = useCallback((message: any) => {
-    websocketManager.send(message);
-  }, []);
-
-  const clearGameUpdates = useCallback(() => {
-    setGameUpdates([]);
-  }, []);
-
-  const clearNotifications = useCallback(() => {
-    setNotifications([]);
-  }, []);
-
-  const clearChatMessages = useCallback(() => {
-    setChatMessages([]);
-  }, []);
-
-  const value: WebSocketContextType = {
+  const value: WebSocketContextValue = {
     isConnected,
-    gameUpdates,
-    notifications,
-    chatMessages,
-    sendMessage,
-    clearGameUpdates,
-    clearNotifications,
-    clearChatMessages,
+    connectionStatus,
+    reconnectAttempts,
+    subscribe,
+    unsubscribe,
+    send,
+    reconnect
   };
 
   return (
@@ -120,4 +298,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       {children}
     </WebSocketContext.Provider>
   );
-};
+}
+
+export function useWebSocket() {
+  const context = useContext(WebSocketContext);
+  if (!context) {
+    throw new Error('useWebSocket must be used within a WebSocketProvider');
+  }
+  return context;
+}
