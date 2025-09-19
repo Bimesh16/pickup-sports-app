@@ -1,6 +1,6 @@
 import React, { useEffect, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, BrowserRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@hooks/useAuth';
 const Dashboard = React.lazy(() => import('@pages/Dashboard'));
 const LoginPage = React.lazy(() => import('@pages/Login'));
@@ -11,6 +11,8 @@ const Register = React.lazy(() => import('@pages/Register'));
 const LocationOnboarding = React.lazy(() => import('@pages/LocationOnboarding'));
 const PremiumTabsDemo = React.lazy(() => import('@pages/PremiumTabsDemo'));
 const ProfileHub = React.lazy(() => import('@pages/ProfileHub'));
+const ViewProfilePage = React.lazy(() => import('@pages/ViewProfilePage'));
+const EditProfilePage = React.lazy(() => import('@pages/EditProfilePage'));
 const NotificationsMatrix = React.lazy(() => import('@pages/NotificationsMatrix'));
 const SettingsAdvanced = React.lazy(() => import('@pages/SettingsAdvanced'));
 const UnifiedComponentsDemo = React.lazy(() => import('@pages/UnifiedComponentsDemo'));
@@ -191,10 +193,26 @@ function AppInner() {
           ) : <Navigate to="/login" replace state={{ from: location }} />}
         />
         <Route
-          path="/profile"
+          path="/profile-hub/:section"
           element={token ? (
             <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
               <ProfileHub />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
+        <Route
+          path="/profile"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <ViewProfilePage />
+            </Suspense>
+          ) : <Navigate to="/login" replace state={{ from: location }} />}
+        />
+        <Route
+          path="/profile/edit"
+          element={token ? (
+            <Suspense fallback={<div style={{color:'white', padding: 24}}>Loading…</div>}>
+              <EditProfilePage />
             </Suspense>
           ) : <Navigate to="/login" replace state={{ from: location }} />}
         />
@@ -274,24 +292,19 @@ function AppInner() {
 
 export default function App() {
   return (
-    <>
-      <GlobalStyles />
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ThemeProvider>
-            <AppStateProvider>
-              <LocationProvider>
-        <WebSocketErrorBoundary>
-          <StompWebSocketProvider>
-            <AppInner />
-          </StompWebSocketProvider>
-        </WebSocketErrorBoundary>
-              </LocationProvider>
-            </AppStateProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </>
+    <AuthProvider>
+      <ThemeProvider>
+        <AppStateProvider>
+          <LocationProvider>
+            <WebSocketErrorBoundary>
+              <StompWebSocketProvider>
+                <AppInner />
+              </StompWebSocketProvider>
+            </WebSocketErrorBoundary>
+          </LocationProvider>
+        </AppStateProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

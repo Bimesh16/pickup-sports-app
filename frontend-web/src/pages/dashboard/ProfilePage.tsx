@@ -522,44 +522,45 @@ export default function ProfilePage() {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: User },
-    { id: 'activity', label: 'Activity', icon: Activity },
-    { id: 'stats', label: 'Stats', icon: BarChart3 },
     { id: 'badges', label: 'Badges', icon: Award },
     { id: 'teams', label: 'Teams', icon: Users },
     { id: 'sports', label: 'Sports', icon: Gamepad2 },
-    { id: 'security', label: 'Security', icon: Shield }
+    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'activity', label: 'Activity', icon: Activity },
+    { id: 'stats', label: 'Stats', icon: BarChart3 }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-nepal-blue via-slate-900 to-nepal-crimson text-white relative overflow-hidden">
       {/* Enhanced Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.1] pointer-events-none">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-nepal-crimson rounded-full blur-3xl transform -translate-x-32 -translate-y-32"></div>
-        <div className="absolute top-1/3 right-0 w-96 h-96 bg-nepal-blue rounded-full blur-3xl transform translate-x-32"></div>
-        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-white/20 rounded-full blur-3xl transform translate-y-32"></div>
+      <div className="absolute inset-0 opacity-[0.15] pointer-events-none">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-nepal-crimson rounded-full blur-3xl transform -translate-x-32 -translate-y-32 animate-pulse"></div>
+        <div className="absolute top-1/3 right-0 w-96 h-96 bg-nepal-blue rounded-full blur-3xl transform translate-x-32 animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-white/20 rounded-full blur-3xl transform translate-y-32 animate-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
       
-      {/* Stadium-style grid overlay */}
-      <div className="absolute inset-0 opacity-30" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+      {/* Enhanced Stadium-style grid overlay */}
+      <div className="absolute inset-0 opacity-40" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
       }}></div>
 
       <div className="relative z-10 space-y-8 p-4 max-w-7xl mx-auto">
-        {/* XP Animation - Enhanced */}
+        {/* Enhanced XP Animation */}
         {xpAnimation.show && (
           <div className="fixed top-20 right-4 z-50 animate-bounce">
-            <div className="bg-gradient-to-r from-nepal-crimson to-nepal-blue text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform animate-pulse">
-              <Sparkles className="w-5 h-5 animate-spin" />
-              <span className="font-bold text-lg">+{xpAnimation.amount} XP</span>
-              <div className="absolute inset-0 bg-white/20 rounded-xl animate-ping"></div>
+            <div className="bg-gradient-to-r from-nepal-crimson via-yellow-500 to-nepal-blue text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform animate-pulse border-2 border-white/20">
+              <Sparkles className="w-6 h-6 animate-spin text-yellow-300" />
+              <span className="font-bold text-xl">+{xpAnimation.amount} XP</span>
+              <Crown className="w-6 h-6 text-yellow-300 animate-bounce" />
+              <div className="absolute inset-0 bg-white/20 rounded-2xl animate-ping"></div>
             </div>
           </div>
         )}
 
-        {/* Enhanced Profile Header v2 */}
-        <div className="transform transition-all duration-500 hover:scale-[1.02] animate-fadeIn">
+        {/* Enhanced Profile Header with better animations */}
+        <div className="transform transition-all duration-700 hover:scale-[1.02] animate-fadeIn hover:shadow-2xl">
           <ProfileHeader
-            profile={profile}
+            profile={{ ...profile, ...draft }}
             editing={editing}
             onToggleEdit={toggleEdit}
             onChange={handleChange}
@@ -569,81 +570,47 @@ export default function ProfilePage() {
           />
         </div>
 
-        {/* About Me Section */}
-        <Card className="p-6 bg-surface-0 border border-border shadow-2xl" data-testid="about-card">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-[18px] font-bold text-text-strong flex items-center gap-2">
-                <User className="w-5 h-5" />
-                About Me
-              </h2>
-              {!editing && (
-                <button
-                  onClick={toggleEdit}
-                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-nepal-blue hover:text-nepal-crimson hover:bg-surface-1 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-nepal-blue focus:ring-offset-2"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  Edit
-                </button>
-              )}
-            </div>
-            <div className="text-text-muted">
-              {profile.bio ? (
-                <p className="leading-relaxed">{profile.bio}</p>
-              ) : (
-                <p className="text-sm italic text-text-muted">
-                  No bio available. Click Edit to add a personal description.
-                </p>
-              )}
-            </div>
-            {editing && (
-              <div className="mt-4">
-                <textarea
-                  value={draft.bio || profile.bio || ''}
-                  onChange={(e) => handleChange({ bio: e.target.value })}
-                  placeholder="Tell us about yourself..."
-                  className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-nepal-crimson focus:border-transparent resize-none bg-surface-1 text-text-strong placeholder-text-muted"
-                  rows={3}
-                />
-              </div>
-            )}
-          </div>
-        </Card>
+
 
         {/* Enhanced Tabbed Sections */}
-        <Card className="p-0 shadow-2xl border-0 bg-surface-0 transform transition-all duration-500 animate-fadeInUp border border-border">
+        <Card className="p-0 shadow-2xl border-2 border-nepal-blue/30 bg-gradient-to-br from-surface-0 via-surface-1 to-surface-0 transform transition-all duration-500 animate-fadeInUp backdrop-blur-sm">
           {/* Enhanced Tab Navigation */}
-          <div className="border-b border-border bg-gradient-to-r from-surface-1 to-surface-0">
-            <div className="flex overflow-x-auto px-2">
+          <div className="border-b-2 border-nepal-blue/30 bg-gradient-to-r from-surface-1/80 via-surface-0/80 to-surface-1/80 backdrop-blur-sm">
+            <div className="flex overflow-x-auto px-4">
               {tabs.map((tab, index) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-3 px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-nepal-blue focus:ring-offset-2 ${
+                  className={`flex items-center gap-3 px-8 py-5 text-sm font-medium whitespace-nowrap border-b-3 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-nepal-blue focus:ring-offset-2 ${
                     activeTab === tab.id
-                      ? 'border-nepal-crimson text-nepal-crimson bg-nepal-crimson/10'
-                      : 'border-transparent text-text-muted hover:text-text-strong hover:border-border hover:bg-surface-1'
+                      ? 'border-nepal-crimson text-nepal-crimson bg-nepal-crimson/20 shadow-lg'
+                      : 'border-transparent text-text-muted hover:text-text-strong hover:border-nepal-blue/50 hover:bg-surface-1/50'
                   }`}
                   style={{
                     animationDelay: `${index * 0.1}s`
                   }}
                 >
-                  <tab.icon className="w-5 h-5" />
+                  <div className={`p-2 rounded-lg transition-all duration-300 ${
+                    activeTab === tab.id 
+                      ? 'bg-nepal-crimson/30 text-nepal-crimson' 
+                      : 'bg-surface-1/50 text-text-muted group-hover:bg-nepal-blue/20'
+                  }`}>
+                    <tab.icon className="w-5 h-5" />
+                  </div>
                   <span className="hidden sm:inline font-semibold">{tab.label}</span>
                   {activeTab === tab.id && (
-                    <div className="w-2 h-2 bg-[var(--brand-primary)] rounded-full animate-pulse"></div>
+                    <div className="w-3 h-3 bg-nepal-crimson rounded-full animate-pulse shadow-lg"></div>
                   )}
                 </button>
               ))}
             </div>
           </div>
 
-
           {/* Enhanced Tab Content */}
-          <div className="p-8 bg-gradient-to-br from-surface-1 via-surface-0 to-surface-1">
+          <div className="p-10 bg-gradient-to-br from-surface-1/50 via-surface-0/50 to-surface-1/50 backdrop-blur-sm">
             <div className="animate-fadeIn">
               {activeTab === 'overview' && profile && (
-                <div className="transform transition-all duration-500 animate-slideInUp">
+                <div className="transform transition-all duration-700 animate-slideInUp">
                   <OverviewTab 
                     profile={profile} 
                     onProfileUpdate={(updates) => setProfile(prev => prev ? { ...prev, ...updates } : null)} 
@@ -652,40 +619,40 @@ export default function ProfilePage() {
               )}
               
               {activeTab === 'activity' && profile && (
-                <div className="transform transition-all duration-500 animate-slideInUp">
+                <div className="transform transition-all duration-700 animate-slideInUp">
                   <ActivityTab profile={profile} />
                 </div>
               )}
               
               {activeTab === 'stats' && profile && (
-                <div className="transform transition-all duration-500 animate-slideInUp">
+                <div className="transform transition-all duration-700 animate-slideInUp">
                   <StatsTab profile={profile} />
                 </div>
               )}
               
               {activeTab === 'badges' && profile && (
-                <div className="transform transition-all duration-500 animate-slideInUp">
+                <div className="transform transition-all duration-700 animate-slideInUp">
                   <BadgesTab profile={profile} />
                 </div>
               )}
               
               {activeTab === 'teams' && profile && (
-                <div className="transform transition-all duration-500 animate-slideInUp">
+                <div className="transform transition-all duration-700 animate-slideInUp">
                   <TeamsTab profile={profile} />
                 </div>
               )}
               
               {activeTab === 'sports' && profile && (
-                <div className="transform transition-all duration-500 animate-slideInUp">
+                <div className="transform transition-all duration-700 animate-slideInUp">
                   <SportsTab 
                     profile={profile} 
-                    onProfileUpdate={(updates) => setProfile(prev => prev ? { ...prev, ...updates } : null)} 
+                    onProfileUpdate={(updates: Partial<Profile>) => setProfile(prev => prev ? { ...prev, ...updates } : null)} 
                   />
                 </div>
               )}
               
               {activeTab === 'security' && profile && (
-                <div className="transform transition-all duration-500 animate-slideInUp">
+                <div className="transform transition-all duration-700 animate-slideInUp">
                   <SecurityTab profile={profile} />
                 </div>
               )}

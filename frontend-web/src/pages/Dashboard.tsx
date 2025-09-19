@@ -15,7 +15,9 @@ import {
   Moon,
   Home,
   Settings,
-  User
+  User,
+  CreditCard,
+  Receipt
 } from "lucide-react";
 import { mockDashboardApi } from "./dashboard/mockData";
 
@@ -25,6 +27,10 @@ import VenuesPage from "./dashboard/VenuesPage";
 import ProfilePage from "./dashboard/ProfilePage";
 import SettingsPage from "./dashboard/SettingsPage";
 import NotificationsPage from "./dashboard/NotificationsPage";
+import PaymentDemo from "./dashboard/PaymentDemo";
+import PaymentHistoryPage from "./dashboard/PaymentHistory";
+import PaymentNotifications from "./dashboard/PaymentNotifications";
+import { PaymentAnalytics } from "../components/payments/PaymentAnalytics";
 
 export const mockApi = {
   getGames: mockDashboardApi.getGames.bind(mockDashboardApi),
@@ -45,6 +51,7 @@ function NavigationTabs() {
     { id: '', label: 'Home', icon: Home, path: '' },
     { id: 'games', label: 'Games', icon: Gamepad2, path: 'games' },
     { id: 'venues', label: 'Venues', icon: MapPin, path: 'venues' },
+    { id: 'payments', label: 'Payments', icon: CreditCard, path: 'payment-demo' },
     { id: 'profile', label: 'Profile', icon: User, path: 'profile' },
     { id: 'notifications', label: 'Notifications', icon: Bell, path: 'notifications', badge: unreadNotifications },
     { id: 'settings', label: 'Settings', icon: Settings, path: 'settings' },
@@ -283,7 +290,11 @@ export default function Dashboard() {
         <Route path="profile" element={<ProfilePage />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="*" element={<Navigate to="" replace />} />
+        <Route path="payment-demo" element={<PaymentDemo />} />
+        <Route path="payment-history" element={<PaymentHistoryPage />} />
+        <Route path="payment-notifications" element={<PaymentNotifications />} />
+        <Route path="payment-analytics" element={<PaymentAnalytics />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </DashboardLayout>
   );

@@ -34,6 +34,15 @@ import { gamesApi, getSportEmoji, formatGameTime } from '@api/games';
 import { toast } from 'react-toastify';
 import ErrorBoundary from '@components/ErrorBoundary';
 import GameChat from '@components/GameChat';
+// Import payment components
+import { PaymentProviderSelector, PaymentProvider } from '../../components/payments/PaymentProviders';
+import { ESewaPayment } from '../../components/payments/ESewaPayment';
+import { KhaltiPayment } from '../../components/payments/KhaltiPayment';
+import { ESewaConfirmation } from '../../components/payments/ESewaConfirmation';
+import { KhaltiConfirmation } from '../../components/payments/KhaltiConfirmation';
+import { CashConfirmation } from '../../components/payments/CashConfirmation';
+import { PaymentSplitter, SplitDetail } from '../../components/payments/PaymentSplitter';
+import { PAYMENT_METHODS } from '../../constants/nepal';
 
 // Types
 interface GameDetails {
@@ -108,45 +117,55 @@ const PaymentModal: React.FC<{
   onPaymentSuccess: () => void;
 }> = ({ isOpen, onClose, game, onPaymentSuccess }) => {
   const [loading, setLoading] = useState(false);
-  const [paymentStep, setPaymentStep] = useState<'details' | 'processing' | 'success'>('details');
+  const [paymentStep, setPaymentStep] = useState<'method_selection' | 'payment_form' | 'processing' | 'success' | 'split_payment'>('method_selection');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('esewa');
+  const [transactionId, setTransactionId] = useState<string>('');
+  const [splitDetails, setSplitDetails] = useState<SplitDetail[]>([]);
+  const { profile } = useAppState();
 
-  const handlePayment = async () => {
-    try {
-      setLoading(true);
-      setPaymentStep('processing');
+  // Convert payment methods from constants to the format needed by the selector
+  const paymentProviders: PaymentProvider[] = PAYMENT_METHODS.map(method => ({
+    id: method.id,
+    name: method.name,
+    logo: `/images/${method.id}-logo.svg`,
+    popular: method.popular
+  }));
 
-      // Create payment intent
-      const paymentIntent: PaymentIntent = await fetch('/api/v1/payments/create-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gameId: game.id,
-          amount: game.pricePerPlayer,
-          currency: 'NPR'
-        })
-      }).then(res => res.json()).catch(() => ({
-        // Mock payment for demo
-        clientSecret: 'mock_secret',
-        amount: game.pricePerPlayer,
-        currency: 'NPR'
-      }));
+  const handlePaymentMethodSelect = (methodId: string) => {
+    setSelectedPaymentMethod(methodId);
+  };
 
-      // Simulate payment processing
-      setTimeout(() => {
-        setPaymentStep('success');
-        setTimeout(() => {
-          onPaymentSuccess();
-          onClose();
-        }, 2000);
-      }, 2000);
-
-    } catch (error) {
-      console.error('Payment failed:', error);
-      toast.error('Payment failed. Please try again.');
-      setPaymentStep('details');
-    } finally {
-      setLoading(false);
+  const handleContinueToPayment = () => {
+    // If there are multiple players and not a private game, offer split payment option
+    if (game.currentPlayers > 1 && !game.isPrivate) {
+      setPaymentStep('split_payment');
+    } else {
+      setPaymentStep('payment_form');
     }
+  };
+
+  const handlePaymentSuccess = (txnId?: string) => {
+    if (txnId) {
+      setTransactionId(txnId);
+    } else {
+      // Generate a random transaction ID if none provided
+      const randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+      setTransactionId(`TXN-${randomId}`);
+    }
+    setPaymentStep('success');
+  };
+
+  const handleBackToMethods = () => {
+    setPaymentStep('method_selection');
+  };
+
+  const handleSplitConfirm = (details: SplitDetail[]) => {
+    setSplitDetails(details);
+    setPaymentStep('payment_form');
+  };
+
+  const handleCancelSplit = () => {
+    setPaymentStep('method_selection');
   };
 
   if (!isOpen) return null;
@@ -154,7 +173,7 @@ const PaymentModal: React.FC<{
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="p-6">
-        {paymentStep === 'details' && (
+        {paymentStep === 'method_selection' && (
           <>
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-gradient-to-br from-[var(--brand-primary)] to-[var(--brand-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -185,13 +204,19 @@ const PaymentModal: React.FC<{
               </div>
             </div>
 
-            <div className="space-y-3">
+            <PaymentProviderSelector
+              providers={paymentProviders}
+              selectedProviderId={selectedPaymentMethod}
+              onSelectProvider={handlePaymentMethodSelect}
+            />
+
+            <div className="mt-6 space-y-3">
               <Button
-                onClick={handlePayment}
+                onClick={handleContinueToPayment}
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] text-white py-3"
               >
-                {loading ? 'Processing...' : '💳 Pay & Join Game'}
+                Continue to Payment
               </Button>
               
               <Button
@@ -210,6 +235,78 @@ const PaymentModal: React.FC<{
           </>
         )}
 
+        {paymentStep === 'split_payment' && (
+          <PaymentSplitter
+            totalAmount={game.pricePerPlayer}
+            participants={game.participants}
+            currentUserId={profile?.id || 0}
+            onSplitConfirm={handleSplitConfirm}
+            onCancel={handleCancelSplit}
+          />
+        )}
+
+        {paymentStep === 'payment_form' && (
+          <>
+            {selectedPaymentMethod === 'esewa' && (
+              <ESewaPayment
+                amount={game.pricePerPlayer}
+                gameId={game.id.toString()}
+                onSuccess={handlePaymentSuccess}
+                onCancel={handleBackToMethods}
+              />
+            )}
+            
+            {selectedPaymentMethod === 'khalti' && (
+              <KhaltiPayment
+                amount={game.pricePerPlayer}
+                gameId={game.id.toString()}
+                onSuccess={handlePaymentSuccess}
+                onCancel={handleBackToMethods}
+              />
+            )}
+            
+            {selectedPaymentMethod === 'cash' && (
+              <div className="p-4">
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[var(--brand-primary)] to-[var(--brand-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl text-white">💵</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
+                    Cash Payment
+                  </h3>
+                  <p className="text-[var(--text-muted)]">
+                    Pay in cash when you arrive at the venue
+                  </p>
+                </div>
+                
+                <Card className="p-4 mb-6">
+                  <div className="text-center">
+                    <p className="mb-4">You'll need to pay NPR {game.pricePerPlayer} in cash to the game host.</p>
+                    <p className="font-medium">Please arrive 15 minutes early to complete your payment.</p>
+                  </div>
+                </Card>
+                
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => handlePaymentSuccess()}
+                    className="w-full bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] text-white py-3"
+                  >
+                    Confirm Cash Payment
+                  </Button>
+                  
+                  <Button
+                    onClick={handleBackToMethods}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Back to Payment Methods
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
         {paymentStep === 'processing' && (
           <div className="text-center py-8">
             <div className="w-16 h-16 border-4 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -223,17 +320,61 @@ const PaymentModal: React.FC<{
         )}
 
         {paymentStep === 'success' && (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-xl font-bold text-green-600 mb-2">
-              Payment Successful! 🎉
-            </h3>
-            <p className="text-[var(--text-muted)]">
-              Welcome to the game! See you on the field.
-            </p>
-          </div>
+          <>
+            {selectedPaymentMethod === 'esewa' && (
+              <ESewaConfirmation
+                transactionId={transactionId}
+                amount={game.pricePerPlayer}
+                playerName={game.creatorName}
+                gameDetails={{
+                  title: game.title,
+                  location: game.location,
+                  date: new Date(game.time),
+                  organizer: 'Sports Nepal'
+                }}
+                onClose={() => {
+                  onPaymentSuccess();
+                  onClose();
+                }}
+              />
+            )}
+            
+            {selectedPaymentMethod === 'khalti' && (
+              <KhaltiConfirmation
+                transactionId={transactionId}
+                amount={game.pricePerPlayer}
+                playerName={game.creatorName}
+                gameDetails={{
+                  title: game.title,
+                  location: game.location,
+                  date: new Date(game.time),
+                  organizer: 'Sports Nepal'
+                }}
+                onClose={() => {
+                  onPaymentSuccess();
+                  onClose();
+                }}
+              />
+            )}
+            
+            {selectedPaymentMethod === 'cash' && (
+              <CashConfirmation
+                transactionId={transactionId}
+                amount={game.pricePerPlayer}
+                playerName={game.creatorName}
+                gameDetails={{
+                  title: game.title,
+                  location: game.location,
+                  date: new Date(game.time),
+                  organizer: 'Sports Nepal'
+                }}
+                onClose={() => {
+                  onPaymentSuccess();
+                  onClose();
+                }}
+              />
+            )}
+          </>
         )}
       </div>
     </Modal>

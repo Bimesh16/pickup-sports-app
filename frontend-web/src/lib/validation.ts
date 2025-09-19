@@ -1,9 +1,92 @@
 // src/lib/validation.ts - Form Validation Utilities
+import { z } from 'zod';
 
 export interface ValidationResult {
   isValid: boolean;
   message?: string;
 }
+
+// Zod schema for profile form validation
+export const profileSchema = z.object({
+  firstName: z.string()
+    .min(1, 'First name is required')
+    .max(50, 'First name must be less than 50 characters')
+    .optional(),
+  
+  lastName: z.string()
+    .min(1, 'Last name is required')
+    .max(50, 'Last name must be less than 50 characters')
+    .optional(),
+  
+  displayName: z.string()
+    .min(1, 'Display name is required')
+    .max(30, 'Display name must be less than 30 characters')
+    .optional(),
+  
+  email: z.string()
+    .email('Please enter a valid email address')
+    .optional(),
+  
+  bio: z.string()
+    .max(500, 'Bio must be less than 500 characters')
+    .optional(),
+  
+  location: z.string()
+    .max(100, 'Location must be less than 100 characters')
+    .optional(),
+  
+  phone: z.string()
+    .regex(/^\+?[\d\s\-\(\)]+$/, 'Please enter a valid phone number')
+    .min(10, 'Phone number must be at least 10 digits')
+    .max(20, 'Phone number must be less than 20 characters')
+    .optional(),
+  
+  age: z.number()
+    .int('Age must be a whole number')
+    .min(13, 'You must be at least 13 years old')
+    .max(120, 'Please enter a valid age')
+    .optional(),
+  
+  gender: z.enum(['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY'])
+    .optional(),
+  
+  skillLevel: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'PRO'])
+    .optional(),
+  
+  preferredSports: z.array(z.string())
+    .max(5, 'You can select up to 5 preferred sports')
+    .optional(),
+  
+  // Privacy settings
+  privacySettings: z.object({
+    showEmail: z.boolean().default(false),
+    showPhone: z.boolean().default(false),
+    showLocation: z.boolean().default(true),
+    showAge: z.boolean().default(false),
+  }).optional(),
+  
+  // Security settings
+  securitySettings: z.object({
+    twoFactorEnabled: z.boolean().default(false),
+    emailNotifications: z.boolean().default(true),
+    pushNotifications: z.boolean().default(true),
+    marketingEmails: z.boolean().default(false),
+  }).optional(),
+});
+
+export type ProfileFormData = z.infer<typeof profileSchema>;
+
+// Validation for avatar upload
+export const avatarSchema = z.object({
+  file: z.instanceof(File)
+    .refine(file => file.size <= 5 * 1024 * 1024, 'File size must be less than 5MB')
+    .refine(
+      file => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type),
+      'Only JPEG, PNG, and WebP images are allowed'
+    ),
+});
+
+export type AvatarFormData = z.infer<typeof avatarSchema>;
 
 // Phone number validation for Nepal
 export const validatePhoneNumber = (phone: string): ValidationResult => {

@@ -27,6 +27,7 @@
     "lighthouse:ci": "lighthouse http://localhost:5173 --output=json --output-path=./lighthouse-report.json --chrome-flags='--headless'"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@stomp/stompjs": "^7.2.0",
     "@tanstack/react-query": "^5.87.4",
     "@types/leaflet": "^1.9.20",
@@ -38,6 +39,7 @@
     "lucide-react": "^0.544.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.62.0",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.26.2",
     "react-toastify": "^10.0.6",

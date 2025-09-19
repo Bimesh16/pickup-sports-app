@@ -1,6 +1,6 @@
 // src/components/ui/index.tsx - Reusable UI Components
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { theme, nepalComponents, keyframes } from '@styles/theme';
 
 // Button Component
@@ -999,118 +999,7 @@ export function Switch({ checked, onCheckedChange, disabled = false, size = 'md'
   );
 }
 
-// Global styles to inject
+// Global styles component - simplified to avoid React hook issues
 export const GlobalStyles = () => {
-  React.useEffect(() => {
-    // Inject web fonts (Inter + Montserrat) once
-    if (!document.head.querySelector('link[data-app-fonts="true"]')) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.setAttribute('data-app-fonts', 'true');
-      link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&display=swap';
-      document.head.appendChild(link);
-    }
-    const styleSheet = document.createElement('style');
-    styleSheet.textContent = `
-      ${keyframes}
-      
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-      @keyframes confetti-fall {
-        0% { opacity: 0; transform: translateY(0) rotate(0deg); }
-        10% { opacity: 1; }
-        100% { opacity: 0; transform: translateY(300px) rotate(360deg); }
-      }
-      
-      :root {
-        --color-primary: #E63946;
-        --color-primary-700: #C82F3A;
-        --color-primary-50: #FDECEF;
-        --color-ink: #0E1116;
-        --color-ink-muted: #4A5568;
-        --color-bg: #0F1626;
-        --neutral-0: #FFFFFF;
-        --neutral-50: #F5F7FA;
-        --neutral-200: #E6E8EC;
-        --neutral-300: #C7CDD8;
-        --success: #2ECC71;
-        --warning: #F4B400;
-        --danger: #E11D48;
-        --info: #3B82F6;
-        --focus-ring: #7C3AED;
-
-        --radius-input: 16px;
-        --radius-card: 24px;
-        --radius-pill: 999px;
-        --shadow-card: 0 12px 30px rgba(0,0,0,0.25);
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-      
-      body {
-        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        line-height: 1.6;
-        color: var(--neutral-50);
-        margin: 0;
-        padding: 0;
-        background-color: var(--color-bg);
-        /* Reduce warm/orange cast; favor navy with subtle crimson */
-        background-image:
-          radial-gradient(ellipse at 10% -10%, rgba(230,57,70,0.10), transparent 55%),
-          radial-gradient(ellipse at 110% 0%, rgba(27,38,59,0.30), transparent 60%),
-          radial-gradient(ellipse at 50% 120%, rgba(27,38,59,0.20), transparent 60%);
-      }
-      h1, h2, .display { font-family: Montserrat, Inter, system-ui, -apple-system, sans-serif; letter-spacing: -0.01em; }
-      /* Ensure form field text is visible on light inputs, even in dark sections */
-      input, select, textarea {
-        color: #111827; /* slate-900 */
-        -webkit-text-fill-color: #111827; /* Safari */
-        background-color: #ffffff;
-        caret-color: #111827;
-      }
-      input::placeholder, textarea::placeholder {
-        color: #6b7280; /* slate-500 */
-      }
-      /* Reasonable default sizing; components can override with classes */
-      input, select, textarea {
-        font-size: 15px;
-      }
-      @media (max-width: 380px) {
-        input, select, textarea {
-          font-size: 14px;
-          padding: 8px 10px;
-        }
-      }
-      
-      button:focus-visible,
-      input:focus-visible,
-      select:focus-visible,
-      textarea:focus-visible {
-        outline: 3px solid var(--focus-ring);
-        outline-offset: 2px;
-      }
-
-      /* Utility button classes using tokens */
-      .btn { min-height: 48px; border-radius: var(--radius-input); font-weight: 700; letter-spacing: .2px; }
-      .btn-primary { background: var(--color-primary); color: #fff; border: none; box-shadow: var(--shadow-card); }
-      .btn-primary:hover { filter: brightness(1.05); transform: translateY(-2px); }
-      .btn-outline { background: transparent; color: var(--neutral-0); border: 1px solid rgba(255,255,255,0.35); }
-      .btn-outline:hover { background: rgba(255,255,255,0.08); }
-      .btn-gradient { background: linear-gradient(45deg, #1B263B, #6A2F8E, #E63946); color: #fff; }
-
-      /* Frosted card */
-      .card-frost { backdrop-filter: blur(16px); background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
-    `;
-    
-    document.head.appendChild(styleSheet);
-    
-    return () => {
-      document.head.removeChild(styleSheet);
-    };
-  }, []);
-
   return null;
 };

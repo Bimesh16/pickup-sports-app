@@ -164,7 +164,8 @@ export default function OverviewTab({ profile, onProfileUpdate }: OverviewTabPro
   // Save bio changes
   const handleSaveBio = async () => {
     try {
-      await apiClient.put('/profiles/me', { bio: bioText });
+      // Use the correct API endpoint format
+      await apiClient.put('/api/v1/profiles/me', { bio: bioText });
       onProfileUpdate({ bio: bioText });
       setIsEditingBio(false);
       toast.success('Bio updated successfully!');

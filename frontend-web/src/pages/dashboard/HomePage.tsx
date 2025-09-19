@@ -26,6 +26,7 @@ import { apiClient } from '@lib/apiClient';
 import { gamesApi, getSportEmoji } from '@api/games';
 import { profilesApi, notificationsApi } from '@api/dashboard';
 import { mockDashboardApi } from './mockData';
+import { Notification as ApiNotification } from '../../types/api';
 import { WeatherService } from '@lib/weatherService';
 import { offlineCache } from '@lib/offlineCache';
 
@@ -130,7 +131,7 @@ export default function HomePage() {
   const [nearbyGames, setNearbyGames] = useState<Game[]>([]);
   const [trendingSports, setTrendingSports] = useState<TrendingSport[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<ApiNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOfflineMode, setIsOfflineMode] = useState(false);
 
@@ -197,7 +198,7 @@ export default function HomePage() {
           let activityData: RecentActivity[] = [];
           if (profile?.id) {
             try {
-              activityData = await profilesApi.getRecentActivity(profile.id);
+              activityData = await profilesApi.getRecentActivity(profile.id.toString());
             } catch (error) {
               activityData = await mockDashboardApi.getRecentActivity(profile.id);
             }
@@ -208,8 +209,8 @@ export default function HomePage() {
             const nearbyGamesData = nearbyGamesResponse.content.map(game => ({
               id: game.id.toString(),
               sport: game.sport,
-              venue: game.venueName || 'Unknown Venue',
-              time: game.startTime,
+              venue: typeof game.venue === 'string' ? game.venue : game.venue?.name || 'Unknown Venue',
+              time: game.time,
               price: game.pricePerPlayer || 0,
               playersCount: game.currentPlayers || 0,
               maxPlayers: game.maxPlayers || 10,
@@ -217,7 +218,7 @@ export default function HomePage() {
               location: {
                 lat: game.latitude || lat,
                 lng: game.longitude || lng,
-                address: game.venueAddress || 'Unknown Address'
+                address: game.location || 'Unknown Address'
               }
             }));
             setNearbyGames(nearbyGamesData);
@@ -287,11 +288,11 @@ export default function HomePage() {
               { sport: 'Cricket', playerCount: 67, gameCount: 15, icon: '🏏' }
             ];
 
-            const mockNotifications: Notification[] = [
+            const mockNotifications: ApiNotification[] = [
               {
-                id: '1',
-                title: 'Game Starting Soon!',
-                message: 'Your futsal game at New Road starts in 30 minutes',
+                id: 1,
+                userId: profile?.id || 1,
+                message: 'Game Starting Soon! Your futsal game at New Road starts in 30 minutes',
                 type: 'game',
                 isRead: false,
                 createdAt: new Date().toISOString()
@@ -353,8 +354,8 @@ export default function HomePage() {
     return { rank: 'Pro', color: 'text-[var(--brand-primary)]', bg: 'bg-[var(--brand-primary)]/10' };
   };
 
-  const userRank = getUserRank(profile?.xp || 0);
-  const xpProgress = ((profile?.xp || 0) % 100) / 100;
+  const userRank = getUserRank(0); // Default to 0 XP since User type doesn't have xp
+  const xpProgress = 0; // Default to 0 progress
 
   return (
     <div className="space-y-6">
@@ -382,16 +383,18 @@ export default function HomePage() {
             
             <div className="flex flex-col md:items-end gap-4">
               <div className="text-right">
-                <div className="text-sm opacity-90 mb-1">Your Rank</div>
-                <Badge variant="default" className={`${userRank.bg} ${userRank.color} border-0`}>
+                <div className="text-xs opacity-90 mb-1" style={{ fontFamily: "'Poppins', 'Montserrat', 'Segoe UI', sans-serif" }}>Your Rank</div>
+                <div 
+                  className={`${userRank.bg} ${userRank.color} border-0 text-xs px-2 py-1 rounded-full inline-block`}
+                  style={{ fontFamily: "'Poppins', 'Montserrat', 'Segoe UI', sans-serif" }}
+                >
                   {userRank.rank}
-                </Badge>
+                </div>
               </div>
-              
               <div className="w-full md:w-48">
                 <div className="flex justify-between text-sm mb-1">
                   <span>XP Progress</span>
-                  <span>{profile?.xp || 0} XP</span>
+                  <span>0 XP</span>
                 </div>
                 <div className="w-full bg-white/20 rounded-full h-2">
                   <div 
@@ -538,9 +541,9 @@ export default function HomePage() {
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{getSportEmoji(sport.sport)}</span>
                       <span className="font-medium text-[var(--text)]">{sport.sport}</span>
-                      <Badge variant="default" size="sm" className="bg-[var(--success)]/10 text-[var(--success)] border-0">
+                      <div className="bg-[var(--success)]/10 text-[var(--success)] border-0 px-2 py-1 rounded-full text-xs">
                         {sport.playerCount}
-                      </Badge>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -651,8 +654,7 @@ export default function HomePage() {
                         <Bell className="w-4 h-4 text-[var(--brand-primary)]" />
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-[var(--text)]">{notification.title}</p>
-                        <p className="text-sm text-[var(--text-muted)]">{notification.message}</p>
+                        <p className="font-medium text-[var(--text)]">{notification.message}</p>
                         <p className="text-xs text-[var(--text-muted)] mt-1">
                           {new Date(notification.createdAt).toLocaleDateString()}
                         </p>

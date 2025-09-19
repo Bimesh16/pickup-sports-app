@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Profile, getInviteQr, COUNTRIES } from './profile.schema';
 import ActionsDock from '@components/profile/ActionsDock';
+import EditProfileModal from '@components/EditProfileModal';
 import { useAuth } from '@hooks/useAuth';
 import { toast } from 'react-toastify';
 import { useReducedMotion } from 'framer-motion';
@@ -25,8 +26,36 @@ const ProfileHeader: React.FC<Props> = ({
   saving
 }) => {
   const { logout } = useAuth();
+  const [showEditModal, setShowEditModal] = useState(false);
   const inviteUrl = `${window.location.origin}/profile/${profile.username}`;
   const shouldReduceMotion = useReducedMotion();
+
+  // Helper function to get current value (draft or profile)
+  const getCurrentValue = (field: keyof Profile) => {
+    // This assumes the parent component passes the merged draft+profile data
+    // If not, we'd need to receive draft as a separate prop
+    return profile[field];
+  };
+
+  const handleEditClick = () => {
+    setShowEditModal(true);
+  };
+
+  const handleModalSave = async (updatedProfile: Partial<Profile>) => {
+    // Update the profile with the changes from the modal
+    Object.keys(updatedProfile).forEach(key => {
+      onChange({ [key]: updatedProfile[key as keyof Profile] });
+    });
+    
+    // Call the parent's save function
+    await onSave();
+    setShowEditModal(false);
+  };
+
+  const handleModalClose = () => {
+    setShowEditModal(false);
+    onCancel(); // Reset any pending changes
+  };
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -127,8 +156,8 @@ const ProfileHeader: React.FC<Props> = ({
           <ActionsDock
             inviteUrl={inviteUrl}
             fetchQr={getInviteQr}
-            isEditing={editing}
-            onToggleEdit={onToggleEdit}
+            isEditing={showEditModal}
+            onToggleEdit={handleEditClick}
           />
         </div>
 
@@ -195,11 +224,21 @@ const ProfileHeader: React.FC<Props> = ({
 
             {/* Name / Username / Email - Proud Sports Typography */}
             <div className="text-center">
-              <h1 className="text-[32px] leading-[36px] font-extrabold tracking-tight text-text-dark-contrast">
-                {profile.displayName}
-              </h1>
-              <p className="text-[14px] font-medium text-text-dark-contrast">@{profile.username}</p>
-              <p className="text-[14px] font-medium text-text-dark-contrast">{profile.email}</p>
+              <div>
+                <h1 className="text-[32px] leading-[36px] font-extrabold tracking-tight text-text-dark-contrast">
+                  {profile.displayName}
+                </h1>
+                <p className="text-[14px] font-medium text-text-dark-contrast">@{profile.username}</p>
+                <p className="text-[14px] font-medium text-text-dark-contrast">{profile.email}</p>
+                {(profile.firstName || profile.lastName) && (
+                  <p className="text-[14px] font-medium text-text-dark-contrast">
+                    {profile.firstName} {profile.lastName}
+                  </p>
+                )}
+                {profile.phone && (
+                  <p className="text-[14px] font-medium text-text-dark-contrast">{profile.phone}</p>
+                )}
+              </div>
             </div>
 
             {/* Gender + Nationality Chips - Solid fills */}
@@ -214,6 +253,13 @@ const ProfileHeader: React.FC<Props> = ({
                   {getCountryDisplay(profile.nationality)}
                 </span>
               )}
+              {profile.bio && (
+                <div className="w-full mt-2">
+                  <p className="text-[12px] text-text-dark-contrast/80 text-center italic">
+                    "{profile.bio}"
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Level/Rank Pills - Crimson styling */}
@@ -225,30 +271,19 @@ const ProfileHeader: React.FC<Props> = ({
                 Level {profile.level}
               </span>
             </div>
-
-            {/* Save/Cancel Bar - Only when editing */}
-            {editing && (
-              <div className="sticky bottom-0 inset-x-0 mx-auto mt-2 w-full max-w-sm bg-text-dark-contrast/20 backdrop-blur rounded-xl border border-text-dark-contrast/30 p-2 flex gap-2">
-                <button
-                  className="w-1/2 px-3 py-2 text-sm font-medium text-text-dark-contrast/90 bg-text-dark-contrast/10 rounded-lg hover:bg-text-dark-contrast/20 transition-colors ring-1 ring-text-dark-contrast/20"
-                  onClick={onCancel}
-                  disabled={saving}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="w-1/2 px-3 py-2 text-sm font-medium text-text-dark-contrast bg-gradient-to-r from-nepal-crimson to-nepal-blue rounded-lg hover:brightness-110 active:scale-[.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={onSave}
-                  disabled={saving}
-                >
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            )}
           </section>
         </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={showEditModal}
+        onClose={handleModalClose}
+        profile={profile}
+        onSave={handleModalSave}
+        saving={saving}
+      />
     </div>
   );
 };

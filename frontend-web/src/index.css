@@ -2,6 +2,7 @@
 
 @import './styles/tokens.css';
 @import './styles/premium-ui.css';
+@import './styles/animations.css';
 @import 'leaflet/dist/leaflet.css';
 
 @tailwind base;
