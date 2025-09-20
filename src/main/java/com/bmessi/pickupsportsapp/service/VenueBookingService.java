@@ -7,6 +7,7 @@ import com.bmessi.pickupsportsapp.entity.*;
 import com.bmessi.pickupsportsapp.repository.VenueBookingRepository;
 import com.bmessi.pickupsportsapp.repository.VenueRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
+import com.bmessi.pickupsportsapp.repository.GameRepository;
 // import com.bmessi.pickupsportsapp.service.payment.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class VenueBookingService {
     private final VenueBookingRepository venueBookingRepository;
     private final VenueRepository venueRepository;
     private final UserRepository userRepository;
+    private final GameRepository gameRepository;
     // private final PaymentService paymentService;
 
     /**
@@ -126,9 +128,13 @@ public class VenueBookingService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        com.bmessi.pickupsportsapp.entity.game.Game game = gameRepository.findById(request.gameId())
+                .orElseThrow(() -> new IllegalArgumentException("Game not found"));
+
         // Create booking
         VenueBooking booking = VenueBooking.builder()
                 .venue(venue)
+                .game(game)
                 .bookedBy(user)
                 .startTime(request.startTime())
                 .endTime(request.endTime())
@@ -145,12 +151,15 @@ public class VenueBookingService {
         // String paymentIntentId = paymentService.createIntentForVenueBooking(
         //         savedBooking.getId(), venue.getId(), userId);
         String paymentIntentId = "temp_" + savedBooking.getId();
+        savedBooking.setPaymentIntentId(paymentIntentId);
+        venueBookingRepository.save(savedBooking);
 
         log.info("Created booking {} with payment intent {}", savedBooking.getId(), paymentIntentId);
 
         return new BookingResponse(
                 savedBooking.getId(),
                 savedBooking.getVenue().getName(),
+                savedBooking.getGame().getId(),
                 savedBooking.getStartTime(),
                 savedBooking.getEndTime(),
                 savedBooking.getTotalCost(),
@@ -303,6 +312,10 @@ public class VenueBookingService {
     }
 
     private void validateBookingRequest(BookingRequest request) {
+        if (request.gameId() == null) {
+            throw new IllegalArgumentException("Game ID is required");
+        }
+
         if (request.startTime().isAfter(request.endTime())) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
@@ -346,6 +359,7 @@ public class VenueBookingService {
         return new BookingResponse(
                 booking.getId(),
                 booking.getVenue().getName(),
+                booking.getGame() != null ? booking.getGame().getId() : null,
                 booking.getStartTime(),
                 booking.getEndTime(),
                 booking.getTotalCost(),

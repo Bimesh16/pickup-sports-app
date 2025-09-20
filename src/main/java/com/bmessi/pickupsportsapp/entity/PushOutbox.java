@@ -12,9 +12,9 @@ import java.time.Instant;
 })
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class PushOutbox {
 
     public enum Status { PENDING, SENT, FAILED }

@@ -1,192 +1,204 @@
 package com.bmessi.pickupsportsapp.service.notification;
 
-import com.bmessi.pickupsportsapp.entity.notification.Notification;
-import com.bmessi.pickupsportsapp.entity.User;
-import com.bmessi.pickupsportsapp.repository.NotificationRepository;
-import com.bmessi.pickupsportsapp.repository.UserRepository;
-import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
-@Slf4j
+/**
+ * Service for managing user notifications.
+ */
 @Service
 @RequiredArgsConstructor
-@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "notification.service.enabled", havingValue = "true", matchIfMissing = false)
+@Slf4j
 public class NotificationService {
 
-    private static final String ERR_MESSAGE_BLANK = "Notification message must not be blank";
-    private static final String ERR_USER_NOT_FOUND = "User not found: %s";
-    private static final String ERR_NOTIFICATION_NOT_FOUND = "Notification not found: %d";
+    private final JdbcTemplate jdbcTemplate;
 
-    private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
-    private final org.springframework.messaging.simp.SimpMessagingTemplate broker;
-    private final io.micrometer.core.instrument.MeterRegistry meterRegistry;
-    private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
-
-    @org.springframework.beans.factory.annotation.Value("${notifications.queue:notifications.queue}")
-    private String notificationQueue;
-
-    @Timed(value = "notifications.create", description = "Time to create a notification")
+    /**
+     * Create a notification for a user.
+     */
     @Transactional
-    @CacheEvict(cacheNames = "notifications-first-page", allEntries = true)
-    public Notification createNotification(String username, String message) {
-        String normalizedMessage = validateAndNormalizeMessage(message);
-        User user = requireUserByUsername(username);
-
-        Notification notification = Notification.builder()
-                .user(user)
-                .message(normalizedMessage)
-                .build();
-
-        Notification savedNotification = notificationRepository.save(notification);
-        log.debug("Created notification {} for user {}", savedNotification.getId(), username);
-
-        // WS event
+    public void createNotification(String username, String message) {
         try {
-            broker.convertAndSendToUser(user.getUsername(), "/queue/notifications",
-                    com.bmessi.pickupsportsapp.dto.NotificationEvent.created(savedNotification));
-            meterRegistry.counter("notifications.ws.sent", "type", "created").increment();
-        } catch (Exception ignore) {
-            meterRegistry.counter("notifications.ws.failed", "type", "created").increment();
-            // do not fail user flow on WS issues
-        }
-        return savedNotification;
-    }
-
-    // Helper used by game flows to compose a message
-    @Transactional
-    public void createGameNotification(String recipientUsername, String actorUsername, String sport, String location, String action) {
-        try {
-            java.util.Map<String, String> model = java.util.Map.of(
-                    "actor", actorUsername == null ? "" : actorUsername,
-                    "sport", sport == null ? "" : sport,
-                    "location", location == null ? "" : location
-            );
-            rabbitTemplate.convertAndSend(notificationQueue,
-                    new com.bmessi.pickupsportsapp.dto.NotificationJob(recipientUsername, actorUsername, sport, location, action, model, java.util.Locale.getDefault()));
-            meterRegistry.counter("notifications_publish_success").increment();
+            jdbcTemplate.update("""
+                INSERT INTO user_notifications (user_id, message, created_at, is_read)
+                SELECT u.id, ?, ?, false
+                FROM app_user u
+                WHERE u.username = ?
+                """, message, OffsetDateTime.now(), username);
+            log.debug("Created notification for user: {}", username);
         } catch (Exception e) {
-            meterRegistry.counter("notifications_publish_error").increment();
-            log.error("Failed to publish notification job", e);
+            log.error("Failed to create notification for user: {}", username, e);
+            throw e;
         }
     }
 
-    // Legacy API preserved: returns all notifications unpaged
-    @Timed(value = "notifications.list.all", description = "Time to list all notifications (unpaged)")
-    @Transactional(readOnly = true)
-    public List<Notification> getUserNotifications(String username) {
-        return getUserNotifications(username, false, Pageable.unpaged()).getContent();
-    }
-
-    // New pageable-aware API
-    @Timed(value = "notifications.list.page", description = "Time to list notifications (paged)")
-    @Transactional(readOnly = true)
-    public Page<Notification> getUserNotifications(String username, Pageable pageable) {
-        return getUserNotifications(username, false, pageable);
-    }
-
-    // New pageable-aware API with unreadOnly flag (DB-side filtering)
-    @Timed(value = "notifications.list.page.flag", description = "Time to list notifications (paged/unreadOnly)")
-    @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "notifications-first-page",
-            key = "T(java.util.Objects).hash(#username) + '|' + #unreadOnly + '|' + #pageable.pageSize + '|' + #pageable.sort.toString()",
-            condition = "#pageable != null && #pageable.pageNumber == 0")
-    public Page<Notification> getUserNotifications(String username, boolean unreadOnly, Pageable pageable) {
-        User user = requireUserByUsername(username);
-        if (unreadOnly) {
-            return notificationRepository.findByUser_IdAndReadFalseOrderByCreatedAtDesc(user.getId(), pageable);
-        }
-        return notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId(), pageable);
-    }
-
-    @Timed(value = "notifications.read", description = "Time to mark one notification read")
+    /**
+     * Mark a notification as read.
+     */
     @Transactional
-    @CacheEvict(cacheNames = "notifications-first-page", allEntries = true)
-    public Notification markAsReadForUser(Long id, String username) {
-        User user = requireUserByUsername(username);
-        Notification notification = notificationRepository.findByIdAndUser_Id(id, user.getId())
-                .orElseThrow(() -> new IllegalArgumentException(String.format(ERR_NOTIFICATION_NOT_FOUND, id)));
-        notification.markRead();
-        Notification saved = notificationRepository.save(notification);
-        // WS event
+    public void markAsRead(Long notificationId, String username) {
+        int updated = jdbcTemplate.update("""
+            UPDATE user_notifications
+            SET is_read = true, read_at = ?
+            WHERE id = ? AND user_id = (SELECT id FROM app_user WHERE username = ?)
+            """, OffsetDateTime.now(), notificationId, username);
+
+        if (updated == 0) {
+            log.warn("No notification found with id {} for user {}", notificationId, username);
+        }
+    }
+
+    /**
+     * Get unread notifications for a user.
+     */
+    public List<Map<String, Object>> getUnreadNotifications(String username) {
+        return jdbcTemplate.queryForList("""
+            SELECT n.id, n.message, n.created_at
+            FROM user_notifications n
+            JOIN app_user u ON u.id = n.user_id
+            WHERE u.username = ? AND n.is_read = false
+            ORDER BY n.created_at DESC
+            LIMIT 50
+            """, username);
+    }
+
+    /**
+     * Get notification count for a user.
+     */
+    public int getUnreadCount(String username) {
+        return jdbcTemplate.queryForObject("""
+            SELECT COUNT(*)
+            FROM user_notifications n
+            JOIN app_user u ON u.id = n.user_id
+            WHERE u.username = ? AND n.is_read = false
+            """, Integer.class, username);
+    }
+
+    /**
+     * Create a game notification for a user.
+     */
+    @Transactional
+    public void createGameNotification(String username, String title, String message, String gameId, String type) {
         try {
-            broker.convertAndSendToUser(user.getUsername(), "/queue/notifications",
-                    com.bmessi.pickupsportsapp.dto.NotificationEvent.read(saved));
-            meterRegistry.counter("notifications.ws.sent", "type", "read").increment();
-        } catch (Exception ignore) {
-            meterRegistry.counter("notifications.ws.failed", "type", "read").increment();
+            String fullMessage = title + ": " + message;
+            jdbcTemplate.update("""
+                INSERT INTO user_notifications (user_id, message, created_at, is_read)
+                SELECT u.id, ?, ?, false
+                FROM app_user u
+                WHERE u.username = ?
+                """, fullMessage, OffsetDateTime.now(), username);
+            log.debug("Created game notification for user: {} with type: {}", username, type);
+        } catch (Exception e) {
+            log.error("Failed to create game notification for user: {}", username, e);
+            throw e;
         }
-        return saved;
     }
 
-    @Timed(value = "notifications.read.all", description = "Time to mark all notifications read")
+    /**
+     * Get user notifications with pagination and read status filter.
+     */
+    public List<Map<String, Object>> getUserNotifications(String username, boolean unreadOnly, org.springframework.data.domain.Pageable pageable) {
+        String sql = """
+            SELECT n.id, n.message, n.created_at, n.is_read, n.read_at
+            FROM user_notifications n
+            JOIN app_user u ON u.id = n.user_id
+            WHERE u.username = ?
+            """ + (unreadOnly ? " AND n.is_read = false" : "") + """
+            ORDER BY n.created_at DESC
+            LIMIT ? OFFSET ?
+            """;
+
+        return jdbcTemplate.queryForList(sql, username, pageable.getPageSize(), pageable.getOffset());
+    }
+
+    /**
+     * Get user notifications without pagination.
+     */
+    public List<Map<String, Object>> getUserNotifications(String username) {
+        return jdbcTemplate.queryForList("""
+            SELECT n.id, n.message, n.created_at, n.is_read, n.read_at
+            FROM user_notifications n
+            JOIN app_user u ON u.id = n.user_id
+            WHERE u.username = ?
+            ORDER BY n.created_at DESC
+            LIMIT 100
+            """, username);
+    }
+
+    /**
+     * Get unread notification count with alias method.
+     */
+    public int unreadCount(String username) {
+        return getUnreadCount(username);
+    }
+
+    /**
+     * Mark notification as read with alias method.
+     */
     @Transactional
-    @CacheEvict(cacheNames = "notifications-first-page", allEntries = true)
-    public int markAllAsReadForUser(String username) {
-        User user = requireUserByUsername(username);
-        return notificationRepository.markAllAsRead(user.getId(), Instant.now());
+    public void markAsReadForUser(Long notificationId, String username) {
+        markAsRead(notificationId, username);
     }
 
-    @Timed(value = "notifications.read.bulk", description = "Time to mark a set of notifications read")
+    /**
+     * Mark multiple notifications as read.
+     */
     @Transactional
-    @CacheEvict(cacheNames = "notifications-first-page", allEntries = true)
-    public int markAsReadForUser(java.util.Collection<Long> ids, String username) {
-        if (ids == null || ids.isEmpty()) return 0;
-        User user = requireUserByUsername(username);
-        return notificationRepository.markAsRead(user.getId(), ids, Instant.now());
+    public void markAsReadForUser(java.util.Collection<Long> notificationIds, String username) {
+        if (notificationIds == null || notificationIds.isEmpty()) {
+            return;
+        }
+
+        String placeholders = String.join(",", java.util.Collections.nCopies(notificationIds.size(), "?"));
+        Object[] params = new Object[notificationIds.size() + 2];
+        params[0] = OffsetDateTime.now();
+        params[params.length - 1] = username;
+
+        int i = 1;
+        for (Long id : notificationIds) {
+            params[i++] = id;
+        }
+
+        String sql = "UPDATE user_notifications " +
+                    "SET is_read = true, read_at = ? " +
+                    "WHERE id IN (" + placeholders + ") " +
+                    "AND user_id = (SELECT id FROM app_user WHERE username = ?)";
+
+        jdbcTemplate.update(sql, params);
     }
 
-    @Timed(value = "notifications.unread.count", description = "Time to count unread notifications")
-    @Transactional(readOnly = true)
-    public long unreadCount(String username) {
-        User user = requireUserByUsername(username);
-        return notificationRepository.countByUser_IdAndReadFalse(user.getId());
-    }
-
-    @Timed(value = "notifications.delete", description = "Time to delete a notification")
+    /**
+     * Mark all notifications as read for a user.
+     */
     @Transactional
-    @CacheEvict(cacheNames = "notifications-first-page", allEntries = true)
-    public void deleteNotificationForUser(Long id, String username) {
-        User user = requireUserByUsername(username);
-        int deleted = notificationRepository.deleteByIdAndUser_Id(id, user.getId());
+    public void markAllAsReadForUser(String username) {
+        jdbcTemplate.update("""
+            UPDATE user_notifications
+            SET is_read = true, read_at = ?
+            WHERE is_read = false
+            AND user_id = (SELECT id FROM app_user WHERE username = ?)
+            """, OffsetDateTime.now(), username);
+    }
+
+    /**
+     * Delete a notification for a user.
+     */
+    @Transactional
+    public void deleteNotificationForUser(Long notificationId, String username) {
+        int deleted = jdbcTemplate.update("""
+            DELETE FROM user_notifications
+            WHERE id = ? AND user_id = (SELECT id FROM app_user WHERE username = ?)
+            """, notificationId, username);
+
         if (deleted == 0) {
-            throw new IllegalArgumentException(String.format(ERR_NOTIFICATION_NOT_FOUND, id));
+            log.warn("No notification found with id {} for user {}", notificationId, username);
         }
-        // WS event
-        try {
-            broker.convertAndSendToUser(user.getUsername(), "/queue/notifications",
-                    com.bmessi.pickupsportsapp.dto.NotificationEvent.deleted(id));
-            meterRegistry.counter("notifications.ws.sent", "type", "deleted").increment();
-        } catch (Exception ignore) {
-            meterRegistry.counter("notifications.ws.failed", "type", "deleted").increment();
-        }
-    }
-
-    // --- Helpers ---
-
-    private static String validateAndNormalizeMessage(String message) {
-        if (message == null || message.isBlank()) {
-            throw new IllegalArgumentException(ERR_MESSAGE_BLANK);
-        }
-        return message.trim();
-    }
-
-    private static String formatGameNotificationMessage(String actorUsername, String action, String sport, String location) {
-        return "%s %s your %s game at %s".formatted(actorUsername, action, sport, location);
-    }
-
-    private User requireUserByUsername(String username) {
-        return userRepository.findOptionalByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException(String.format(ERR_USER_NOT_FOUND, username)));
     }
 }

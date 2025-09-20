@@ -1,6 +1,5 @@
 package com.bmessi.pickupsportsapp.advice;
 
-import com.bmessi.pickupsportsapp.exception.GlobalExceptionHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -40,7 +39,7 @@ import java.util.Map;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ApiExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
     // 401: Invalid credentials (login) or invalid refresh token
     @ExceptionHandler(BadCredentialsException.class)

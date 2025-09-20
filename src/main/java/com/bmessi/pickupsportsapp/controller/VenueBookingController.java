@@ -2,6 +2,8 @@ package com.bmessi.pickupsportsapp.controller;
 
 import com.bmessi.pickupsportsapp.dto.venue.*;
 import com.bmessi.pickupsportsapp.service.VenueBookingService;
+import com.bmessi.pickupsportsapp.repository.UserRepository;
+import com.bmessi.pickupsportsapp.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,6 +33,7 @@ import java.util.List;
 public class VenueBookingController {
 
     private final VenueBookingService venueBookingService;
+    private final UserRepository userRepository;
 
     /**
      * Check venue availability for a specific time range.
@@ -77,10 +81,10 @@ public class VenueBookingController {
             @Valid @RequestBody BookingRequest request,
             Authentication authentication
     ) {
-        log.info("Creating booking for venue {} by user {}", request.venueId(), authentication.getName());
+        String username = authentication.getName();
+        log.info("Creating booking for venue {} by user {}", request.venueId(), username);
 
-        // Extract user ID from authentication
-        Long userId = Long.valueOf(authentication.getName());
+        Long userId = resolveUserId(username);
 
         BookingResponse booking = venueBookingService.createBooking(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(booking);
@@ -112,10 +116,10 @@ public class VenueBookingController {
             @Parameter(description = "Cancellation reason") @RequestParam String reason,
             Authentication authentication
     ) {
-        log.info("Cancelling booking: {} by user: {}", bookingId, authentication.getName());
+        String username = authentication.getName();
+        log.info("Cancelling booking: {} by user: {}", bookingId, username);
 
-        // Extract user ID from authentication
-        Long userId = Long.valueOf(authentication.getName());
+        Long userId = resolveUserId(username);
 
         venueBookingService.cancelBooking(bookingId, userId, reason);
         return ResponseEntity.ok().build();
@@ -128,10 +132,10 @@ public class VenueBookingController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get user bookings", description = "Get all bookings for the authenticated user")
     public ResponseEntity<List<BookingResponse>> getMyBookings(Authentication authentication) {
-        log.debug("Getting bookings for user: {}", authentication.getName());
+        String username = authentication.getName();
+        log.debug("Getting bookings for user: {}", username);
 
-        // Extract user ID from authentication
-        Long userId = Long.valueOf(authentication.getName());
+        Long userId = resolveUserId(username);
 
         List<BookingResponse> bookings = venueBookingService.getUserBookings(userId);
         return ResponseEntity.ok(bookings);
@@ -158,10 +162,10 @@ public class VenueBookingController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get upcoming bookings", description = "Get upcoming bookings for the authenticated user")
     public ResponseEntity<List<BookingResponse>> getMyUpcomingBookings(Authentication authentication) {
-        log.debug("Getting upcoming bookings for user: {}", authentication.getName());
+        String username = authentication.getName();
+        log.debug("Getting upcoming bookings for user: {}", username);
 
-        // Extract user ID from authentication
-        Long userId = Long.valueOf(authentication.getName());
+        Long userId = resolveUserId(username);
 
         List<BookingResponse> bookings = venueBookingService.getUserBookings(userId);
         // Filter for upcoming bookings (this could be optimized in the service)
@@ -179,10 +183,10 @@ public class VenueBookingController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get past bookings", description = "Get past bookings for the authenticated user")
     public ResponseEntity<List<BookingResponse>> getMyPastBookings(Authentication authentication) {
-        log.debug("Getting past bookings for user: {}", authentication.getName());
+        String username = authentication.getName();
+        log.debug("Getting past bookings for user: {}", username);
 
-        // Extract user ID from authentication
-        Long userId = Long.valueOf(authentication.getName());
+        Long userId = resolveUserId(username);
 
         List<BookingResponse> bookings = venueBookingService.getUserBookings(userId);
         // Filter for past bookings (this could be optimized in the service)
@@ -191,5 +195,11 @@ public class VenueBookingController {
                 .toList();
         
         return ResponseEntity.ok(pastBookings);
+    }
+
+    private Long resolveUserId(String username) {
+        return userRepository.findOptionalByUsername(username)
+                .map(User::getId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
     }
 }

@@ -16,6 +16,9 @@ public record BookingResponse(
         @Schema(description = "Venue name", example = "Central Park Soccer Field")
         String venueName,
 
+        @Schema(description = "Associated game identifier", example = "456")
+        Long gameId,
+
         @Schema(description = "Start time of the booking", example = "2025-08-25T20:00:00Z")
         OffsetDateTime startTime,
 

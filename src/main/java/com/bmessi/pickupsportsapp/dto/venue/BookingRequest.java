@@ -15,6 +15,10 @@ public record BookingRequest(
         @NotNull(message = "Venue ID is required")
         Long venueId,
 
+        @Schema(description = "Game ID associated with this booking", example = "456")
+        @NotNull(message = "Game ID is required")
+        Long gameId,
+
         @Schema(description = "Start time of the booking", example = "2025-08-25T18:00:00Z")
         @NotNull(message = "Start time is required")
         @Future(message = "Start time must be in the future")

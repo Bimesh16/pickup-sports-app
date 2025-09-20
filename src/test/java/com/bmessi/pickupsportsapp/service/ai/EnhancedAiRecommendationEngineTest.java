@@ -73,11 +73,11 @@ class EnhancedAiRecommendationEngineTest {
     void testGenerateComprehensiveRecommendations_Success() {
         // Arrange
         when(featureExtractor.extractUserFeatures(testUser)).thenReturn(testUserFeatures);
-        when(gameRecommendationService.getPersonalizedRecommendations(testUser, 10))
+        when(gameRecommendationService.getPersonalizedRecommendations(eq(testUser), eq(10)))
             .thenReturn(createMockGameRecommendations(5));
-        when(playerRecommendationService.getPlayerRecommendations(any(), testUser, 10))
+        when(playerRecommendationService.getPlayerRecommendations(any(), eq(testUser), eq(10)))
             .thenReturn(createMockPlayerRecommendations(5));
-        when(venueRecommendationService.getPersonalizedRecommendations(testUser, 10))
+        when(venueRecommendationService.getPersonalizedRecommendations(eq(testUser), eq(10)))
             .thenReturn(createMockVenueRecommendations(5));
         when(recommendationOptimizer.optimizeGameRecommendations(anyList(), anyMap()))
             .thenReturn(createMockGameRecommendations(5));
@@ -116,11 +116,11 @@ class EnhancedAiRecommendationEngineTest {
     void testGenerateComprehensiveRecommendations_WithCollaborativeAlgorithm() {
         // Arrange
         when(featureExtractor.extractUserFeatures(testUser)).thenReturn(testUserFeatures);
-        when(gameRecommendationService.getPersonalizedRecommendations(testUser, 10))
+        when(gameRecommendationService.getPersonalizedRecommendations(eq(testUser), eq(10)))
             .thenReturn(createMockGameRecommendations(5));
-        when(playerRecommendationService.getPlayerRecommendations(any(), testUser, 10))
+        when(playerRecommendationService.getPlayerRecommendations(any(), eq(testUser), eq(10)))
             .thenReturn(createMockPlayerRecommendations(5));
-        when(venueRecommendationService.getPersonalizedRecommendations(testUser, 10))
+        when(venueRecommendationService.getPersonalizedRecommendations(eq(testUser), eq(10)))
             .thenReturn(createMockVenueRecommendations(5));
         when(recommendationOptimizer.optimizeGameRecommendations(anyList(), anyMap()))
             .thenReturn(createMockGameRecommendations(5));
@@ -143,11 +143,11 @@ class EnhancedAiRecommendationEngineTest {
     void testGenerateComprehensiveRecommendations_WithContentAlgorithm() {
         // Arrange
         when(featureExtractor.extractUserFeatures(testUser)).thenReturn(testUserFeatures);
-        when(gameRecommendationService.getPersonalizedRecommendations(testUser, 10))
+        when(gameRecommendationService.getPersonalizedRecommendations(eq(testUser), eq(10)))
             .thenReturn(createMockGameRecommendations(5));
-        when(playerRecommendationService.getPlayerRecommendations(any(), testUser, 10))
+        when(playerRecommendationService.getPlayerRecommendations(any(), eq(testUser), eq(10)))
             .thenReturn(createMockPlayerRecommendations(5));
-        when(venueRecommendationService.getPersonalizedRecommendations(testUser, 10))
+        when(venueRecommendationService.getPersonalizedRecommendations(eq(testUser), eq(10)))
             .thenReturn(createMockVenueRecommendations(5));
         when(recommendationOptimizer.optimizeGameRecommendations(anyList(), anyMap()))
             .thenReturn(createMockGameRecommendations(5));
@@ -169,11 +169,11 @@ class EnhancedAiRecommendationEngineTest {
     void testGenerateComprehensiveRecommendations_WithContextualAlgorithm() {
         // Arrange
         when(featureExtractor.extractUserFeatures(testUser)).thenReturn(testUserFeatures);
-        when(gameRecommendationService.getPersonalizedRecommendations(testUser, 10))
+        when(gameRecommendationService.getPersonalizedRecommendations(eq(testUser), eq(10)))
             .thenReturn(createMockGameRecommendations(5));
-        when(playerRecommendationService.getPlayerRecommendations(any(), testUser, 10))
+        when(playerRecommendationService.getPlayerRecommendations(any(), eq(testUser), eq(10)))
             .thenReturn(createMockPlayerRecommendations(5));
-        when(venueRecommendationService.getPersonalizedRecommendations(testUser, 10))
+        when(venueRecommendationService.getPersonalizedRecommendations(eq(testUser), eq(10)))
             .thenReturn(createMockVenueRecommendations(5));
         when(recommendationOptimizer.optimizeGameRecommendations(anyList(), anyMap()))
             .thenReturn(createMockGameRecommendations(5));
@@ -235,7 +235,7 @@ class EnhancedAiRecommendationEngineTest {
     void testGenerateGameRecommendationsByAlgorithm_Content() {
         // Arrange
         when(featureExtractor.extractUserFeatures(testUser)).thenReturn(testUserFeatures);
-        when(gameRecommendationService.getPersonalizedRecommendations(testUser, 20))
+        when(gameRecommendationService.getPersonalizedRecommendations(eq(testUser), eq(20)))
             .thenReturn(createMockGameRecommendations(10));
 
         // Act
@@ -267,7 +267,7 @@ class EnhancedAiRecommendationEngineTest {
     void testGenerateGameRecommendationsByAlgorithm_Contextual() {
         // Arrange
         when(featureExtractor.extractUserFeatures(testUser)).thenReturn(testUserFeatures);
-        when(gameRecommendationService.getPersonalizedRecommendations(testUser, 20))
+        when(gameRecommendationService.getPersonalizedRecommendations(eq(testUser), eq(20)))
             .thenReturn(createMockGameRecommendations(10));
 
         // Act
@@ -313,7 +313,7 @@ class EnhancedAiRecommendationEngineTest {
     @Test
     void testGeneratePlayerRecommendationsByAlgorithm() {
         // Arrange
-        when(playerRecommendationService.getPlayerRecommendations(any(), testUser, 10))
+        when(playerRecommendationService.getPlayerRecommendations(any(), eq(testUser), eq(10)))
             .thenReturn(createMockPlayerRecommendations(5));
 
         // Act
@@ -322,13 +322,13 @@ class EnhancedAiRecommendationEngineTest {
         // Assert
         assertNotNull(result);
         assertFalse(result.isEmpty());
-        verify(playerRecommendationService).getPlayerRecommendations(any(), testUser, 10);
+        verify(playerRecommendationService).getPlayerRecommendations(any(), eq(testUser), eq(10));
     }
 
     @Test
     void testGenerateVenueRecommendationsByAlgorithm() {
         // Arrange
-        when(venueRecommendationService.getPersonalizedRecommendations(testUser, 10))
+        when(venueRecommendationService.getPersonalizedRecommendations(eq(testUser), eq(10)))
             .thenReturn(createMockVenueRecommendations(5));
 
         // Act
@@ -337,7 +337,7 @@ class EnhancedAiRecommendationEngineTest {
         // Assert
         assertNotNull(result);
         assertFalse(result.isEmpty());
-        verify(venueRecommendationService).getPersonalizedRecommendations(testUser, 10);
+        verify(venueRecommendationService).getPersonalizedRecommendations(eq(testUser), eq(10));
     }
 
     @Test

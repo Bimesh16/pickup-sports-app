@@ -4,12 +4,15 @@ import com.bmessi.pickupsportsapp.service.nepal.NepalMarketService;
 import com.bmessi.pickupsportsapp.service.nepal.NepalPaymentService;
 import com.bmessi.pickupsportsapp.entity.nepal.CityHost;
 import com.bmessi.pickupsportsapp.repository.nepal.CityHostRepository;
+import com.bmessi.pickupsportsapp.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -38,6 +41,7 @@ public class NepalController {
     private final NepalMarketService nepalMarketService;
     private final NepalPaymentService nepalPaymentService;
     private final CityHostRepository cityHostRepository;
+    private final UserRepository userRepository;
 
     // ==================== Futsal Game Discovery ====================
 
@@ -142,19 +146,19 @@ public class NepalController {
                     .build());
         }
         
-        // Create new host application
+        var user = userRepository.findById(request.userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        // Create new host application with existing user reference
         CityHost host = CityHost.builder()
-                .user(new com.bmessi.pickupsportsapp.entity.User()) // TODO: Load actual user
+                .user(user)
                 .city(request.city)
                 .district(request.district)
                 .province(request.province)
                 .status(CityHost.HostStatus.PENDING_VERIFICATION)
-                .notes("Application submitted via API")
+                .notes(buildApplicationNotes(request))
                 .build();
-        
-        // Set user ID (simplified for now)
-        host.getUser().setId(request.userId);
-        
+
         CityHost savedHost = cityHostRepository.save(host);
         
         return ResponseEntity.ok(HostApplicationResponse.builder()
@@ -165,6 +169,17 @@ public class NepalController {
                 .status(savedHost.getStatus().getDisplayName())
                 .submittedAt(savedHost.getCreatedAt())
                 .build());
+    }
+
+    private String buildApplicationNotes(HostApplicationRequest request) {
+        StringBuilder sb = new StringBuilder("Application submitted via API");
+        if (request.getExperience() != null && !request.getExperience().isBlank()) {
+            sb.append(" | Experience: ").append(request.getExperience());
+        }
+        if (request.getMotivation() != null && !request.getMotivation().isBlank()) {
+            sb.append(" | Motivation: ").append(request.getMotivation());
+        }
+        return sb.toString();
     }
 
     @GetMapping("/hosts/nearby")

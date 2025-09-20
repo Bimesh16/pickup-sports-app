@@ -81,7 +81,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-batch</artifactId>
@@ -262,10 +261,20 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- AWS SDK -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
             <version>2.25.63</version>
+        </dependency>
+
+        <!-- Optional: AWS SNS SDK v2 for SMS provider; not required when using LOG/TWILIO -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sns</artifactId>
+            <version>2.25.46</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -279,6 +288,7 @@
                 </excludes>
             </resource>
         </resources>
+
         <plugins>
             <!-- Spring Boot plugin -->
             <plugin>
@@ -314,13 +324,6 @@
                             <artifactId>mapstruct-processor</artifactId>
                             <version>1.6.0</version>
                         </path>
-                        <!--
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok-mapstruct-binding</artifactId>
-                            <version>0.2.0</version>
-                        </path>
-                        -->
                     </annotationProcessorPaths>
                     <compilerArgs>
                         <arg>-Amapstruct.suppressGeneratorTimestamp=true</arg>
@@ -337,8 +340,11 @@
                 <version>3.2.5</version>
                 <configuration>
                     <includes>
-                        <include>**/unit/**/*Test.java</include>
+                        <include>**/*Test.java</include>
                     </includes>
+                    <excludes>
+                        <exclude>**/integration/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 
@@ -363,24 +369,16 @@
                 </executions>
             </plugin>
 
+            <!-- Flyway plugin for database migrations -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.6.0</version>
-                <executions>
-                    <execution>
-                        <id>add-integration-source</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>src/integration/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>9.22.3</version>
+                <configuration>
+                    <url>jdbc:postgresql://localhost:5432/pickup</url>
+                    <user>pickup_user</user>
+                    <password>pickup_pass</password>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -439,10 +437,3 @@
     </profiles>
 
 </project>
-        <!-- Optional: AWS SNS SDK v2 for SMS provider; not required when using LOG/TWILIO -->
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>sns</artifactId>
-            <version>2.25.46</version>
-            <optional>true</optional>
-        </dependency>

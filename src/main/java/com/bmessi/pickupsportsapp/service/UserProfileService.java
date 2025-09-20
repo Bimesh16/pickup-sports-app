@@ -58,7 +58,7 @@ public class UserProfileService {
         // New profile fields
         if (request.firstName() != null) user.setFirstName(request.firstName().trim());
         if (request.lastName() != null) user.setLastName(request.lastName().trim());
-        if (request.email() != null) user.setEmail(request.email().trim());
+        // Email update handled separately for security reasons
         if (request.displayName() != null) user.setDisplayName(request.displayName().trim());
         if (request.phone() != null) user.setPhone(request.phone().trim());
         if (request.gender() != null) user.setGender(request.gender());
@@ -142,8 +142,8 @@ public class UserProfileService {
                 u.getXp(),
                 u.getLevel(),
                 u.getRank(),
-                u.getIsEmailVerified(),
-                u.getIsPhoneVerified(),
+                u.isEmailVerified(),
+                u.isPhoneVerified(),
                 u.getPreferredSports(),
                 u.getPrivacySettings(),
                 u.getSecuritySettings()

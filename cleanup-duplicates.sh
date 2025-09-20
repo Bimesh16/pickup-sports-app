@@ -1,5 +1,18 @@
 #!/bin/bash
+#!/bin/bash
 
+echo "Cleaning up duplicate DTO files..."
+
+# Remove any standalone DTO files that might be duplicated
+# We'll keep the ones in the main dto package and remove others
+
+echo "Checking for SessionDTO duplicates..."
+find src/main/java -name "SessionDTO.java" -not -path "*/dto/SessionDTO.java" -delete
+
+echo "Checking for UserStatsDTO duplicates..."
+find src/main/java -name "UserStatsDTO.java" -not -path "*/dto/UserStatsDTO.java" -delete
+
+echo "Cleanup complete. Try building again."
 # 🧹 Pickup Sports App - Duplicate File Cleanup Script
 # Run this script to clean up duplicate and unwanted files
 

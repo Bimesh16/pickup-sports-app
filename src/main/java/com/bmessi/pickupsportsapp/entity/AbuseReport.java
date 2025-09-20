@@ -12,9 +12,9 @@ import java.time.Instant;
 })
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class AbuseReport {
 
     public enum SubjectType { GAME, MESSAGE, USER }

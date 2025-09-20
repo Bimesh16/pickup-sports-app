@@ -74,11 +74,11 @@ public class PasswordResetService {
         if (redisRateLimiter != null) {
             if (username != null && !username.isBlank() && !redisRateLimiter.allow("forgot:user:" + username.toLowerCase(), perUser, 60)) {
                 try { meterRegistry.counter("auth.forgot.attempts", "result", "denied", "scope", "user").increment(); } catch (Exception ignore) {}
-                return;
+                return null;
             }
             if (requesterIp != null && !requesterIp.isBlank() && !redisRateLimiter.allow("forgot:ip:" + requesterIp, perIp, 60)) {
                 try { meterRegistry.counter("auth.forgot.attempts", "result", "denied", "scope", "ip").increment(); } catch (Exception ignore) {}
-                return;
+                return null;
             }
         }
 
