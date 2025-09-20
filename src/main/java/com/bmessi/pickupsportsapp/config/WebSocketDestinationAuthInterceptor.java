@@ -1,6 +1,7 @@
 package com.bmessi.pickupsportsapp.config;
 
 import com.bmessi.pickupsportsapp.service.gameaccess.GameAccessService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessagingException;
@@ -19,6 +20,7 @@ import java.util.regex.Pattern;
  * Enforces that only game members/creator can SEND/SUBSCRIBE to
  * /app/games/{id}/** and /topic/games/{id}/**.
  */
+@Profile("!test-simple")
 @Component
 public class WebSocketDestinationAuthInterceptor implements ChannelInterceptor {
 

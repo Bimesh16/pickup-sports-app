@@ -6,6 +6,7 @@ import com.bmessi.pickupsportsapp.entity.Venue;
 import com.bmessi.pickupsportsapp.repository.GameRepository;
 import com.bmessi.pickupsportsapp.repository.UserRepository;
 import com.bmessi.pickupsportsapp.repository.VenueRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -155,7 +156,9 @@ public class PredictiveAnalyticsEngine {
     
     private UserBehaviorPattern analyzeUserBehaviorPattern(User user) {
         // Analyze user's game participation patterns
-        List<Game> userGames = gameRepository.findByUserIdWithParticipants(user.getId(), null).getContent();
+        List<Game> userGames = gameRepository
+                .findByUserIdWithParticipants(user.getId(), PageRequest.of(0, 100))
+                .getContent();
         
         Map<String, Integer> timeSlotPreferences = new HashMap<>();
         Map<String, Integer> venuePreferences = new HashMap<>();

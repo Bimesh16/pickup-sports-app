@@ -357,7 +357,7 @@ public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificat
      * Update old completed games to archived status
      */
     @Modifying
-    @Query("UPDATE Game g SET g.status = 'ARCHIVED', g.updatedAt = CURRENT_TIMESTAMP WHERE g.status = 'COMPLETED' AND g.updatedAt <= :cutoffDate")
+    @Query("UPDATE Game g SET g.status = 'ARCHIVED', g.updatedAt = :cutoffDate WHERE g.status = 'COMPLETED' AND g.updatedAt <= :cutoffDate")
     int updateOldCompletedGamesToArchived(@Param("cutoffDate") OffsetDateTime cutoffDate);
 
     /**

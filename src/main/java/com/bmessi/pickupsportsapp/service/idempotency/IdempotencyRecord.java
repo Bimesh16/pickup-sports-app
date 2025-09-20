@@ -7,7 +7,7 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "idempotency_record", indexes = {
-        @Index(name = "idx_idempotency_created_at", columnList = "createdAt")
+        @Index(name = "idx_idempotency_created_at", columnList = "created_at")
 })
 @Getter
 @Setter
@@ -17,7 +17,7 @@ import java.time.Instant;
 public class IdempotencyRecord {
 
     @Id
-    @Column(length = 200)
+    @Column(name = "idempotency_key", length = 200)
     private String key;
 
     private int status;
@@ -25,7 +25,7 @@ public class IdempotencyRecord {
     @Column(columnDefinition = "TEXT")
     private String body;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private Instant createdAt;
 
     @PrePersist
@@ -35,4 +35,3 @@ public class IdempotencyRecord {
         }
     }
 }
-
